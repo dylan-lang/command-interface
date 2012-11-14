@@ -27,9 +27,6 @@ define abstract class <cli-node> (<object>)
   /* possible successors */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
-  /* handler function */
-  slot node-handler :: false-or(<function>) = #f,
-    init-keyword: handler:;
   /* hidden nodes are not completed */
   slot node-hidden? :: <boolean> = #f,
     init-keyword: hidden?:;
@@ -89,9 +86,6 @@ end method;
  */
 define method node-accept(parser :: <cli-parser>, node :: <cli-node>, token :: <cli-token>)
  => ();
-  if(node-handler(node))
-    parser-push-handler(parser, node-handler(node));
-  end
 end method;
 
 
@@ -105,7 +99,7 @@ end class;
 
 define method root-define-command(root :: <cli-root>, name :: <sequence>,
                                   #rest node-keys,
-                                  #key node-class :: <class> = <cli-symbol>, #all-keys)
+                                  #key node-class :: <class> = <cli-command>, #all-keys)
  => (cmd :: <cli-symbol>);
   local
     method find-or-make-successor(node :: <cli-node>,
@@ -184,6 +178,26 @@ define method node-complete(parser :: <cli-parser>, node :: <cli-symbol>, token 
 end method;
 
 
+/*
+ * Commands are symbols with handler and parameter requirements
+ */
+define class <cli-command> (<cli-symbol>)
+  /* help source for the command */
+  slot command-help :: false-or(<string>) = #f,
+    init-keyword: help:;
+  /* handler function */
+  slot command-handler :: false-or(<function>) = #f,
+    init-keyword: handler:;
+end class;
+
+define method node-accept(parser :: <cli-parser>, node :: <cli-command>, token :: <cli-token>)
+ => ()
+  if(command-handler(node))
+    parser-push-handler(parser, command-handler(node));
+  end
+end method;
+
+
 /* Wrappers allow wrapping another command
  *
  * This is used for the "help" command so it can complete normal commands.
@@ -191,14 +205,14 @@ end method;
  * They will have the successors of the given WRAPPER-ROOT.
  *
  */
-define class <cli-wrapper> (<cli-symbol>)
-  slot wrapper-root :: <cli-root>,
-    init-keyword: wrapper-root:;
+define class <cli-wrapper> (<cli-command>)
+  slot wrapper-wrapped :: <cli-node>,
+    init-keyword: wrapped:;
 end class;
 
 define method node-successors(node :: <cli-wrapper>)
  => (successors :: <sequence>);
-  concatenate(node-successors(wrapper-root(node)), next-method());
+  concatenate(node-successors(wrapper-wrapped(node)), next-method());
 end method;
 
 

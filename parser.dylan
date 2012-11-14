@@ -31,9 +31,11 @@ end class;
 
 define method parser-execute(parser :: <cli-parser>)
  => ();
-  for(h in parser-handlers(parser))
-    h(parser);
-  end for;
+  let handlers = reverse(parser-handlers(parser));
+  if(size(handlers) > 0)
+    let hn = element(handlers, 0);
+    hn(parser);
+  end;
 end method;
 
 define method parser-parse(parser :: <cli-parser>, tokens :: <sequence>)
@@ -113,16 +115,12 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
         parser-push-node(parser, token, succ);
       end;
     0 =>
-      //cli-annotate(parser-source(parser), token-srcloc(token));
-      //error(format-to-string("No options at %s", token-string(token)));
       signal(make(<cli-unknown-error>,
                   format-string: "Unknown token \"%s\":\n",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
                   token: token));
     otherwise =>
-      //cli-annotate(parser-source(parser), token-srcloc(token));
-      //error(format-to-string("Ambiguous at %s: %=", token-string(token), matches));
       signal(make(<cli-ambiguous-error>,
                   format-string: "Ambiguous token \"%s\":\n",
                   format-arguments: vector(token-string(token)),

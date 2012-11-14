@@ -5,7 +5,37 @@ define constant $cli-root = make(<cli-root>);
 
 root-define-command($cli-root, "help",
                     node-class: <cli-wrapper>,
-                    wrapper-root: $cli-root);
+                    wrapped: $cli-root,
+                    handler:
+                      method(parser :: <cli-parser>)
+                       => ();
+                          let nodes = reverse(parser-nodes(parser));
+                          let tokens = reverse(parser-tokens(parser));
+                          // skip "help"
+                          nodes := tail(nodes);
+                          tokens := tail(tokens);
+
+                          let cmd :: false-or(<cli-command>) = #f;
+                          let cmd-title :: <list> = #();
+                          let cmd-help :: false-or(<string>) = #f;
+
+                          for(token in tokens, node in nodes)
+                            if(instance?(node, <cli-symbol>))
+                              if(~cmd)
+                                cmd-title := add(cmd-title, node-symbol(node));
+                              end if;
+                            end if;
+                            if(instance?(node, <cli-command>))
+                              cmd := node;
+                              if(command-help(node))
+                                cmd-help := command-help(node);
+                              end if;
+                            end if;
+                          end for;
+
+                          format-out("command %=\n", cmd-title);
+                          format-out("help:\n%s\n", cmd-help);
+                      end method);
 
 
 define constant $bashcomp =
@@ -68,14 +98,20 @@ define constant $bashcomp =
 
 make-simple-param($bashcomp, #"command", repeatable?: #t);
 
-define variable $show-if = root-define-command($cli-root, #["show", "interface"]);
+
+define variable $show-if = root-define-command($cli-root, #["show", "interface"],
+                                               help: "Query the interface database");
 make-named-param($show-if, #"name", repeatable?: #t);
 make-named-param($show-if, #"type");
-define variable $show-rt = root-define-command($cli-root, #["show", "route"]);
+
+define variable $show-rt = root-define-command($cli-root, #["show", "route"],
+                                               help: "Query the route database");
 make-simple-param($show-rt, #"spec");
-root-define-command($cli-root, #["show", "log"]);
-root-define-command($cli-root, #["show", "configuration"]);
-root-define-command($cli-root, #["set", "variable"]);
+
+root-define-command($cli-root, #["show", "log"],
+                    help: "Show system log");
+root-define-command($cli-root, #["show", "configuration"],
+                    help: "Show active system configuration");
 
 
 
