@@ -5,7 +5,7 @@ define constant $cli-root = make(<cli-root>);
 
 root-define-command($cli-root, "help",
                     node-class: <cli-wrapper>,
-                    wrapped: $cli-root,
+                    root: $cli-root,
                     handler:
                       method(parser :: <cli-parser>)
                        => ();

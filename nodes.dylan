@@ -206,13 +206,13 @@ end method;
  *
  */
 define class <cli-wrapper> (<cli-command>)
-  slot wrapper-wrapped :: <cli-node>,
-    init-keyword: wrapped:;
+  slot wrapper-root :: <cli-node>,
+    init-keyword: root:;
 end class;
 
 define method node-successors(node :: <cli-wrapper>)
  => (successors :: <sequence>);
-  concatenate(node-successors(wrapper-wrapped(node)), next-method());
+  concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
 
 
