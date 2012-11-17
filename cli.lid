@@ -5,4 +5,6 @@ files: library
   parser
   nodes
   building
+  bash
+  help
   cli
