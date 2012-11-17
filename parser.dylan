@@ -80,33 +80,36 @@ define method parser-push-node(parser :: <cli-parser>, token :: <cli-token>, nod
 end method;
 
 
-
 define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
   let current-node = parser-current-node(parser);
   // filter out non-acceptable nodes
   let acceptable = choose(rcurry(node-acceptable?, parser),
                           node-successors(current-node));
   // find all matches
-  let matches = #();
-  for(successor in acceptable)
-    if(node-match(successor, parser, token))
-      matches := add(matches, successor);
-    end
-  end for;
+  let possible-matches = choose(rcurry(node-match, parser, token), acceptable);
+  // get match priorities
+  let possible-match-prios = map(node-priority, possible-matches);
+  // find maximum priority
+  let match-priority = reduce(max, $cli-priority-minimum, possible-match-prios);
+  // filter by priority
+  let matches = choose-by(curry(\==, match-priority), possible-match-prios, possible-matches);
   // act on matches
   select(matches.size)
+    // exactly one match: we found a match
     1 =>
       begin
         let succ = element(matches, 0);
         node-accept(succ, parser, token);
         parser-push-node(parser, token, succ);
       end;
+    // no match: unknown token
     0 =>
       signal(make(<cli-unknown-error>,
                   format-string: "Unknown token \"%s\":\n",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
                   token: token));
+    // more than one: ambiguous token
     otherwise =>
       signal(make(<cli-ambiguous-error>,
                   format-string: "Ambiguous token \"%s\":\n",

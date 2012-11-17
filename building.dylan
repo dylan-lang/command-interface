@@ -61,6 +61,7 @@ define function make-simple-param(anchor :: <cli-node>, name :: <symbol>, #rest 
   let param = apply(make, <cli-parameter>,
                     name:, name,
                     anchor:, anchor,
+                    priority:, $cli-priority-parameter,
                     keys);
   node-add-successor(anchor, param);
   param;
@@ -71,6 +72,7 @@ define method make-named-param(anchor :: <cli-node>, names :: <sequence>, #rest 
   let param = apply(make, <cli-parameter>,
                     name:, element(names, 0),
                     anchor:, anchor,
+                    priority:, $cli-priority-parameter,
                     keys);
   let syms = #();
   for(name in names)
@@ -86,8 +88,15 @@ define method make-named-param(anchor :: <cli-node>, names :: <sequence>, #rest 
 end method;
 
 define method make-named-param(anchor :: <cli-node>, name :: <symbol>, #rest keys, #key, #all-keys)
- => (param :: <cli-parameter>, symbol :: <cli-symbol>);
-  let (param, syms) = apply(make-named-param, anchor, list(name), keys);
-  values(param, element(syms, 0));
+ => (param :: <cli-parameter>, symbols :: <sequence>);
+  apply(make-named-param, anchor, list(name), keys);
 end method;
 
+define method make-inline-param(anchor :: <cli-node>, names, #rest keys, #key, #all-keys)
+ => (param :: <cli-node>, symbols :: <sequence>);
+  let (param, syms) = apply(make-named-param, anchor, names, keys);
+
+  node-add-successor(anchor, param);
+
+  values(param, syms);
+end method;

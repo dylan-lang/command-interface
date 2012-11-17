@@ -1,5 +1,10 @@
 module: cli
 
+define constant $cli-priority-minimum   = -10000;
+define constant $cli-priority-parameter = -10;
+define constant $cli-priority-default   =  0;
+
+
 /* Grammar node for the CLI
  *
  * These form a digraph with circles through their SUCCESSORS
@@ -27,6 +32,9 @@ define abstract class <cli-node> (<object>)
   /* possible successors */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
+  /* match and completion priority */
+  slot node-priority :: <integer> = $cli-priority-default,
+    init-keyword: priority:;
   /* hidden nodes are not completed */
   slot node-hidden? :: <boolean> = #f,
     init-keyword: hidden?:;
