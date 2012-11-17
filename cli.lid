@@ -4,4 +4,5 @@ files: library
   source
   parser
   nodes
+  building
   cli
