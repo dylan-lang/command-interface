@@ -79,19 +79,6 @@ define method parser-push-node(parser :: <cli-parser>, token :: <cli-token>, nod
   node;
 end method;
 
-define function parser-node-completer(parser :: <cli-parser>, token :: false-or(<cli-token>))
- => (completer-function :: <function>);
-  method (node :: <cli-node>)
-    node-complete(parser, node, token);
-  end method
-end function;
-
-define function parser-node-matcher(parser :: <cli-parser>, token :: <cli-token>)
- => (matcher-function :: <function>);
-  method (node :: <cli-node>)
-    node-match(parser, node, token);
-  end method
-end function;
 
 
 define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
@@ -102,7 +89,7 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
   // find all matches
   let matches = #();
   for(successor in acceptable)
-    if(node-match(parser, successor, token))
+    if(node-match(successor, parser, token))
       matches := add(matches, successor);
     end
   end for;
@@ -111,7 +98,7 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
     1 =>
       begin
         let succ = element(matches, 0);
-        node-accept(parser, succ, token);
+        node-accept(succ, parser, token);
         parser-push-node(parser, token, succ);
       end;
     0 =>
@@ -142,11 +129,11 @@ define method parser-complete(parser :: <cli-parser>, token :: false-or(<cli-tok
 
   // filter with token if available
   if(token)
-    acceptable := choose(parser-node-matcher(parser, token), acceptable);
+    acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
 
   // collect completions from each node
-  let completions-by-node = map(parser-node-completer(parser, token), acceptable);
+  let completions-by-node = map(rcurry(node-complete, parser, token), acceptable);
 
   // concatenate and return
   if(empty?(completions-by-node))
