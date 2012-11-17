@@ -16,6 +16,7 @@ define module cli
   use pprint;
   use strings;
   use file-system;
+  use locators;
   use standard-io;
   use format-out;
   use operating-system;
