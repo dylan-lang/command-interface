@@ -1,5 +1,6 @@
 library: cli
 files: library
+  util
   predicate
   source
   parser
