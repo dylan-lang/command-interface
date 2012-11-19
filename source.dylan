@@ -25,10 +25,123 @@ define class <cli-string-source> (<cli-source>)
     init-keyword: string:;
 end class;
 
+define class <cli-lexer-error> (<simple-error>)
+  slot error-source :: <cli-source>,
+    init-keyword: source:;
+  slot error-string :: <string>,
+    init-keyword: string:;
+  slot error-srcoff :: <cli-srcoff>,
+    init-keyword: srcoff:;
+end class;
+
 define method cli-tokenize(source :: <cli-string-source>)
  => (tokens :: <sequence>);
-  // XXX
-  #();
+  let string = source-string(source);
+  let tokens = #();
+  let state = #"initial";
+
+  let collected-start = #f;
+  let collected-end = #f;
+  let collected-chars = #();
+
+  local
+    method push-simple(char :: <character>, offset :: <integer>)
+     => ();
+      let srcloc = make-source-location(source,
+                                        offset, 0, offset,
+                                        offset, 0, offset);
+      let token = make(<cli-token>,
+                       string: as(<string>, char),
+                       srcloc: srcloc);
+      tokens := add(tokens, token);
+    end,
+    method collect-char(char :: <character>, offset :: <integer>)
+     => ();
+      unless(collected-start)
+        collected-start := offset;
+      end;
+      collected-end := offset;
+      collected-chars := add(collected-chars, char);
+    end,
+    method maybe-push-collected()
+     => ();
+      if(collected-start)
+        let str = as(<string>, reverse(collected-chars));
+        let srcloc = make-source-location(source,
+                                          collected-start, 0, collected-start,
+                                          collected-end, 0, collected-end);
+
+        let token = make(<cli-token>,
+                         string: str,
+                         srcloc: srcloc);
+        tokens := add(tokens, token);
+
+        collected-chars := #();
+        collected-start := #f;
+        collected-end := #f;
+      end;
+    end,
+    method invalid(char, offset)
+      => ();
+      signal(make(<cli-lexer-error>,
+                  format-string: "Lexer error.",
+                  format-arguments: #[],
+                  source: source,
+                  string: string,
+                  srcoff: cli-srcoff(offset, 0, offset)));
+    end method;
+
+  for(char in string, offset from 0)
+    select(state)
+      #"initial" =>
+        case
+          char.whitespace? =>
+            begin
+              maybe-push-collected();
+              state := #"initial";
+            end;
+          char = '"' =>
+            state := #"dquote";
+          char = '?' =>
+            if(collected-start)
+              collect-char(char, offset);
+            else
+              push-simple(char, offset);
+            end;
+          char.graphic? =>
+            collect-char(char, offset);
+          otherwise =>
+            invalid(char, offset);
+        end;
+      #"dquote" =>
+        select(char)
+          '"' =>
+            state := #"initial";
+          '\\' =>
+            state := #"dquote-backslash";
+          otherwise =>
+            collect-char(char, offset);
+        end;
+      #"dquote-backslash" =>
+        select(char)
+          '\\', '"' =>
+            begin
+              collect-char(char, offset);
+              state := #"dquote";
+            end;
+          otherwise =>
+            invalid(char, offset);
+        end;
+    end;
+  end for;
+
+  if(state == #"initial")
+    maybe-push-collected();
+  else
+    invalid(' ', size(string));
+  end;
+
+  reverse(tokens);
 end method;
 
 /* CLI source code provided as a vector of strings */
@@ -64,12 +177,33 @@ define method cli-tokenize(source :: <cli-vector-source>)
   reverse(tokens);
 end method;
 
-define method cli-annotate(stream :: <stream>, source :: <cli-vector-source>, srcloc :: <cli-srcloc>)
- => ();
-  let tokens :: <sequence> = cli-tokenize(source);
+define method cli-annotate(source :: <cli-source>, srcoff :: <cli-srcoff>)
+ => (marks :: <string>);
+  cli-annotate(source, make(<cli-srcloc>, source: source, start: srcoff, end: srcoff));
+end method;
 
+define method cli-annotate(source :: <cli-string-source>, srcloc :: <cli-srcloc>)
+ => (marks :: <string>);
+  let string = concatenate(source-string(source), " "); // for final locations
+  let marks :: <string> = "";
+
+  for(char in string, posn from 0)
+    let srcoff = cli-srcoff(posn, 0, posn);
+    if(in-source-location?(srcloc, srcoff))
+      marks := concatenate!(marks, "^");
+    else
+      marks := concatenate!(marks, " ");
+    end;
+  end for;
+
+  marks;
+end method;
+
+define method cli-annotate(source :: <cli-vector-source>, srcloc :: <cli-srcloc>)
+ => (marks :: <string>);
+  let tokens = cli-tokenize(source);
   let code :: <string> = "  ";
-  let marks :: <string> = "  ";
+  let marks :: <string> = "";
 
   for(token in tokens, posn from 0)
     if(posn > 0)
@@ -92,7 +226,7 @@ define method cli-annotate(stream :: <stream>, source :: <cli-vector-source>, sr
     end;
   end for;
 
-  format(stream, "%s\n%s\n", code, marks);
+  marks;
 end method;
 
 

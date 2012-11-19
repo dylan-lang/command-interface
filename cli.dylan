@@ -36,8 +36,7 @@ define function main (name :: <string>, arguments :: <vector>)
     apply(format, *standard-error*,
           condition-format-string(pe),
           condition-format-arguments(pe));
-    cli-annotate(*standard-error*,
-                 parser-source(pe.error-parser),
+    cli-annotate(source,
                  token-srcloc(pe.error-token));
     force-output(*standard-error*);
   end;
