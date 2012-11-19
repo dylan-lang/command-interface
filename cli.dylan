@@ -9,15 +9,38 @@ root-add-help($cli-root);
 
 define variable $show-if = root-define-command($cli-root, #["show", "interface"],
                                                help: "Query the interface database");
-make-named-param($show-if, #"name", repeatable?: #t);
+
+// property params
+make-inline-param($show-if, #"name");
 make-named-param($show-if, #"type");
+
+
+root-define-command($cli-root, #"shell",
+                    handler:
+                      method(p :: <cli-parser>)
+                          let t = application-controlling-tty();
+                          let e = make(<tty-cli>);
+                          tty-run(t, e);
+                      end method);
 
 define variable $show-rt = root-define-command($cli-root, #["show", "route"],
                                                help: "Query the route database");
-make-simple-param($show-rt, #"spec");
 
-root-define-command($cli-root, #["show", "log"],
+// lookup params
+make-inline-param($show-rt, #"to");
+make-named-param($show-rt,  #"from");
+
+// property params
+make-named-param($show-rt,  #"device");
+make-named-param($show-rt,  #"source");
+make-named-param($show-rt,  #"nexthop");
+
+
+let sl = root-define-command($cli-root, #["show", "log"],
                     help: "Show system log");
+let fp = make(<cli-file>, name: #"file");
+node-add-successor(sl, fp);
+
 root-define-command($cli-root, #["show", "configuration"],
                     help: "Show active system configuration");
 
