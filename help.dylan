@@ -24,7 +24,7 @@ define method help-handler(parser :: <cli-parser>)
   for(token in tokens, node in nodes)
     if(instance?(node, <cli-symbol>))
       if(~cmd)
-        cmd-title := add(cmd-title, node-symbol(node));
+        cmd-title := add(cmd-title, as(<string>, node-symbol(node)));
       end if;
     end if;
     if(instance?(node, <cli-command>))
@@ -34,7 +34,14 @@ define method help-handler(parser :: <cli-parser>)
       end if;
     end if;
   end for;
-  
-  format-out("command %=\n", cmd-title);
-  format-out("help:\n%s\n", cmd-help);
+
+  cmd-title := reverse(cmd-title);
+  // upcase
+  cmd-title := map(as-uppercase, cmd-title);
+  // separate with spaces
+  cmd-title := apply(list, first(cmd-title),
+                     map(curry(concatenate, " "), tail(cmd-title)));
+
+  format-out("\n    %s\n\n", reduce(concatenate, "", cmd-title));
+  format-out("    %s\n\n", cmd-help);
 end method;
