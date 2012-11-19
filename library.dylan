@@ -4,6 +4,7 @@ define library cli
   use common-dylan;
   use source-records;
   use io;
+  use c-ffi;
   use system;
   use strings;
 end library;
@@ -21,4 +22,5 @@ define module cli
   use format-out;
   use operating-system;
   use source-records;
+  use c-ffi;
 end module;
