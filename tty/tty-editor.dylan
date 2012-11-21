@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define class <tty-editor> (<tty-activity>)
   slot editor-prompt :: <string> = "> ";

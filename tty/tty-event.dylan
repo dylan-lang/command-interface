@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define class <tty-event> (<object>)
   slot event-tty :: <tty>,

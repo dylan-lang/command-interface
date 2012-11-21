@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define abstract class <tty-activity> (<object>)
   slot activity-tty :: false-or(<tty>) = #f;

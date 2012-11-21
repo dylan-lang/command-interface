@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 // This is required so we can convert 
 

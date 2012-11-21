@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define constant $unix-termios-raw =
   begin

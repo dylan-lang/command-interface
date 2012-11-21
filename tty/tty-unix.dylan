@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define class <unix-tty> (<tty>)
   slot unix-tty-type :: <string>,

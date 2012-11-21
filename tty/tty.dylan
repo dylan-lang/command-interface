@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define constant <tty-state> = <integer>;
 
@@ -19,6 +19,12 @@ define abstract class <tty> (<object>)
   slot tty-error :: false-or(<stream>) = #f,
     init-keyword: error:;
 end class;
+
+define generic tty-start(t :: <tty>)
+ => ();
+
+define generic tty-finish(t :: <tty>)
+ => ();
 
 define method tty-run(t :: <tty>, a :: <tty-activity>)
   let oo = *standard-output*;

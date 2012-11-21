@@ -1,4 +1,4 @@
-module: cli
+module: tty
 
 define constant $char-delete = as(<byte-character>, 127);
 

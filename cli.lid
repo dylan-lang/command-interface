@@ -9,13 +9,13 @@ files: library
   bash
   help
   tty-cli
-  tty
-  tty-char
-  tty-event
-  tty-stream
-  tty-activity
-  tty-editor
-  tty-unix
-  tty-unix-binding
+  tty/tty
+  tty/tty-char
+  tty/tty-event
+  tty/tty-stream
+  tty/tty-activity
+  tty/tty-editor
+  tty/tty-unix
+  tty/tty-unix-binding
   cli
-c-source-files: tty-unix-helper.c
+c-source-files: tty/tty-unix-helper.c
