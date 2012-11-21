@@ -19,6 +19,10 @@ end class;
 define generic cli-tokenize(source :: <cli-source>)
  => (tokens :: <sequence>);
 
+define generic source-string(source :: <cli-source>)
+ => (whole-source :: <string>);
+
+
 /* CLI source code provided as a string */
 define class <cli-string-source> (<cli-source>)
   slot source-string :: <string>,
@@ -81,11 +85,11 @@ define method cli-tokenize(source :: <cli-string-source>)
         collected-end := #f;
       end;
     end,
-    method invalid(char, offset)
+    method invalid(char, offset, message)
       => ();
       signal(make(<cli-lexer-error>,
-                  format-string: "Lexer error.",
-                  format-arguments: #[],
+                  format-string: "Lexical error: %s",
+                  format-arguments: vector(message),
                   source: source,
                   string: string,
                   srcoff: cli-srcoff(offset, 0, offset)));
@@ -108,7 +112,7 @@ define method cli-tokenize(source :: <cli-string-source>)
           char.graphic? =>
             collect-char(char, offset);
           otherwise =>
-            invalid(char, offset);
+            invalid(char, offset, "character not allowed here");
         end;
       #"dquote" =>
         select(char)
@@ -127,7 +131,7 @@ define method cli-tokenize(source :: <cli-string-source>)
               state := #"dquote";
             end;
           otherwise =>
-            invalid(char, offset);
+            invalid(char, offset, "character not allowed here");
         end;
     end;
   end for;
@@ -135,7 +139,7 @@ define method cli-tokenize(source :: <cli-string-source>)
   if(state == #"initial")
     maybe-push-collected();
   else
-    invalid(' ', size(string));
+    invalid(' ', size(string), "incomplete token");
   end;
 
   reverse(tokens);
@@ -146,6 +150,11 @@ define class <cli-vector-source> (<cli-source>)
   slot source-vector :: <sequence>,
     init-keyword: strings:;
 end class;
+
+define method source-string(source :: <cli-vector-source>)
+ => (string :: <string>);
+  join(source-vector(source), " ");
+end method;
 
 define method cli-tokenize(source :: <cli-vector-source>)
  => (tokens :: <sequence>);

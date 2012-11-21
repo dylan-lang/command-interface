@@ -105,7 +105,7 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
     // no match: unknown token
     0 =>
       signal(make(<cli-unknown-error>,
-                  format-string: "Unknown token \"%s\"",
+                  format-string: "Unrecognized token \"%s\"",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
                   token: token));

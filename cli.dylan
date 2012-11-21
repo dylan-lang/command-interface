@@ -56,11 +56,12 @@ define function main (name :: <string>, arguments :: <vector>)
     parser-parse(parser, tokens);
     parser-execute(parser);
   exception (pe :: <cli-parse-error>)
-    apply(format, *standard-error*,
-          condition-format-string(pe),
-          condition-format-arguments(pe));
-    cli-annotate(source,
-                 token-srcloc(pe.error-token));
+    format(*standard-error*,
+           " %s\n %s\n%s\n",
+           source-string(source),
+           cli-annotate(source,
+                        token-srcloc(pe.error-token)),
+           condition-to-string(pe));
     force-output(*standard-error*);
   end;
 
