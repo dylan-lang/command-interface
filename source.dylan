@@ -51,7 +51,7 @@ define method cli-tokenize(source :: <cli-string-source>)
                                         offset, 0, offset,
                                         offset, 0, offset);
       let token = make(<cli-token>,
-                       string: as(<string>, char),
+                       string: as(<string>, vector(char)),
                        srcloc: srcloc);
       tokens := add(tokens, token);
     end,
@@ -96,10 +96,7 @@ define method cli-tokenize(source :: <cli-string-source>)
       #"initial" =>
         case
           char.whitespace? =>
-            begin
-              maybe-push-collected();
-              state := #"initial";
-            end;
+            maybe-push-collected();
           char = '"' =>
             state := #"dquote";
           char = '?' =>
