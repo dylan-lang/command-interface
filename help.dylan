@@ -36,12 +36,8 @@ define method help-handler(parser :: <cli-parser>)
   end for;
 
   cmd-title := reverse(cmd-title);
-  // upcase
   cmd-title := map(as-uppercase, cmd-title);
-  // separate with spaces
-  cmd-title := apply(list, first(cmd-title),
-                     map(curry(concatenate, " "), tail(cmd-title)));
 
-  format-out("\n    %s\n\n", reduce(concatenate, "", cmd-title));
+  format-out("\n    %s\n\n", join(cmd-title, " "));
   format-out("    %s\n\n", cmd-help);
 end method;
