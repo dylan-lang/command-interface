@@ -33,12 +33,14 @@ define c-function %unix-make-termios
   c-name: "unix_make_termios";
 end;
 
+/*
 define c-function %unix-tcsetattr-now
   parameter fd :: <c-int>;
   parameter termios :: <%unix-termios>;
   result code :: <c-int>;
   c-name: "unix_tcsetattr_now";
 end;
+*/
 
 define c-function %unix-tcsetattr-drain
   parameter fd :: <c-int>;
@@ -47,9 +49,11 @@ define c-function %unix-tcsetattr-drain
   c-name: "unix_tcsetattr_drain";
 end;
 
+/*
 define c-function %unix-tcsetattr-flush
   parameter fd :: <c-int>;
   parameter termios :: <%unix-termios>;
   result code :: <c-int>;
   c-name: "unix_tcsetattr_flush";
 end;
+*/
