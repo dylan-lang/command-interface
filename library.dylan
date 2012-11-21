@@ -35,23 +35,39 @@ define module tty
 
   // tty activities
   export
-    <tty-activity>;
+    <tty-activity>,
+
+    tty-activity-event;
+
+  // tty events
+  export
+    <tty-event>,
+    <tty-key>,
+    <tty-activity-event>,
+    <tty-activity-start>,
+    <tty-activity-finish>,
+    <tty-activity-pause>,
+    <tty-activity-resume>;
 
   // editor activity
   export
     <tty-editor>,
+
+    // getters and setters
     editor-prompt,
     //editor-prompt-setter,
     editor-line,
     //editor-line-setter,
 
+    // text manipulation
     editor-clear,
 
+    // relevant to users
+    editor-finish,
     editor-execute,
     editor-complete,
 
-    editor-finish,
-
+    // XXX: need this?
     editor-refresh-position,
     editor-refresh-line;
 end module;

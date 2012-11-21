@@ -57,12 +57,17 @@ define method tty-run(t :: <tty>, a :: <tty-activity>)
   end;
 end method;
 
+define method tty-event(t :: <tty>, a :: <tty-activity>, class :: subclass(<tty-activity-event>))
+ => ();
+  tty-activity-event(a, make(class, tty: t, activity: a));
+end method;
+
 define method tty-start-activity(t :: <tty>, a :: <tty-activity>)
  => ();
   let previous = tty-activity(t);
   // pause previous
   if(previous)
-    tty-activity-pause(a);
+    tty-event(t, previous, <tty-activity-start>);
   end;
   // set activity slots
   activity-tty(a) := t;
@@ -70,8 +75,8 @@ define method tty-start-activity(t :: <tty>, a :: <tty-activity>)
   // activity is now current
   tty-activity(t) := a;
   // callbacks
-  tty-activity-start(a);
-  tty-activity-resume(a);
+  tty-event(t, a, <tty-activity-start>);
+  tty-event(t, a, <tty-activity-resume>);
   // flush in case of output
   tty-flush(t);
 end method;
@@ -82,8 +87,8 @@ define method tty-finish-activity(t :: <tty>)
   if(a)
     let previous = activity-previous(a);
     // callbacks
-    tty-activity-pause(a);
-    tty-activity-finish(a);
+    tty-event(t, a, <tty-activity-pause>);
+    tty-event(t, a, <tty-activity-finish>);
     // pop the activity
     tty-activity(t) := previous;
     // clear activity slots
@@ -91,7 +96,7 @@ define method tty-finish-activity(t :: <tty>)
     activity-previous(a) := #f;
     // resume previous
     if(previous)
-      tty-activity-resume(previous);
+      tty-event(t, previous, <tty-activity-resume>);
     end;
   end;
 end method;

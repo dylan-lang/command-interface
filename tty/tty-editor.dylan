@@ -8,14 +8,14 @@ define class <tty-editor> (<tty-activity>)
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
 
-define method tty-activity-resume(editor :: <tty-editor>)
- => ();
-  editor-refresh-line(editor);
-end method;
-
-define method tty-activity-pause(editor :: <tty-editor>)
+define method tty-activity-event(editor :: <tty-editor>, event :: <tty-activity-pause>)
  => ();
   editor-finish(editor);
+end method;
+
+define method tty-activity-event(editor :: <tty-editor>, event :: <tty-activity-resume>)
+ => ();
+  editor-refresh-line(editor);
 end method;
 
 define method tty-activity-event(editor :: <tty-editor>, key :: <tty-key>)

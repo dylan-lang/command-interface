@@ -33,3 +33,19 @@ define method key-character?(k :: <tty-key>)
  => (ischar? :: <boolean>);
   true?(k.key-character);
 end method;
+
+
+define class <tty-activity-event> (<tty-event>)
+end class;
+
+define class <tty-activity-start> (<tty-activity-event>)
+end class;
+
+define class <tty-activity-finish> (<tty-activity-event>)
+end class;
+
+define class <tty-activity-pause> (<tty-activity-event>)
+end class;
+
+define class <tty-activity-resume> (<tty-activity-event>)
+end class;
