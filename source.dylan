@@ -297,3 +297,13 @@ define method in-source-location?
     & (other.source-offset-char
          <= srcloc.source-location-end-character)
 end method;
+
+// this allows for being just after the srcloc
+define method in-completion-location?
+    (srcloc :: <cli-srcloc>, other :: <cli-srcoff>)
+ => (within? :: <boolean>);
+  (other.source-offset-char
+     >= srcloc.source-location-start-character)
+    & (other.source-offset-char
+         <= (srcloc.source-location-end-character + 1))
+end method;
