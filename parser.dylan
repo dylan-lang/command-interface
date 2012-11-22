@@ -29,19 +29,19 @@ define class <cli-parser> (<object>)
   slot parser-parameters :: <table> = make(<object-table>);
 end class;
 
-define method parser-execute(parser :: <cli-parser>)
+define method parser-execute (parser :: <cli-parser>)
  => ();
   let handlers = reverse(parser-handlers(parser));
-  if(size(handlers) > 0)
+  if (size(handlers) > 0)
     let hn = element(handlers, 0);
     hn(parser);
   end;
 end method;
 
-define method parser-parse(parser :: <cli-parser>, tokens :: <sequence>)
+define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
  => ();
-  for(token in tokens)
-    if(token-string(token) = "?")
+  for (token in tokens)
+    if (token-string(token) = "?")
       let completions = parser-complete(parser, #f);
       format-out("completions: %=\n", completions);
     else
@@ -50,15 +50,15 @@ define method parser-parse(parser :: <cli-parser>, tokens :: <sequence>)
   end for;
 end method;
 
-define method parser-get-parameter(parser :: <cli-parser>, name :: <symbol>)
+define method parser-get-parameter (parser :: <cli-parser>, name :: <symbol>)
  => (value :: <object>);
   element(parser-parameters(parser), name, default: #f);
 end method;
 
-define method parser-push-param(parser :: <cli-parser>, param :: <cli-parameter>, value :: <object>)
+define method parser-push-param (parser :: <cli-parser>, param :: <cli-parameter>, value :: <object>)
  => (value :: <object>);
-  if(node-repeatable?(param))
-    element(parser-parameters(parser), parameter-name(param)) := 
+  if (node-repeatable?(param))
+    element(parser-parameters(parser), parameter-name(param)) :=
       add(element(parser-parameters(parser), parameter-name(param), default: #()), value);
   else
     element(parser-parameters(parser), parameter-name(param)) := value;
@@ -66,12 +66,12 @@ define method parser-push-param(parser :: <cli-parser>, param :: <cli-parameter>
   value;
 end method;
 
-define method parser-push-handler(parser :: <cli-parser>, h :: <function>)
+define method parser-push-handler (parser :: <cli-parser>, h :: <function>)
  => ();
   parser-handlers(parser) := add(parser-handlers(parser), h);
 end method;
 
-define method parser-push-node(parser :: <cli-parser>, token :: <cli-token>, node :: <cli-node>)
+define method parser-push-node (parser :: <cli-parser>, token :: <cli-token>, node :: <cli-node>)
  => (node :: <cli-node>);
   parser-current-node(parser) := node;
   parser-nodes(parser) := add(parser-nodes(parser), node);
@@ -80,7 +80,7 @@ define method parser-push-node(parser :: <cli-parser>, token :: <cli-token>, nod
 end method;
 
 
-define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
+define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
   let current-node = parser-current-node(parser);
   // filter out non-acceptable nodes
   let acceptable = choose(rcurry(node-acceptable?, parser),
@@ -94,7 +94,7 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
   // filter by priority
   let matches = choose-by(curry(\==, match-priority), possible-match-prios, possible-matches);
   // act on matches
-  select(matches.size)
+  select (matches.size)
     // exactly one match: we found a match
     1 =>
       begin
@@ -120,7 +120,7 @@ define method parser-advance(parser :: <cli-parser>, token :: <cli-token>)
 
 end method;
 
-define method parser-complete(parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <sequence>);
   let current-node = parser-current-node(parser);
 
@@ -131,7 +131,7 @@ define method parser-complete(parser :: <cli-parser>, token :: false-or(<cli-tok
   acceptable := choose(rcurry(node-acceptable?, parser), acceptable);
 
   // filter with token if available
-  if(token)
+  if (token)
     acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
 
@@ -139,7 +139,7 @@ define method parser-complete(parser :: <cli-parser>, token :: false-or(<cli-tok
   let completions-by-node = map(rcurry(node-complete, parser, token), acceptable);
 
   // concatenate and return
-  if(empty?(completions-by-node))
+  if (empty?(completions-by-node))
     #()
   else
     apply(concatenate, completions-by-node);
