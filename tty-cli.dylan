@@ -3,13 +3,13 @@ module: cli
 define class <tty-cli> (<tty-editor>)
 end class;
 
-define method editor-execute(editor :: <tty-cli>)
+define method editor-execute (editor :: <tty-cli>)
  => ();
   editor-finish(editor);
 
   let str = editor-line(editor);
   let src = make(<cli-string-source>, string: str);
-  let parser = make(<cli-parser>, source: src, initial-node: $cli-root);  
+  let parser = make(<cli-parser>, source: src, initial-node: $cli-root);
 
   block ()
     let tokens = cli-tokenize(src);
@@ -36,7 +36,7 @@ end method;
 
 // there should be a "silent" version of this for use in "space" completion.
 // it should possibly be merged with the bashcomp version somehow.
-define method editor-complete(editor :: <tty-cli>)
+define method editor-complete (editor :: <tty-cli>)
  => ();
   editor-finish(editor);
 
@@ -49,14 +49,14 @@ define method editor-complete(editor :: <tty-cli>)
   local
     // this should be a <tty-editor> operation,
     // without the autospace? feature
-    method replace(start-posn :: <integer>,
-                   end-posn :: <integer>,
-                   autospace? :: <boolean>,
-                   replacement :: <string>)
+    method replace (start-posn :: <integer>,
+                    end-posn :: <integer>,
+                    autospace? :: <boolean>,
+                    replacement :: <string>)
      => ();
       // insert automatic space
-      if(autospace?)
-        if(end-posn == size(str) | str[end-posn] ~= " ")
+      if (autospace?)
+        if (end-posn == size(str) | str[end-posn] ~= " ")
           replacement := concatenate!(replacement, " ");
         end;
       end;
@@ -68,7 +68,7 @@ define method editor-complete(editor :: <tty-cli>)
       editor-line(editor) := new-str;
       editor-position(editor) := new-posn;
     end method,
-    method replace-token(token :: <cli-token>, autospace? :: <boolean>, replacement :: <string>)
+    method replace-token (token :: <cli-token>, autospace? :: <boolean>, replacement :: <string>)
      => ();
       let reploc = token-srcloc(token);
       replace(source-location-start-character(reploc),
@@ -76,7 +76,7 @@ define method editor-complete(editor :: <tty-cli>)
               autospace?,
               replacement);
     end method,
-    method replace-position(position :: <integer>, autospace? :: <boolean>, replacement :: <string>)
+    method replace-position (position :: <integer>, autospace? :: <boolean>, replacement :: <string>)
       => ();
       replace(position, position, autospace?, replacement);
     end method;
@@ -85,13 +85,13 @@ define method editor-complete(editor :: <tty-cli>)
     let tokens = cli-tokenize(src);
     // get all tokens before the completion token and
     // the completion token itself, if there is one.
-    // not having a completion token means that we 
+    // not having a completion token means that we
     // are completing between tokens or at the end of
     // the line.
     let parse-tokens = #();
     let complete-token = #f;
-    for(token in tokens, until: true?(complete-token))
-      if(in-completion-location?(token-srcloc(token), comploff))
+    for (token in tokens, until: true?(complete-token))
+      if (in-completion-location?(token-srcloc(token), comploff))
         // XXX we should cut this token off at the cursor
         //     location, probably make parser-complete()
         //     and node-complete take a string instead of a token.
@@ -101,20 +101,20 @@ define method editor-complete(editor :: <tty-cli>)
       end;
     end for;
     // parse everything before the compl token
-    for(token in reverse(parse-tokens))
+    for (token in reverse(parse-tokens))
       parser-advance(parser, token);
     end for;
     // complete, with or without a compl token
     let completions = parser-complete(parser, complete-token);
     // act on completion results
-    select(size(completions))
+    select (size(completions))
       // no completions -> say so
       0 =>
         format-out("No completions.\n");
       // one completion -> insert it
       1 =>
         let completion = first(completions);
-        if(complete-token)
+        if (complete-token)
           replace-token(complete-token, #t, completion);
         else
           replace-position(posn, #t, completion);
@@ -123,7 +123,7 @@ define method editor-complete(editor :: <tty-cli>)
       otherwise =>
         format-out("%s\n", join(completions, " "));
         let common = longest-common-prefix(completions);
-        if(complete-token)
+        if (complete-token)
           replace-token(complete-token, #f, common);
         else
           replace-position(posn, #f, common);

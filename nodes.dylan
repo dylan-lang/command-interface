@@ -53,9 +53,9 @@ end class;
  * Note how we also check for the repeat-marker of the node for
  * cases where another node can preclude our occurence.
  */
-define method node-acceptable?(node :: <cli-node>, parser :: <cli-parser>)
+define method node-acceptable? (node :: <cli-node>, parser :: <cli-parser>)
  => (acceptable? :: <boolean>);
-  if(node-repeatable?(node))
+  if (node-repeatable?(node))
     #t
   else
     ~member?(node, parser-nodes(parser))
@@ -66,7 +66,7 @@ end method;
 
 /* Add a possible successor node
  */
-define method node-add-successor(node :: <cli-node>, successor :: <cli-node>)
+define method node-add-successor (node :: <cli-node>, successor :: <cli-node>)
  => (successor :: <cli-node>);
   node-successors(node) := add(node-successors(node), successor);
   successor;
@@ -74,7 +74,7 @@ end method;
 
 /* Check if the given token matches this node partially or completely
  */
-define method node-match(node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   #f
 end;
@@ -83,7 +83,7 @@ end;
  *
  * May or may not be provided a partial token.
  */
-define method node-complete(node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   #();
 end method;
@@ -92,7 +92,7 @@ end method;
  *
  * This is where parameters do conversion and command handlers are added.
  */
-define method node-accept(node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
 end method;
 
@@ -115,15 +115,15 @@ define class <cli-symbol> (<cli-node>)
     init-keyword: name:;
 end class;
 
-define method node-match(node :: <cli-symbol>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <cli-symbol>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   starts-with?(as(<string>, node-symbol(node)),
                as-lowercase(token-string(token)));
 end method;
 
-define method node-complete(node :: <cli-symbol>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <cli-symbol>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
-  if(~token | node-match(node, parser, token))
+  if (~token | node-match(node, parser, token))
     list(as(<string>, node-symbol(node)))
   else
     #()
@@ -143,9 +143,9 @@ define class <cli-command> (<cli-symbol>)
     init-keyword: handler:;
 end class;
 
-define method node-accept(node :: <cli-command>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <cli-command>, parser :: <cli-parser>, token :: <cli-token>)
  => ()
-  if(command-handler(node))
+  if (command-handler(node))
     parser-push-handler(parser, command-handler(node));
   end
 end method;
@@ -163,7 +163,7 @@ define class <cli-wrapper> (<cli-command>)
     init-keyword: root:;
 end class;
 
-define method node-successors(node :: <cli-wrapper>)
+define method node-successors (node :: <cli-wrapper>)
  => (successors :: <sequence>);
   concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
@@ -181,36 +181,36 @@ define class <cli-parameter> (<cli-node>)
     init-keyword: mandatory?:;
 end class;
 
-define method node-successors(node :: <cli-parameter>)
+define method node-successors (node :: <cli-parameter>)
  => (successors :: <sequence>);
-  if(parameter-anchor(node))
+  if (parameter-anchor(node))
     concatenate(node-successors(parameter-anchor(node)), next-method());
   else
     next-method();
   end
 end method;
 
-define method node-match(node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   #t
 end method;
 
-define method node-complete(node :: <cli-parameter>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <cli-parameter>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
-  if(token)
+  if (token)
     list(token-string(token));
   else
     #();
   end
 end method;
 
-define method node-accept(node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
   next-method();
   parser-push-param(parser, node, parameter-convert(parser, node, token));
 end method;
 
-define method parameter-convert(parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
+define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
  => (value :: <object>);
   token-string(token);
 end method;
@@ -235,7 +235,7 @@ define class <cli-file> (<cli-parameter>)
     init-keyword: must-exist?:;
 end class;
 
-define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <cli-file>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   let completions = #();
 
@@ -243,7 +243,7 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
   //  XXX does not work for ~USER - locators not up to it?
   //  XXX this is crappy - locators are brain-dead in places
   let tstring =
-    if(token)
+    if (token)
       let s = token-string(token);
       case
         s = "." =>
@@ -260,8 +260,8 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
     end;
 
   // locator of current token as hint
-  let tloc = 
-    if(tstring)
+  let tloc =
+    if (tstring)
       as(<file-locator>, tstring);
     else
       #f
@@ -269,7 +269,7 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
 
   // directory to complete in
   let dir =
-    if(tloc & locator-directory(tloc))
+    if (tloc & locator-directory(tloc))
       locator-directory(tloc);
     else
       as(<directory-locator>, ".");
@@ -277,13 +277,13 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
 
   // complete in that directory
   let children = directory-contents(dir);
-  for(child in children)
+  for (child in children)
     let filename = locator-name(child);
-    if(tloc)
+    if (tloc)
       // accept files that match token hint
       let str = locator-name(tloc);
       // XXX this comparison probably breaks on windows
-      if(filename = str | starts-with?(filename, str))
+      if (filename = str | starts-with?(filename, str))
         completions := add(completions, child);
       end;
     else
@@ -294,7 +294,7 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
 
   // filter out files if we don't want them
   // we don't do this for directories because they lead to files
-  if(~file-accept-file?(node))
+  if (~file-accept-file?(node))
     completions := choose(rcurry(instance?, <file-locator>), completions);
   end;
 
@@ -302,7 +302,7 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
   // a directory, then if we are searching for files
   // (not just directories) we add an elipsis completion
   // so that shells don't think we are done
-  if(size(completions) = 1
+  if (size(completions) = 1
        & instance?(last(completions), <directory-locator>)
        & file-accept-file?(node))
     let elipsis = make(<file-locator>,
@@ -314,11 +314,11 @@ define method node-complete(node :: <cli-file>, parser :: <cli-parser>, token ::
   map(curry(as, <string>), completions);
 end method;
 
-define method node-accept(node :: <cli-file>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <cli-file>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
   next-method();
   let str = token-string(token);
-  if(~file-exists?(str))
+  if (~file-exists?(str))
     error("File does not exist");
   end;
 end method;
@@ -329,7 +329,7 @@ define class <cli-oneof> (<cli-parameter>)
     init-keyword: alternatives:;
 end class;
 
-define method node-match(node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   // try matching all alternatives
   let found = choose(rcurry(node-match, parser, token), node-alternatives(node));
@@ -337,11 +337,11 @@ define method node-match(node :: <cli-oneof>, parser :: <cli-parser>, token :: <
   size(found) > 0;
 end method;
 
-define method node-complete(node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   // find all alternatives that can accept TOKEN
   let found =
-    if(token)
+    if (token)
       choose(rcurry(node-match, parser, token), node-alternatives(node));
     else
       node-alternatives(node);

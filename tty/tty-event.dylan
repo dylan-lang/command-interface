@@ -9,7 +9,7 @@ end class;
 define class <tty-interrupt> (<tty-event>, <condition>)
 end class;
 
-define method default-handler(ti :: <tty-interrupt>)
+define method default-handler (ti :: <tty-interrupt>)
  => ();
   format(*standard-error*, "Program interrupted.\n");
   exit-application(1);
@@ -29,7 +29,7 @@ define class <tty-key> (<tty-event>)
     init-keyword: function:;
 end class;
 
-define method key-character?(k :: <tty-key>)
+define method key-character? (k :: <tty-key>)
  => (ischar? :: <boolean>);
   true?(k.key-character);
 end method;
