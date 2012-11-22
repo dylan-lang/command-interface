@@ -55,9 +55,11 @@ define module tty
 
     // getters and setters
     editor-prompt,
-    //editor-prompt-setter,
+    editor-prompt-setter,
     editor-line,
-    //editor-line-setter,
+    editor-line-setter,
+    editor-position,
+    editor-position-setter,
 
     // text manipulation
     editor-clear,
