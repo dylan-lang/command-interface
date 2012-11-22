@@ -16,10 +16,10 @@ end class;
 define abstract class <cli-source> (<source-record>)
 end class;
 
-define generic cli-tokenize(source :: <cli-source>)
+define generic cli-tokenize (source :: <cli-source>)
  => (tokens :: <sequence>);
 
-define generic source-string(source :: <cli-source>)
+define generic source-string (source :: <cli-source>)
  => (whole-source :: <string>);
 
 
@@ -38,7 +38,7 @@ define class <cli-lexer-error> (<simple-error>)
     init-keyword: srcoff:;
 end class;
 
-define method cli-tokenize(source :: <cli-string-source>)
+define method cli-tokenize (source :: <cli-string-source>)
  => (tokens :: <sequence>);
   let string = source-string(source);
   let tokens = #();
@@ -49,7 +49,7 @@ define method cli-tokenize(source :: <cli-string-source>)
   let collected-chars = #();
 
   local
-    method push-simple(char :: <character>, offset :: <integer>)
+    method push-simple (char :: <character>, offset :: <integer>)
      => ();
       let srcloc = make-source-location(source,
                                         offset, 0, offset,
@@ -59,17 +59,17 @@ define method cli-tokenize(source :: <cli-string-source>)
                        srcloc: srcloc);
       tokens := add(tokens, token);
     end,
-    method collect-char(char :: <character>, offset :: <integer>)
+    method collect-char (char :: <character>, offset :: <integer>)
      => ();
-      unless(collected-start)
+      unless (collected-start)
         collected-start := offset;
       end;
       collected-end := offset;
       collected-chars := add(collected-chars, char);
     end,
-    method maybe-push-collected()
+    method maybe-push-collected ()
      => ();
-      if(collected-start)
+      if (collected-start)
         let str = as(<string>, reverse(collected-chars));
         let srcloc = make-source-location(source,
                                           collected-start, 0, collected-start,
@@ -85,7 +85,7 @@ define method cli-tokenize(source :: <cli-string-source>)
         collected-end := #f;
       end;
     end,
-    method invalid(char, offset, message)
+    method invalid (char, offset, message)
       => ();
       signal(make(<cli-lexer-error>,
                   format-string: "Lexical error: %s",
@@ -95,8 +95,8 @@ define method cli-tokenize(source :: <cli-string-source>)
                   srcoff: cli-srcoff(offset, 0, offset)));
     end method;
 
-  for(char in string, offset from 0)
-    select(state)
+  for (char in string, offset from 0)
+    select (state)
       #"initial" =>
         case
           char.whitespace? =>
@@ -104,7 +104,7 @@ define method cli-tokenize(source :: <cli-string-source>)
           char = '"' =>
             state := #"dquote";
           char = '?' =>
-            if(collected-start)
+            if (collected-start)
               collect-char(char, offset);
             else
               push-simple(char, offset);
@@ -115,7 +115,7 @@ define method cli-tokenize(source :: <cli-string-source>)
             invalid(char, offset, "character not allowed here");
         end;
       #"dquote" =>
-        select(char)
+        select (char)
           '"' =>
             state := #"initial";
           '\\' =>
@@ -124,7 +124,7 @@ define method cli-tokenize(source :: <cli-string-source>)
             collect-char(char, offset);
         end;
       #"dquote-backslash" =>
-        select(char)
+        select (char)
           '\\', '"' =>
             begin
               collect-char(char, offset);
@@ -136,7 +136,7 @@ define method cli-tokenize(source :: <cli-string-source>)
     end;
   end for;
 
-  if(state == #"initial")
+  if (state == #"initial")
     maybe-push-collected();
   else
     invalid(' ', size(string), "incomplete token");
@@ -151,17 +151,17 @@ define class <cli-vector-source> (<cli-source>)
     init-keyword: strings:;
 end class;
 
-define method source-string(source :: <cli-vector-source>)
+define method source-string (source :: <cli-vector-source>)
  => (string :: <string>);
   join(source-vector(source), " ");
 end method;
 
-define method cli-tokenize(source :: <cli-vector-source>)
+define method cli-tokenize (source :: <cli-vector-source>)
  => (tokens :: <sequence>);
   let tokens :: <list> = #();
   let concat :: <string> = "";
-  for(string in source-vector(source), posn from 0)
-    if(posn > 0)
+  for (string in source-vector(source), posn from 0)
+    if (posn > 0)
       concat := concatenate!(concat, " ");
     end;
     let token-start = size(concat);
@@ -183,19 +183,19 @@ define method cli-tokenize(source :: <cli-vector-source>)
   reverse(tokens);
 end method;
 
-define method cli-annotate(source :: <cli-source>, srcoff :: <cli-srcoff>)
+define method cli-annotate (source :: <cli-source>, srcoff :: <cli-srcoff>)
  => (marks :: <string>);
   cli-annotate(source, make(<cli-srcloc>, source: source, start: srcoff, end: srcoff));
 end method;
 
-define method cli-annotate(source :: <cli-string-source>, srcloc :: <cli-srcloc>)
+define method cli-annotate (source :: <cli-string-source>, srcloc :: <cli-srcloc>)
  => (marks :: <string>);
   let string = concatenate(source-string(source), " "); // for final locations
   let marks :: <string> = "";
 
-  for(char in string, posn from 0)
+  for (char in string, posn from 0)
     let srcoff = cli-srcoff(posn, 0, posn);
-    if(in-source-location?(srcloc, srcoff))
+    if (in-source-location?(srcloc, srcoff))
       marks := concatenate!(marks, "^");
     else
       marks := concatenate!(marks, " ");
@@ -205,14 +205,14 @@ define method cli-annotate(source :: <cli-string-source>, srcloc :: <cli-srcloc>
   marks;
 end method;
 
-define method cli-annotate(source :: <cli-vector-source>, srcloc :: <cli-srcloc>)
+define method cli-annotate (source :: <cli-vector-source>, srcloc :: <cli-srcloc>)
  => (marks :: <string>);
   let tokens = cli-tokenize(source);
   let code :: <string> = "  ";
   let marks :: <string> = "";
 
-  for(token in tokens, posn from 0)
-    if(posn > 0)
+  for (token in tokens, posn from 0)
+    if (posn > 0)
       code := concatenate!(code, " ");
       marks := concatenate!(marks, " ");
     end;
@@ -221,12 +221,12 @@ define method cli-annotate(source :: <cli-vector-source>, srcloc :: <cli-srcloc>
 
     code := concatenate!(code, str);
 
-    if(in-source-location?(srcloc, token-srcloc(token)))
-      for(i from 0 below str.size)
+    if (in-source-location?(srcloc, token-srcloc(token)))
+      for (i from 0 below str.size)
         marks := concatenate!(marks, "^");
       end
     else
-      for(i from 0 below str.size)
+      for (i from 0 below str.size)
         marks := concatenate!(marks, " ");
       end
     end;
@@ -247,12 +247,12 @@ define class <cli-srcoff> (<big-source-offset>)
     init-keyword: column:;
 end class;
 
-define method cli-srcoff(char, line, column)
+define method cli-srcoff (char, line, column)
   make(<cli-srcoff>, char: char, line: line, column: column);
 end method;
 
 define method source-offset-character-in
-    (record :: <source-record>, offset :: <source-offset>) 
+    (record :: <source-record>, offset :: <source-offset>)
  => (pos :: <integer>);
   offset.source-offset-char;
 end method;

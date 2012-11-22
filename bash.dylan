@@ -1,6 +1,6 @@
 module: cli
 
-define method root-add-bash-completion(root :: <cli-root>)
+define method root-add-bash-completion (root :: <cli-root>)
  => ();
   let command = root-define-command
     (root, "bashcomplete",
@@ -13,14 +13,14 @@ define method bash-complete-handler (parser :: <cli-parser>)
  => ();
   // get arguments passed by bash
   let command = parser-get-parameter(parser, #"command");
-  if(command)
+  if (command)
     bash-complete-command(parser, reverse(command));
   else
     bash-complete-hookscript();
   end if;
 end method;
 
-define method bash-complete-hookscript()
+define method bash-complete-hookscript ()
  => ();
   let appname = application-name();
   format-out("function _%s_complete() {\n", appname);
@@ -29,7 +29,7 @@ define method bash-complete-hookscript()
   format-out("complete -F _%s_complete %s\n", appname, appname);
 end method;
 
-define method bash-complete-command(parser :: <cli-parser>, command)
+define method bash-complete-command (parser :: <cli-parser>, command)
  => ();
   // parse position
   let position = string-to-integer(element(command, 0), default: 9999);
@@ -48,8 +48,8 @@ define method bash-complete-command(parser :: <cli-parser>, command)
   let tokens = cli-tokenize(src);
   // perform completion
   let completions = #f;
-  for(t in tokens, i from 0, while: i <= position)
-    if(i == position)
+  for (t in tokens, i from 0, while: i <= position)
+    if (i == position)
       // complete with given token
       completions := parser-complete(p, t);
     else
@@ -62,11 +62,11 @@ define method bash-complete-command(parser :: <cli-parser>, command)
     end
   end for;
   // we are completing without a token
-  if(~completions)
+  if (~completions)
     completions := parser-complete(p, #f);
   end if;
   // print completion
-  for(completion in completions)
+  for (completion in completions)
     format-out("%s\n", completion);
   end for;
 end method;

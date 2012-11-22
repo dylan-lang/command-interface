@@ -20,33 +20,33 @@ define abstract class <tty> (<object>)
     init-keyword: error:;
 end class;
 
-define generic tty-start(t :: <tty>)
+define generic tty-start (t :: <tty>)
  => ();
 
-define generic tty-finish(t :: <tty>)
+define generic tty-finish (t :: <tty>)
  => ();
 
-define method tty-run(t :: <tty>, a :: <tty-activity>)
+define method tty-run (t :: <tty>, a :: <tty-activity>)
   let oo = *standard-output*;
   let oe = *standard-error*;
-  block()
+  block ()
     tty-start(t);
     *standard-output* := make(<tty-stream>, inner-stream: tty-output(t));
     *standard-error* := make(<tty-stream>, inner-stream: tty-error(t) | tty-output(t));
-    block()
+    block ()
       tty-start-activity(t, a);
       iterate read-more()
         let c = read-element(tty-input(t), on-end-of-stream: #f);
-        if(c)
+        if (c)
           tty-feed(t, c);
           tty-flush(t);
-          if(tty-activity(t))
+          if (tty-activity(t))
             read-more();
           end;
         end;
       end;
     cleanup
-      while(tty-activity(t))
+      while (tty-activity(t))
         tty-finish-activity(t);
       end;
     end;
@@ -57,16 +57,16 @@ define method tty-run(t :: <tty>, a :: <tty-activity>)
   end;
 end method;
 
-define method tty-event(t :: <tty>, a :: <tty-activity>, class :: subclass(<tty-activity-event>))
+define method tty-event (t :: <tty>, a :: <tty-activity>, class :: subclass(<tty-activity-event>))
  => ();
   tty-activity-event(a, make(class, tty: t, activity: a));
 end method;
 
-define method tty-start-activity(t :: <tty>, a :: <tty-activity>)
+define method tty-start-activity (t :: <tty>, a :: <tty-activity>)
  => ();
   let previous = tty-activity(t);
   // pause previous
-  if(previous)
+  if (previous)
     tty-event(t, previous, <tty-activity-start>);
   end;
   // set activity slots
@@ -81,10 +81,10 @@ define method tty-start-activity(t :: <tty>, a :: <tty-activity>)
   tty-flush(t);
 end method;
 
-define method tty-finish-activity(t :: <tty>)
+define method tty-finish-activity (t :: <tty>)
  => ();
   let a = tty-activity(t);
-  if(a)
+  if (a)
     let previous = activity-previous(a);
     // callbacks
     tty-event(t, a, <tty-activity-pause>);
@@ -95,27 +95,27 @@ define method tty-finish-activity(t :: <tty>)
     activity-tty(a) := #f;
     activity-previous(a) := #f;
     // resume previous
-    if(previous)
+    if (previous)
       tty-event(t, previous, <tty-activity-resume>);
     end;
   end;
 end method;
 
-define method tty-flush(t :: <tty>)
+define method tty-flush (t :: <tty>)
   force-output(tty-output(t));
-  if(tty-error(t))
+  if (tty-error(t))
     force-output(tty-error(t));
   end;
 end method;
 
-define method tty-dispatch-event(t :: <tty>, e :: <tty-event>)
+define method tty-dispatch-event (t :: <tty>, e :: <tty-event>)
  => ();
-  if(tty-activity(t))
+  if (tty-activity(t))
     tty-activity-event(tty-activity(t), e);
   else
-    if(instance?(e, <tty-key>))
+    if (instance?(e, <tty-key>))
       format-out("Key %s%s (function %s)\n",
-                 if(key-control?(e)) "ctrl-" else "" end,
+                 if (key-control?(e)) "ctrl-" else "" end,
                  key-character(e) | "",
                  key-function(e));
     else
@@ -123,15 +123,15 @@ define method tty-dispatch-event(t :: <tty>, e :: <tty-event>)
     end;
   end;
 
-  if(instance?(e, <condition>))
+  if (instance?(e, <condition>))
     signal(e);
   end;
 end method;
 
-define method tty-feed(t :: <tty>, c :: <byte-character>)
+define method tty-feed (t :: <tty>, c :: <byte-character>)
  => ();
   tty-state(t) :=
-    select(tty-state(t))
+    select (tty-state(t))
       $tty-state-plain =>
         tty-feed-plain(t, c);
       $tty-state-esc =>
@@ -141,9 +141,9 @@ define method tty-feed(t :: <tty>, c :: <byte-character>)
     end;
 end method;
 
-define method tty-feed-plain(t :: <tty>, c :: <byte-character>)
+define method tty-feed-plain (t :: <tty>, c :: <byte-character>)
  => (new-state :: <tty-state>);
-  select(c)
+  select (c)
     $ctrl-char-escape => $tty-state-esc;
 
     $ctrl-char-interrupt =>
@@ -171,9 +171,9 @@ define method tty-feed-plain(t :: <tty>, c :: <byte-character>)
   end;
 end method;
 
-define method tty-feed-esc(t :: <tty>, c :: <byte-character>)
+define method tty-feed-esc (t :: <tty>, c :: <byte-character>)
  => (new-state :: <tty-state>);
-  select(c)
+  select (c)
     // ANSI sequence
     '['       => $tty-state-csi;
     // fall back to plain
@@ -181,9 +181,9 @@ define method tty-feed-esc(t :: <tty>, c :: <byte-character>)
   end;
 end method;
 
-define method tty-feed-csi(t :: <tty>, c :: <byte-character>)
+define method tty-feed-csi (t :: <tty>, c :: <byte-character>)
  => (new-state :: <tty-state>);
-  select(c)
+  select (c)
     // cursor events
     'A', 'B', 'C', 'D' =>
       begin
@@ -191,7 +191,7 @@ define method tty-feed-csi(t :: <tty>, c :: <byte-character>)
           (t, make(<tty-key>,
                    tty: t,
                    function:
-                     select(c)
+                     select (c)
                        'A' => #"cursor-up";
                        'B' => #"cursor-down";
                        'C' => #"cursor-right";
@@ -206,27 +206,27 @@ end method;
 
 define constant $ansi-csi = "\<1b>[";
 
-define method tty-write(t :: <tty>, s :: <string>)
+define method tty-write (t :: <tty>, s :: <string>)
   => ();
   write(tty-output(t), s);
 end method;
 
-define method tty-format-csi(t :: <tty>, s :: <string>, #rest args)
+define method tty-format-csi (t :: <tty>, s :: <string>, #rest args)
  => ();
   apply(format, tty-output(t), concatenate($ansi-csi, s), args);
 end method;
 
-define method tty-kill-whole-line(t :: <tty>)
+define method tty-kill-whole-line (t :: <tty>)
   => ();
   tty-format-csi(t, "%dK", 2);
 end method;
 
-define method tty-cursor-column(t :: <tty>, column :: <integer>)
+define method tty-cursor-column (t :: <tty>, column :: <integer>)
   => ();
   tty-format-csi(t, "%dG", column + 1);
 end method;
 
-define method tty-linefeed(t :: <tty>)
+define method tty-linefeed (t :: <tty>)
   => ();
   tty-write(t, "\r\n");
 end method;
