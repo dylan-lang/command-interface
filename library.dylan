@@ -36,13 +36,17 @@ define module tty
   // tty activities
   export
     <tty-activity>,
-
     tty-activity-event;
 
   // tty events
   export
     <tty-event>,
+    event-tty,
     <tty-key>,
+    key-control?,
+    key-character?,
+    key-character,
+    key-function,
     <tty-activity-event>,
     <tty-activity-start>,
     <tty-activity-finish>,
@@ -52,7 +56,6 @@ define module tty
   // editor activity
   export
     <tty-editor>,
-
     // getters and setters
     editor-prompt,
     editor-prompt-setter,
@@ -60,34 +63,88 @@ define module tty
     editor-line-setter,
     editor-position,
     editor-position-setter,
-
     // text manipulation
     editor-clear,
-
     // relevant to users
     editor-finish,
     editor-execute,
     editor-complete,
-
     // XXX: need this?
     editor-refresh-position,
     editor-refresh-line;
+
+  export
+    <unix-tty>,
+    unix-tty-type;
 end module;
 
 define module cli
   use common-dylan;
-  use streams;
-  use format;
-  use print;
-  use pprint;
+
+  // all over the place
+  use standard-io;
   use strings;
+  use format,
+    include: { format };
+  use format-out,
+    include: { format-out };
+  use streams,
+    include: { force-output };
+  // used by <cli-file>
   use file-system;
   use locators;
-  use standard-io;
-  use format-out;
-  use operating-system;
+  // used in source.dylan
   use source-records;
-
+  // used by <tty-cli>
   use tty;
-end module;
 
+  export
+    <cli-source>,
+    // source locations
+    <cli-srcloc>,
+    <cli-srcoff>,
+    // tokens
+    <cli-token>,
+    // source record ops
+    cli-tokenize,
+    cli-annotate,
+    // errors
+    <cli-lexer-error>;
+
+  export
+    <cli-parser>,
+    // getters and setters
+    parser-source,
+    // operations
+    parser-advance,
+    parser-parse,
+    parser-complete,
+    parser-execute,
+    parser-get-parameter,
+    // errors
+    <cli-parse-error>,
+    error-parser,
+    error-token,
+    <cli-ambiguous-error>,
+    <cli-unknown-error>;
+
+  export
+    <cli-node>,
+    // getters and setters
+    node-hidden?,
+    node-repeatable?,
+    node-priority,
+    // subclasses
+    <cli-root>,
+    <cli-symbol>,
+    <cli-command>,
+    <cli-wrapper>,
+    <cli-parameter>,
+    parameter-name,
+    parameter-mandatory?,
+    <cli-file>;
+
+  export
+    <tty-cli>;
+
+end module;
