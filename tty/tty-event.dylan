@@ -1,4 +1,7 @@
 module: tty
+synopsis: TTY event classes.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define class <tty-event> (<object>)
   slot event-tty :: <tty>,

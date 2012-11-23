@@ -1,4 +1,7 @@
 module: cli
+synsopsis: Utility functions.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define function n-spaces (n :: <integer>)
   => (spaces :: <string>);

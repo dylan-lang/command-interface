@@ -1,4 +1,7 @@
 module: tty
+synopsis: TTY line editor activity.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define class <tty-editor> (<tty-activity>)
   slot editor-prompt :: <string> = "> ";

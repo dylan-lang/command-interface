@@ -1,4 +1,7 @@
 module: cli
+synopsis: TTY activity for the CLI.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define class <tty-cli> (<tty-editor>)
 end class;

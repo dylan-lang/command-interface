@@ -1,4 +1,7 @@
 module: cli
+synopsis: Predicate utilities.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define function predicate-not (function)
  => (predicate :: <function>);

@@ -1,4 +1,10 @@
-
+/*
+ * Binding helper functions for UNIX TTY support
+ *
+ * Author: Ingo Albrecht <prom@berlin.ccc.de>
+ * Copyright: see accompanying file COPYING
+ *
+ */
 #include <termios.h>
 #include <unistd.h>
 

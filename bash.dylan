@@ -1,4 +1,7 @@
 module: cli
+synopsis: Reusable bash completion.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define method root-add-bash-completion (root :: <cli-root>)
  => ();

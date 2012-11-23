@@ -1,5 +1,7 @@
 module: cli
-
+synopsis: Demo code.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define constant $cli-root = make(<cli-root>);
 

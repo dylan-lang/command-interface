@@ -1,4 +1,7 @@
 module: tty
+synopsis: TTY base class and generics.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define constant <tty-state> = <integer>;
 

@@ -1,4 +1,7 @@
 module: tty
+synopsis: TTY character information.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define constant $char-delete = as(<byte-character>, 127);
 

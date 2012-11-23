@@ -1,4 +1,7 @@
 module: cli
+synopsis: Reusable help command.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define method root-add-help (root :: <cli-root>)
  => ();

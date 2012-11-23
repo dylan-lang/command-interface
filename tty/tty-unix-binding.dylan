@@ -1,4 +1,7 @@
 module: tty
+synopsis: Binding for UNIX tcsetattr.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define constant $unix-termios-raw =
   begin

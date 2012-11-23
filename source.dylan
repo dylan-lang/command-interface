@@ -1,4 +1,7 @@
 module: cli
+synopsis: CLI source records.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 
 /* TOKENS */

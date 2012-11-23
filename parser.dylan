@@ -1,4 +1,7 @@
 module: cli
+synopsis: CLI phrase parser and completer.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define class <cli-parse-error> (<simple-error>)
   slot error-parser :: <cli-parser>,

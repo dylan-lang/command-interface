@@ -1,7 +1,15 @@
 module: tty
+synposis: TTY wrapper streams.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
-// This is required so we can convert
-
+/* STDIO wrapper stream for TTY raw mode
+ *
+ * These are used to wrap stdio while the respective TTY
+ * is in RAW mode so that we have an opportunity to expand
+ * CR into CRLF.
+ *
+ */
 define class <tty-stream> (<wrapper-stream>)
 end class;
 
