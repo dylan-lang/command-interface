@@ -3,6 +3,13 @@ synopsis: TTY line editor activity.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+/* Line editor for TTYs
+ *
+ * This currently handles just a prompt and some simple editing and motion.
+ *
+ * Completion and execution can be implemented by inheritors.
+ *
+ */
 define class <tty-editor> (<tty-activity>)
   slot editor-prompt :: <string> = "> ";
   slot editor-line :: <string> = "";
@@ -11,16 +18,22 @@ define class <tty-editor> (<tty-activity>)
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
 
+/* Relinquish TTY control when paused
+ */
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-pause>)
  => ();
   editor-finish(editor);
 end method;
 
+/* Redraw when resumed
+ */
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-resume>)
  => ();
   editor-refresh-line(editor);
 end method;
 
+/* Handle key events
+ */
 define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
   => ();
   select (key-function(key))
@@ -52,6 +65,11 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
   end;
 end method;
 
+/* Finish use of the TTY
+ *
+ * This leaves the TTY on a clean line.
+ *
+ */
 define method editor-finish (editor :: <tty-editor>)
  => ();
   let tty = activity-tty(editor);
@@ -59,12 +77,16 @@ define method editor-finish (editor :: <tty-editor>)
   tty-cursor-column(tty, 0);
 end method;
 
+/* Execute or act upon editor content
+ */
 define method editor-execute (editor :: <tty-editor>)
  => ();
   editor-finish(editor);
   editor-clear(editor);
 end method;
 
+/* Complete editor content at current position
+ */
 define method editor-complete (editor :: <tty-editor>)
  => ();
   editor-finish(editor);
@@ -72,6 +94,11 @@ define method editor-complete (editor :: <tty-editor>)
   editor-refresh-line(editor);
 end method;
 
+/* Redraw the entire line
+ *
+ * Also repositions the cursor.
+ *
+ */
 define method editor-refresh-line (editor :: <tty-editor>)
  => ();
   let tty = activity-tty(editor);
@@ -83,6 +110,8 @@ define method editor-refresh-line (editor :: <tty-editor>)
   editor-refresh-position(editor);
 end method;
 
+/* Reposition the cursor without redraw
+ */
 define method editor-refresh-position (editor :: <tty-editor>)
  => ();
   let tty = activity-tty(editor);
@@ -90,6 +119,8 @@ define method editor-refresh-position (editor :: <tty-editor>)
   tty-cursor-column(tty, size(prompt) + editor-position(editor));
 end method;
 
+/* Clear the contents of the editor
+ */
 define method editor-clear (editor :: <tty-editor>)
  => ();
   editor-line(editor) := "";
@@ -97,6 +128,8 @@ define method editor-clear (editor :: <tty-editor>)
   editor-refresh-line(editor);
 end method;
 
+/* Insert the given char at the given column
+ */
 define method editor-insert-at
     (editor :: <tty-editor>, char :: <byte-character>, column :: <integer>)
  => ();
@@ -114,6 +147,8 @@ define method editor-insert-at
   editor-refresh-line(editor);
 end method;
 
+/* Delete the character at the given column
+ */
 define method editor-delete-at
     (editor :: <tty-editor>, column :: <integer>)
  => ();
@@ -130,11 +165,15 @@ define method editor-delete-at
   editor-refresh-line(editor);
 end method;
 
+/* Insert the given character at the current position
+ */
 define method editor-insert (editor :: <tty-editor>, char :: <character>)
  => ();
   editor-insert-at(editor, char, editor-position(editor));
 end method;
 
+/* Delete char before current position
+ */
 define method editor-backspace (editor :: <tty-editor>)
  => ();
   if (editor-position(editor) > 0)
@@ -142,6 +181,8 @@ define method editor-backspace (editor :: <tty-editor>)
   end;
 end method;
 
+/* Jump to the given position
+ */
 define method editor-jump (editor :: <tty-editor>, column :: <integer>)
  => ();
   let total-len = size(editor-line(editor));
@@ -152,6 +193,8 @@ define method editor-jump (editor :: <tty-editor>, column :: <integer>)
   end;
 end method;
 
+/* Move relatively by the given number of columns
+ */
 define method editor-move (editor :: <tty-editor>, columns :: <integer>)
   let posn = editor-position(editor) + columns;
   if (posn < 0)

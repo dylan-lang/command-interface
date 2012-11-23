@@ -31,17 +31,27 @@ define constant $ctrl-char-lf = ctrl-char('j');
 define constant $ctrl-char-cr = ctrl-char('m');
 
 
+/* Convert a character to its corresponding control-char
+ *
+ * Works for both cases. Mostly make sense with letters.
+ */
 define function ctrl-char (c :: <byte-character>)
  => (ctrl-char :: <byte-character>);
   as(<byte-character>,
      logand($ctrl-char-mask, as(<integer>, c)));
 end function;
 
+/* Is the given character a control-char?
+ */
 define function is-ctrl-char? (c :: <byte-character>)
  => (ctrl? :: <boolean>);
   as(<integer>, c) < #x20;
 end function;
 
+/* Get graphic character corresponding to a control char
+ *
+ * Will always be uppercase.
+ */
 define function ctrl-char-character (c :: <byte-character>)
  => (character :: <byte-character>);
   if (is-ctrl-char?(c))
@@ -52,6 +62,11 @@ define function ctrl-char-character (c :: <byte-character>)
   end;
 end function;
 
+/*
+ * Get a graphic character corresponding to a char
+ *
+ * This will brutally convert control-chars to something graphic.
+ */
 define function char-character (c :: <byte-character>)
  => (char :: false-or(<byte-character>));
   if (is-ctrl-char?(c))
@@ -65,6 +80,10 @@ define function char-character (c :: <byte-character>)
   end;
 end function;
 
+/* Get the name of an abstract key function for the given char
+ *
+ * May return #f in case there is no such function.
+ */
 define function char-function (c :: <byte-character>)
  => (key :: false-or(<symbol>));
   select (c)

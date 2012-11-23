@@ -9,6 +9,8 @@ copyright: see accompanying file COPYING
  * is in RAW mode so that we have an opportunity to expand
  * CR into CRLF.
  *
+ * We only need to override all methods related to printing newlines.
+ *
  */
 define class <tty-stream> (<wrapper-stream>)
 end class;

@@ -3,12 +3,20 @@ synopsis: TTY base class and generics.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+/* Numeric parser state for ANSI parser
+ */
 define constant <tty-state> = <integer>;
-
 define constant $tty-state-plain = 0;
 define constant $tty-state-esc   = 1;
 define constant $tty-state-csi   = 2;
 
+/* Base class of TTYs
+ *
+ * This handles I/O for the TTY, including
+ * parsing and generation of ANSI code sequences.
+ *
+ * It also handles activity lifecycle.
+ */
 define abstract class <tty> (<object>)
   slot tty-activity :: false-or(<tty-activity>) = #f,
     init-keyword: activity:;
@@ -23,12 +31,18 @@ define abstract class <tty> (<object>)
     init-keyword: error:;
 end class;
 
+/* Prepare terminal for use
+ */
 define generic tty-start (t :: <tty>)
  => ();
 
+/* Clean up terminal after use
+ */
 define generic tty-finish (t :: <tty>)
  => ();
 
+/* Loop over TTY events
+ */
 define method tty-run (t :: <tty>, a :: <tty-activity>)
   let oo = *standard-output*;
   let oe = *standard-error*;
@@ -60,11 +74,17 @@ define method tty-run (t :: <tty>, a :: <tty-activity>)
   end;
 end method;
 
+/* Make and dispatch a TTY event
+ */
 define method tty-event (t :: <tty>, a :: <tty-activity>, class :: subclass(<tty-activity-event>))
  => ();
   tty-activity-event(a, make(class, tty: t, activity: a));
 end method;
 
+/* Begin executing the given TTY activity
+ *
+ * This will pause the current activity and continue in the new one.
+ */
 define method tty-start-activity (t :: <tty>, a :: <tty-activity>)
  => ();
   let previous = tty-activity(t);
@@ -84,6 +104,12 @@ define method tty-start-activity (t :: <tty>, a :: <tty-activity>)
   tty-flush(t);
 end method;
 
+/* Begin executing the given TTY activity
+ *
+ * This will finish the current activity and continue in the previous one.
+ *
+ * XXX this should quit if there is no activity left
+ */
 define method tty-finish-activity (t :: <tty>)
  => ();
   let a = tty-activity(t);
@@ -104,6 +130,8 @@ define method tty-finish-activity (t :: <tty>)
   end;
 end method;
 
+/* Flush all output for the TTY
+ */
 define method tty-flush (t :: <tty>)
   force-output(tty-output(t));
   if (tty-error(t))

@@ -3,6 +3,11 @@ synopsis: Support for UNIX TTYs in RAW mode
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+/* UNIX TTYs
+ *
+ * These only work for real UNIX ttys and use
+ * the UNIX terminal infrastructure.
+ */
 define class <unix-tty> (<tty>)
   slot unix-tty-type :: <string>,
     required-init-keyword: type:;
@@ -10,11 +15,15 @@ define class <unix-tty> (<tty>)
   slot unix-tty-initial-termios :: false-or(<%unix-termios>) = #f;
 end class;
 
+/* Get the file descriptor of the given TTY
+ */
 define method tty-file-descriptor (t :: <unix-tty>)
  => (fd :: <integer>);
   0; // XXX take from input stream
 end method;
 
+/* Initialize the TTY for use
+ */
 define method tty-start (t :: <unix-tty>)
  => ();
   unless (unix-tty-initial-termios(t))
@@ -24,6 +33,8 @@ define method tty-start (t :: <unix-tty>)
   end;
 end method;
 
+/* Reset the TTY to state before start
+ */
 define method tty-finish (t :: <unix-tty>)
  => ();
   if (unix-tty-initial-termios(t))
@@ -33,6 +44,8 @@ define method tty-finish (t :: <unix-tty>)
   end;
 end method;
 
+/* Capture the attributes of the given TTY
+ */
 define method unix-tty-get-termios (t :: <unix-tty>)
  => (m :: <%unix-termios>);
   let termios = %unix-make-termios();
@@ -41,16 +54,23 @@ define method unix-tty-get-termios (t :: <unix-tty>)
   termios;
 end method;
 
+/* Set the attributes of the given TTY
+ */
 define method unix-tty-set-termios (t :: <unix-tty>, m :: <%unix-termios>)
  => ();
   // XXX return value
   %unix-tcsetattr-drain(tty-file-descriptor(t), m);
 end method;
 
-
+/* Reference to the controlling tty, if there is one
+ */
 define variable *controlling-tty*
   :: false-or(<unix-tty>) = #f;
 
+/* Get the UNIX controlling tty of the current process
+ *
+ * This is the TTY that is associated with stdio.
+ */
 define function application-controlling-tty ()
  => (t :: <tty>);
   unless (*controlling-tty*)
@@ -60,6 +80,8 @@ define function application-controlling-tty ()
   *controlling-tty*;
 end function;
 
+/* Construct a TTY for the controlling tty
+ */
 define function make-controlling-tty ()
  => (t :: <tty>);
   let type = environment-variable("TERM") | "vt102";
@@ -70,6 +92,8 @@ define function make-controlling-tty ()
        type: type)
 end function;
 
+/* Callback for cleaning up controlling terminal state via atexit()
+ */
 define function finish-controlling-tty ()
  => ();
   if (*controlling-tty*)
