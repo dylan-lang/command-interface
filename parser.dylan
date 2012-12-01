@@ -60,9 +60,9 @@ define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
   end for;
 end method;
 
-define method parser-get-parameter (parser :: <cli-parser>, name :: <symbol>)
+define method parser-get-parameter (parser :: <cli-parser>, name :: <symbol>, #key default :: <object> = #f)
  => (value :: <object>);
-  element(parser-parameters(parser), name, default: #f);
+  element(parser-parameters(parser), name, default: default);
 end method;
 
 define method parser-push-param (parser :: <cli-parser>, param :: <cli-parameter>, value :: <object>)
