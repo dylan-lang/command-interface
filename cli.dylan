@@ -1,73 +1,172 @@
-module: cli
-synopsis: Demo code.
+module: dylan-user
+synopsis: Library and module declarations.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
-define constant $cli-root = make(<cli-root>);
+define library cli
+  use common-dylan;
+  use source-records;
+  use io;
+  use c-ffi;
+  use system;
+  use strings;
 
-root-add-bash-completion($cli-root);
-root-add-help($cli-root);
+  export cli;
+  export tty;
+end library;
 
+define module tty
+  use common-dylan;
 
-define variable $show-if = root-define-command($cli-root, #["show", "interface"],
-                                               help: "Query the interface database");
+  // we use streams and also wrap them
+  use streams;
+  // we override stdio
+  use standard-io;
+  // the unix binding uses c-ffi
+  use c-ffi;
+  // for getting TERM and such
+  use operating-system,
+    import: { environment-variable };
+  // these are not used much
+  use format,
+    import: { format };
+  use format-out,
+    import: { format-out };
 
-// property params
-make-inline-param($show-if, #"name");
-make-named-param($show-if, #"type");
+  // tty
+  export
+    <tty>,
+    tty-run,
+    application-controlling-tty;
 
+  // tty activities
+  export
+    <tty-activity>,
+    tty-activity-event;
 
-root-define-command($cli-root, #"shell",
-                    handler:
-                      method(p :: <cli-parser>)
-                          let t = application-controlling-tty();
-                          let e = make(<tty-cli>);
-                          tty-run(t, e);
-                      end method);
+  // tty events
+  export
+    <tty-event>,
+    event-tty,
+    <tty-key>,
+    key-control?,
+    key-character?,
+    key-character,
+    key-function,
+    <tty-activity-event>,
+    <tty-activity-start>,
+    <tty-activity-finish>,
+    <tty-activity-pause>,
+    <tty-activity-resume>;
 
-define variable $show-rt = root-define-command($cli-root, #["show", "route"],
-                                               help: "Query the route database");
+  // editor activity
+  export
+    <tty-editor>,
+    // getters and setters
+    editor-prompt,
+    editor-prompt-setter,
+    editor-line,
+    editor-line-setter,
+    editor-position,
+    editor-position-setter,
+    // text manipulation
+    editor-clear,
+    // relevant to users
+    editor-finish,
+    editor-execute,
+    editor-complete,
+    // XXX: need this?
+    editor-refresh-position,
+    editor-refresh-line;
 
-// lookup params
-make-inline-param($show-rt, #"to");
-make-named-param($show-rt,  #"from");
+  export
+    <unix-tty>,
+    unix-tty-type;
+end module;
 
-// property params
-make-named-param($show-rt,  #"device");
-make-named-param($show-rt,  #"source");
-make-named-param($show-rt,  #"nexthop");
+define module cli
+  use common-dylan;
 
+  // all over the place
+  use standard-io;
+  use strings;
+  use format,
+    include: { format };
+  use format-out,
+    include: { format-out };
+  use streams,
+    include: { force-output };
+  // used by <cli-file>
+  use file-system;
+  use locators;
+  // used in source.dylan
+  use source-records;
+  // used by <tty-cli>
+  use tty;
 
-let sl = root-define-command($cli-root, #["show", "log"],
-                    help: "Show system log");
-let fp = make(<cli-file>, name: #"file");
-node-add-successor(sl, fp);
+  export
+    // source records
+    <cli-source>,
+    <cli-string-source>,
+    source-string,
+    <cli-vector-source>,
+    source-vector,
+    // source locations
+    <cli-srcloc>,
+    <cli-srcoff>,
+    // tokens
+    <cli-token>,
+    token-srcloc,
+    // source record ops
+    cli-tokenize,
+    cli-annotate,
+    // errors
+    <cli-lexer-error>;
 
-root-define-command($cli-root, #["show", "configuration"],
-                    help: "Show active system configuration");
+  export
+    <cli-parser>,
+    // getters and setters
+    parser-source,
+    // operations
+    parser-advance,
+    parser-parse,
+    parser-complete,
+    parser-execute,
+    parser-get-parameter,
+    // errors
+    <cli-parse-error>,
+    error-parser,
+    error-token,
+    <cli-ambiguous-error>,
+    <cli-unknown-error>;
 
+  export
+    <cli-node>,
+    // getters and setters
+    node-hidden?,
+    node-repeatable?,
+    node-priority,
+    // operations
+    node-add-successor,
+    // subclasses
+    <cli-root>,
+    <cli-symbol>,
+    <cli-command>,
+    <cli-wrapper>,
+    <cli-parameter>,
+    parameter-name,
+    parameter-mandatory?,
+    <cli-file>;
 
+  export
+    <tty-cli>;
 
-define function main (name :: <string>, arguments :: <vector>)
-  let source = make(<cli-vector-source>, strings: arguments);
-  let parser = make(<cli-parser>, source: source, initial-node: $cli-root);
+  export
+    root-define-command,
+    root-add-help,
+    root-add-bash-completion,
+    make-named-param,
+    make-inline-param,
+    make-simple-param;
 
-  let tokens = cli-tokenize(source);
-
-  block ()
-    parser-parse(parser, tokens);
-    parser-execute(parser);
-  exception (pe :: <cli-parse-error>)
-    format(*standard-error*,
-           " %s\n %s\n%s\n",
-           source-string(source),
-           cli-annotate(source,
-                        token-srcloc(pe.error-token)),
-           condition-to-string(pe));
-    force-output(*standard-error*);
-  end;
-
-  exit-application(0);
-end function main;
-
-main(application-name(), application-arguments());
+end module;

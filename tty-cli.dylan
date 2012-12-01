@@ -4,6 +4,8 @@ author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
 define class <tty-cli> (<tty-editor>)
+  slot tty-cli-root-node :: <cli-node>,
+    required-init-keyword: root-node:;
 end class;
 
 define method editor-execute (editor :: <tty-cli>)
@@ -12,7 +14,8 @@ define method editor-execute (editor :: <tty-cli>)
 
   let str = editor-line(editor);
   let src = make(<cli-string-source>, string: str);
-  let parser = make(<cli-parser>, source: src, initial-node: $cli-root);
+  let parser = make(<cli-parser>, source: src,
+                    initial-node: tty-cli-root-node(editor));
 
   block ()
     let tokens = cli-tokenize(src);
@@ -46,7 +49,8 @@ define method editor-complete (editor :: <tty-cli>)
   let str = editor-line(editor);
   let posn = editor-position(editor);
   let src = make(<cli-string-source>, string: str);
-  let parser = make(<cli-parser>, source: src, initial-node: $cli-root);
+  let parser = make(<cli-parser>, source: src,
+                    initial-node: tty-cli-root-node(editor));
   let comploff = cli-srcoff(posn, 0, posn);
 
   local

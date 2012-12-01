@@ -21,8 +21,10 @@ define class <cli-parser> (<object>)
   slot parser-source :: <cli-source>,
     init-keyword: source:;
 
-  slot parser-current-node :: <cli-node>,
-    init-keyword: initial-node:;
+  slot parser-initial-node :: <cli-node>,
+    required-init-keyword: initial-node:;
+
+  slot parser-current-node :: <cli-node>;
 
   slot parser-handlers :: <list> = #();
 
@@ -31,6 +33,11 @@ define class <cli-parser> (<object>)
 
   slot parser-parameters :: <table> = make(<object-table>);
 end class;
+
+define method initialize (parser :: <cli-parser>, #rest keys, #key, #all-keys)
+ => ();
+  parser-current-node(parser) := parser-initial-node(parser);
+end method;
 
 define method parser-execute (parser :: <cli-parser>)
  => ();

@@ -46,7 +46,7 @@ define method bash-complete-command (parser :: <cli-parser>, command)
                  strings: command);
   let p = make(<cli-parser>,
                source: src,
-               initial-node: $cli-root);
+               initial-node: parser-initial-node(parser));
   // tokenize the command
   let tokens = cli-tokenize(src);
   // perform completion
