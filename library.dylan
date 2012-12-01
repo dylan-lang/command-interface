@@ -102,7 +102,10 @@ define module cli
   use tty;
 
   export
+    // source records
     <cli-source>,
+    <cli-string-source>,
+    <cli-vector-source>,
     // source locations
     <cli-srcloc>,
     <cli-srcoff>,
