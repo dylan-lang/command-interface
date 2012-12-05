@@ -12,8 +12,8 @@ define library cli-dylan
   use environment-protocols;
   use environment-reports;
   use dfmc-common;
-  use dfmc-environment-database;
   use dfmc-environment-projects;
+  use dfmc-environment-database;
   use dfmc-back-end-implementations;
 end library;
 
@@ -33,7 +33,7 @@ define module cli-dylan
 
   use release-info;
 
-  use projects-protocol;
+  use projects;
   use environment-protocols,
     exclude: { application-filename, application-arguments };
   use environment-reports;
