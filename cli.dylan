@@ -91,11 +91,11 @@ define module cli
   use standard-io;
   use strings;
   use format,
-    include: { format };
+    import: { format };
   use format-out,
-    include: { format-out };
+    import: { format-out };
   use streams,
-    include: { force-output };
+    import: { force-output };
   // used by <cli-file>
   use file-system;
   use locators;
