@@ -1,14 +1,14 @@
 library: cli
-files: cli
-       util
-       predicate
-       source
-       parser
-       nodes
-       building
-       bash
-       help
-       tty-cli
+files: cli-library
+       cli/util
+       cli/predicate
+       cli/source
+       cli/parser
+       cli/nodes
+       cli/building
+       cli/bash
+       cli/help
+       cli/tty-cli
        tty/tty
        tty/tty-char
        tty/tty-event
