@@ -12,8 +12,13 @@ copyright: see accompanying file COPYING
  */
 define class <tty-editor> (<tty-activity>)
   slot editor-prompt :: <string> = "> ";
+
   slot editor-line :: <string> = "";
   slot editor-position :: <integer> = 0;
+
+  slot editor-dirty-position? :: <boolean> = #f;
+  slot editor-dirty-line? :: <boolean> = #f;
+
   slot editor-history-list :: <list> = #();
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
@@ -30,6 +35,7 @@ end method;
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-resume>)
  => ();
   editor-refresh-line(editor);
+  editor-maybe-refresh(editor);
 end method;
 
 /* Handle key events
@@ -63,6 +69,7 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
         end;
       end;
   end;
+  editor-maybe-refresh(editor);
 end method;
 
 /* Finish use of the TTY
@@ -94,29 +101,38 @@ define method editor-complete (editor :: <tty-editor>)
   editor-refresh-line(editor);
 end method;
 
-/* Redraw the entire line
- *
- * Also repositions the cursor.
- *
+/* Refresh if needed
+ */
+define method editor-maybe-refresh (editor :: <tty-editor>)
+ => ();
+  let tty = activity-tty(editor);
+  let prompt = editor-prompt(editor);
+  if(editor-dirty-line?(editor))
+    tty-cursor-column(tty, 0);
+    tty-kill-whole-line(tty);
+    tty-write(tty, prompt);
+    tty-write(tty, editor-line(editor));
+  end;
+  if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
+    tty-cursor-column(tty, size(prompt) + editor-position(editor));
+  end;
+  editor-dirty-line?(editor) := #f;
+  editor-dirty-position?(editor) := #f;
+end method;
+
+/* Request refresh of the entire line
+ * Will also position the cursor
  */
 define method editor-refresh-line (editor :: <tty-editor>)
  => ();
-  let tty = activity-tty(editor);
-  let prompt = editor-prompt(editor);
-  tty-cursor-column(tty, 0);
-  tty-kill-whole-line(tty);
-  tty-write(tty, prompt);
-  tty-write(tty, editor-line(editor));
-  editor-refresh-position(editor);
+  editor.editor-dirty-line? := #t;
 end method;
 
-/* Reposition the cursor without redraw
+/* Request refresh of the cursor position
  */
 define method editor-refresh-position (editor :: <tty-editor>)
  => ();
-  let tty = activity-tty(editor);
-  let prompt = editor-prompt(editor);
-  tty-cursor-column(tty, size(prompt) + editor-position(editor));
+  editor.editor-dirty-position? := #t;
 end method;
 
 /* Clear the contents of the editor
@@ -143,7 +159,6 @@ define method editor-insert-at
     new-line[i] := old-line[i - 1];
   end;
   editor-line(editor) := new-line;
-  editor-position(editor) := column + 1;
   editor-refresh-line(editor);
 end method;
 
@@ -161,7 +176,6 @@ define method editor-delete-at
     new-line[i] := old-line[i + 1];
   end for;
   editor-line(editor) := new-line;
-  editor-position(editor) := column;
   editor-refresh-line(editor);
 end method;
 
@@ -170,6 +184,7 @@ end method;
 define method editor-insert (editor :: <tty-editor>, char :: <character>)
  => ();
   editor-insert-at(editor, char, editor-position(editor));
+  editor-position(editor) := editor-position(editor) + 1;
 end method;
 
 /* Delete char before current position
@@ -178,6 +193,7 @@ define method editor-backspace (editor :: <tty-editor>)
  => ();
   if (editor-position(editor) > 0)
     editor-delete-at(editor, editor-position(editor) - 1);
+    editor-position(editor) := editor-position(editor) - 1;
   end;
 end method;
 
