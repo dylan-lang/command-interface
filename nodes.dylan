@@ -334,24 +334,19 @@ end class;
 
 define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
-  // try matching all alternatives
-  let found = choose(rcurry(node-match, parser, token), node-alternatives(node));
-  // if any match then we do, too
-  size(found) > 0;
+  let string = as-lowercase(token-string(token));
+  let alts = map(curry(as, <string>), node-alternatives(node));
+  let found = choose(curry(starts-with?, string), alts);
+  ~empty?(found);
 end method;
 
 define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
-  // find all alternatives that can accept TOKEN
-  let found =
-    if (token)
-      choose(rcurry(node-match, parser, token), node-alternatives(node));
-    else
-      node-alternatives(node);
-    end;
-  // produce completions for all possible
-  // alternatives and collect them into one list
-  apply(concatenate,
-        map(rcurry(node-complete, parser, token), found));
+  let string = as-lowercase(token-string(token));
+  let alts = map(curry(as, <string>), node-alternatives(node));
+  if (token)
+    choose(curry(starts-with?, string), alts);
+  else
+    alts;
+  end;
 end method;
-
