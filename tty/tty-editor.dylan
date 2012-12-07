@@ -52,7 +52,11 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
       if (size(editor-line(editor)) = 0)
         tty-finish-activity(activity-tty(editor));
       end;
-    #"enter" => editor-execute(editor);
+    #"enter" =>
+      begin
+        editor-complete-implicit(editor);
+        editor-execute(editor);
+      end;
     #"tab" => editor-complete(editor);
     otherwise =>
       begin
@@ -64,7 +68,9 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
           end;
         else
           if (key-character?(key))
-            editor-insert(editor, key-character(key));
+            if (key-character(key) ~= ' ' | editor-complete-implicit(editor))
+              editor-insert(editor, key-character(key));
+            end;
           end;
         end;
       end;
@@ -100,6 +106,14 @@ define method editor-complete (editor :: <tty-editor>)
   format-out("complete: \"%s\" at %d\n", editor-line(editor), editor-position(editor));
   editor-refresh-line(editor);
 end method;
+
+/* Complete editor content at current position silently (space completion)
+ */
+define method editor-complete-implicit (editor :: <tty-editor>)
+ => (accepted? :: <boolean>);
+  #f;
+end method;
+
 
 /* Refresh if needed
  */

@@ -75,6 +75,7 @@ define module tty
     editor-finish,
     editor-execute,
     editor-complete,
+    editor-complete-implicit,
     // XXX: need this?
     editor-refresh-position,
     editor-refresh-line;
