@@ -16,11 +16,13 @@ copyright: see accompanying file COPYING
  *
  *  - START
  *    Called when an activity starts.
+ *    No tty activity should be attempted.
  *
  *  - FINISH
  *    Called when an activity is finished
  *    or being finished. This is the final
- *    event for an activity.
+ *    event for an activity. No tty activity
+ *    should be attempted.
  *
  *  - PAUSE
  *    Called when an activity is subsumed
