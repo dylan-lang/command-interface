@@ -4,6 +4,22 @@ define class <dylan-cli> (<object>)
   slot dylan-current-project :: false-or(<project-object>) = #f;
 end class;
 
+define class <cli-dylan-project> (<cli-parameter>)
+end class;
+
+define method node-complete (param :: <cli-dylan-project>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+  let names = map(project-name, open-projects());
+  let compls =
+    if (token)
+      let string = as-lowercase(token-string(token));
+      choose(curry(starts-with?, string), names);
+    else
+      names;
+    end;
+  as(<list>, compls);
+end method;
+
 define method dylan-project-named (cli :: <dylan-cli>, string :: <string>)
  => (project :: false-or(<project-object>));
   any?(method (project)

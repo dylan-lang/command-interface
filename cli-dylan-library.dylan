@@ -4,6 +4,7 @@ define library cli-dylan
   use common-dylan;
   use io;
   use system;
+  use strings;
   use cli;
   use release-info;
   use projects;
@@ -27,6 +28,7 @@ define module cli-dylan
   use standard-io;
   use file-system;
   use locators;
+  use strings;
 
   use cli;
   use tty;
