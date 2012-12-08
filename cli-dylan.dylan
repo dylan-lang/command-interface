@@ -158,7 +158,7 @@ dylan-define-command (#(show:, environment:),
 dylan-define-command (#(show:, project:),
                       help: "Show information about a project",
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:);
+                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let project = dylan-project(c, p, name:);
@@ -177,7 +177,7 @@ dylan-define-command (#(open:),
                       help: "Open a project",
                       external?: #f,
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:, required?: #t);
+                                    make-simple-param(c, name:, required?: #t, node-class: <cli-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let filename = parser-get-parameter(p, name:);
@@ -205,7 +205,7 @@ dylan-define-command (#(close:),
                       help: "Close a project",
                       external?: #f,
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:);
+                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  format-out("Closing!\n");
@@ -214,7 +214,7 @@ dylan-define-command (#(close:),
 dylan-define-command (#(report:),
                       help: "Report on a project",
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:);
+                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
                                     make-named-param(c, type:);
                                     make-named-param(c, format:);
                                   end,
@@ -305,7 +305,7 @@ end method compiler-condition-handler;
 dylan-define-command (#(build:),
                       help: "Build a project",
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:);
+                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let p = dylan-project(c, p, name:);
@@ -333,7 +333,7 @@ dylan-define-command (#(build:),
 dylan-define-command (#(clean:),
                       help: "Clean a project",
                       parameters: method (c :: <cli-command>)
-                                    make-inline-param(c, name:);
+                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let p = dylan-project(c, p, name:);
