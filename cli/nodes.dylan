@@ -349,9 +349,9 @@ end method;
 
 define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
-  let string = as-lowercase(token-string(token));
   let alts = map(curry(as, <string>), node-alternatives(node));
   if (token)
+    let string = as-lowercase(token-string(token));
     choose(curry(starts-with?, string), alts);
   else
     alts;
