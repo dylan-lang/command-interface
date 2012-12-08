@@ -10,33 +10,37 @@ end class;
 
 define method editor-execute (editor :: <tty-cli>)
  => ();
+  // clean line for command
   editor-finish(editor);
-
+  // instantiate source and parser
   let str = editor-line(editor);
   let src = make(<cli-string-source>, string: str);
   let parser = make(<cli-parser>, source: src,
                     initial-node: tty-cli-root-node(editor));
-
+  // process the command
   block ()
+    // tokenize
     let tokens = cli-tokenize(src);
+    // parse
     parser-parse(parser, tokens);
+    // execute
     parser-execute(parser);
+    // clear editor if successful
     editor-clear(editor);
   exception (le :: <cli-lexer-error>)
+    // print with annotations
     format(*standard-error*, "%s%s\n%s\n",
            n-spaces(size(editor-prompt(editor))),
            cli-annotate(src, le.error-srcoff),
            condition-to-string(le));
   exception (pe :: <cli-parse-error>)
+    // print with annotations
     format(*standard-error*, "%s%s\n%s\n",
            n-spaces(size(editor-prompt(editor))),
            cli-annotate(src, token-srcloc(pe.error-token)),
            condition-to-string(pe));
   end;
-
-  force-output(*standard-output*);
-  force-output(*standard-error*);
-
+  // trigger a redraw
   editor-refresh-line(editor);
 end method;
 
