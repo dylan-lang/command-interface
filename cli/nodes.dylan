@@ -159,7 +159,7 @@ define open class <cli-command> (<cli-symbol>)
 end class;
 
 define method node-accept (node :: <cli-command>, parser :: <cli-parser>, token :: <cli-token>)
- => ()
+ => ();
   if (command-handler(node))
     parser-push-handler(parser, command-handler(node));
   end
