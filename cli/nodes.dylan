@@ -49,6 +49,26 @@ define abstract class <cli-node> (<object>)
     init-keyword: repeat-marker:;
 end class;
 
+/* Generate completions for the given node
+ *
+ * May or may not be provided a partial token.
+ */
+define open generic node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+
+/* Check if the given token matches this node partially or completely
+ */
+define open generic node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+ => (matched? :: <boolean>);
+
+/* Accept the given node with the given token as data
+ *
+ * This is where parameters do conversion and command handlers are added.
+ */
+define open generic node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+ => ();
+
+
 /* Is the node acceptable as next node in given parser state?
  *
  * This prevents non-repeatable parameters from being added again.
@@ -75,26 +95,16 @@ define method node-add-successor (node :: <cli-node>, successor :: <cli-node>)
   successor;
 end method;
 
-/* Check if the given token matches this node partially or completely
- */
 define method node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   #f
 end;
 
-/* Generate completions for the given node
- *
- * May or may not be provided a partial token.
- */
 define method node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   #();
 end method;
 
-/* Accept the given node with the given token as data
- *
- * This is where parameters do conversion and command handlers are added.
- */
 define method node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
 end method;
@@ -137,7 +147,7 @@ end method;
 /*
  * Commands are symbols with handler and parameter requirements
  */
-define class <cli-command> (<cli-symbol>)
+define open class <cli-command> (<cli-symbol>)
   /* help source for the command */
   slot command-help :: false-or(<string>) = #f,
     init-keyword: help:;
@@ -182,7 +192,7 @@ end method;
 /*
  * A captured parameter
  */
-define class <cli-parameter> (<cli-node>)
+define open class <cli-parameter> (<cli-node>)
   slot parameter-name :: <symbol>,
     init-keyword: name:;
   slot parameter-anchor :: false-or(<cli-node>) = #f,

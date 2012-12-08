@@ -117,6 +117,7 @@ define module cli
     <cli-srcoff>,
     // tokens
     <cli-token>,
+    token-string,
     token-srcloc,
     // source record ops
     cli-tokenize,
@@ -149,12 +150,17 @@ define module cli
     node-priority,
     // operations
     node-add-successor,
+    node-accept,
+    node-complete,
+    node-match,
     // subclasses
     <cli-root>,
     <cli-symbol>,
     <cli-command>,
     <cli-wrapper>,
     <cli-parameter>,
+    <cli-string>,
+    <cli-oneof>,
     parameter-name,
     parameter-mandatory?,
     <cli-file>;
