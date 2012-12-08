@@ -144,6 +144,8 @@ define class <cli-command> (<cli-symbol>)
   /* handler function */
   slot command-handler :: false-or(<function>) = #f,
     init-keyword: handler:;
+  /* parameters */
+  slot command-parameters :: <list> = #();
 end class;
 
 define method node-accept (node :: <cli-command>, parser :: <cli-parser>, token :: <cli-token>)
@@ -151,6 +153,11 @@ define method node-accept (node :: <cli-command>, parser :: <cli-parser>, token 
   if (command-handler(node))
     parser-push-handler(parser, command-handler(node));
   end
+end method;
+
+define method command-add-parameter (node :: <cli-command>, parameter :: <cli-parameter>)
+ => ();
+  command-parameters(node) := add!(command-parameters(node), parameter);
 end method;
 
 

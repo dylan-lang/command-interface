@@ -58,20 +58,23 @@ define method root-define-command (root :: <cli-root>, name :: <symbol>,
 end method;
 
 
-define function make-simple-param (anchor :: <cli-node>, name :: <symbol>, #rest keys, #key, #all-keys)
+define function make-simple-param (anchor :: <cli-command>, name :: <symbol>,
+                                   #rest keys, #key node-class :: <class> = <cli-parameter>, #all-keys)
  => (entry :: <cli-node>);
-  let param = apply(make, <cli-parameter>,
+  let param = apply(make, node-class,
                     name:, name,
                     anchor:, anchor,
                     priority:, $cli-priority-parameter,
                     keys);
   node-add-successor(anchor, param);
+  command-add-parameter(anchor, param);
   param;
 end function;
 
-define method make-named-param (anchor :: <cli-node>, names :: <sequence>, #rest keys, #key, #all-keys)
+define method make-named-param (anchor :: <cli-command>, names :: <sequence>,
+                                #rest keys, #key node-class :: <class> = <cli-parameter>, #all-keys)
  => (param :: <cli-node>, symbols :: <sequence>);
-  let param = apply(make, <cli-parameter>,
+  let param = apply(make, node-class,
                     name:, element(names, 0),
                     anchor:, anchor,
                     priority:, $cli-priority-parameter,
@@ -86,15 +89,18 @@ define method make-named-param (anchor :: <cli-node>, names :: <sequence>, #rest
     syms := add(syms, sym);
     node-add-successor(anchor, sym);
   end for;
+  command-add-parameter(anchor, param);
   values(param, syms);
 end method;
 
-define method make-named-param (anchor :: <cli-node>, name :: <symbol>, #rest keys, #key, #all-keys)
+define method make-named-param (anchor :: <cli-command>, name :: <symbol>,
+                                #rest keys, #key, #all-keys)
  => (param :: <cli-parameter>, symbols :: <sequence>);
   apply(make-named-param, anchor, list(name), keys);
 end method;
 
-define method make-inline-param (anchor :: <cli-node>, names, #rest keys, #key, #all-keys)
+define method make-inline-param (anchor :: <cli-command>, names,
+                                 #rest keys, #key, #all-keys)
  => (param :: <cli-node>, symbols :: <sequence>);
   let (param, syms) = apply(make-named-param, anchor, names, keys);
 
