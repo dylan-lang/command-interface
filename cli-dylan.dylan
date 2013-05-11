@@ -4,6 +4,23 @@ define class <dylan-cli> (<object>)
   slot dylan-current-project :: false-or(<project-object>) = #f;
 end class;
 
+define class <cli-open-dylan-project> (<cli-parameter>)
+end class;
+
+define method node-complete (param :: <cli-open-dylan-project>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+  let names = map(project-name, open-projects());
+  let compls =
+    if (token)
+      let string = as-lowercase(token-string(token));
+      let compls = choose(rcurry(starts-with?, string), names);
+      compls;
+    else
+      names;
+    end;
+  as(<list>, compls);
+end method;
+
 define class <cli-dylan-project> (<cli-parameter>)
 end class;
 
@@ -13,12 +30,34 @@ define method node-complete (param :: <cli-dylan-project>, parser :: <cli-parser
   let compls =
     if (token)
       let string = as-lowercase(token-string(token));
-      choose(curry(starts-with?, string), names);
+      let compls = choose(rcurry(starts-with?, string), names);
+      unless (member?(string, compls, test: \=)
+                | member?(longest-common-prefix(names), compls, test: \=))
+        compls := add!(compls, string);
+      end;
+      compls;
     else
       names;
     end;
   as(<list>, compls);
 end method;
+
+define class <cli-report-type> (<cli-parameter>)
+end class;
+
+define method node-complete (param :: <cli-report-type>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+  let names = map(curry(as, <string>), key-sequence(available-reports()));
+  let compls =
+    if (token)
+      let string = as-lowercase(token-string(token));
+      choose(rcurry(starts-with?, string), names);
+    else
+      names;
+    end;
+  as(<list>, compls);
+end method;
+
 
 define method dylan-project-named (cli :: <dylan-cli>, string :: <string>)
  => (project :: false-or(<project-object>));
@@ -158,7 +197,7 @@ dylan-define-command (#(show:, environment:),
 dylan-define-command (#(show:, project:),
                       help: "Show information about a project",
                       parameters: method (c :: <cli-command>)
-                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
+                                    make-simple-param(c, name:, node-class: <cli-open-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let project = dylan-project(c, p, name:);
@@ -205,18 +244,21 @@ dylan-define-command (#(close:),
                       help: "Close a project",
                       external?: #f,
                       parameters: method (c :: <cli-command>)
-                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
+                                    make-simple-param(c, name:, node-class: <cli-open-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  format-out("Closing!\n");
+                                 let project  = dylan-project(c, p, name:);
+                                 close-project(project);
                                end);
 
 dylan-define-command (#(report:),
                       help: "Report on a project",
                       parameters: method (c :: <cli-command>)
-                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
-                                    make-named-param(c, type:);
-                                    make-named-param(c, format:);
+                                    make-simple-param(c, name:, node-class: <cli-open-dylan-project>);
+                                    make-named-param(c, type:, node-class: <cli-report-type>);
+                                    make-named-param(c, format:, node-class: <cli-oneof>,
+                                                     alternatives: #("text", "dot", "html", "xml", "rst"));
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let project  = dylan-project(c, p, name:);
@@ -305,7 +347,7 @@ end method compiler-condition-handler;
 dylan-define-command (#(build:),
                       help: "Build a project",
                       parameters: method (c :: <cli-command>)
-                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
+                                    make-simple-param(c, name:, node-class: <cli-open-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let p = dylan-project(c, p, name:);
@@ -333,7 +375,7 @@ dylan-define-command (#(build:),
 dylan-define-command (#(clean:),
                       help: "Clean a project",
                       parameters: method (c :: <cli-command>)
-                                    make-simple-param(c, name:, node-class: <cli-dylan-project>);
+                                    make-simple-param(c, name:, node-class: <cli-open-dylan-project>);
                                   end,
                       handler: method (c :: <dylan-cli>, p :: <cli-parser>)
                                  let p = dylan-project(c, p, name:);
