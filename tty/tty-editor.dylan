@@ -42,6 +42,7 @@ end method;
  */
 define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
   => ();
+  let tty = activity-tty(editor);
   select (key-function(key))
     #"backspace" => editor-backspace(editor);
     #"refresh" => editor-refresh-line(editor);
@@ -50,7 +51,7 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
     #"cursor-left" => editor-move(editor, -1);
     #"quit" =>
       if (size(editor-line(editor)) = 0)
-        tty-finish-activity(activity-tty(editor));
+        tty-finish-activity(tty);
       end;
     #"enter" =>
       begin
@@ -77,6 +78,7 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
       end;
   end;
   editor-maybe-refresh(editor);
+  tty-flush(tty);
 end method;
 
 /* Finish use of the TTY
@@ -131,7 +133,6 @@ define method editor-maybe-refresh (editor :: <tty-editor>)
   if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
     tty-cursor-column(tty, size(prompt) + editor-position(editor));
   end;
-  tty-flush(tty);
   editor-dirty-line?(editor) := #f;
   editor-dirty-position?(editor) := #f;
 end method;
