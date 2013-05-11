@@ -353,7 +353,7 @@ define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: 
  => (matched? :: <boolean>);
   let string = as-lowercase(token-string(token));
   let alts = map(curry(as, <string>), node-alternatives(node));
-  let found = choose(curry(starts-with?, string), alts);
+  let found = choose(rcurry(starts-with?, string), alts);
   ~empty?(found);
 end method;
 
@@ -362,7 +362,7 @@ define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token 
   let alts = map(curry(as, <string>), node-alternatives(node));
   if (token)
     let string = as-lowercase(token-string(token));
-    choose(curry(starts-with?, string), alts);
+    choose(rcurry(starts-with?, string), alts);
   else
     alts;
   end;

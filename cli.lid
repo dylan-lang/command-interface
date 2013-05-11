@@ -5,6 +5,7 @@ files: cli-library
        cli/source
        cli/parser
        cli/nodes
+       cli/completion
        cli/building
        cli/bash
        cli/help

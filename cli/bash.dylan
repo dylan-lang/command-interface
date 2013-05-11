@@ -69,7 +69,9 @@ define method bash-complete-command (parser :: <cli-parser>, command)
     completions := parser-complete(p, #f);
   end if;
   // print completion
-  for (completion in completions)
+  let all-completion-results =
+    apply(concatenate, map(completion-results, completions));
+  for (completion in all-completion-results)
     format-out("%s\n", completion);
   end for;
 end method;

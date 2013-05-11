@@ -71,6 +71,7 @@ define module tty
     editor-position-setter,
     // text manipulation
     editor-clear,
+    editor-replace,
     // relevant to users
     editor-finish,
     editor-execute,
@@ -83,6 +84,7 @@ define module tty
   export
     <unix-tty>,
     unix-tty-type;
+
 end module;
 
 define module cli
@@ -175,5 +177,8 @@ define module cli
     make-named-param,
     make-inline-param,
     make-simple-param;
+
+  export
+    longest-common-prefix;
 
 end module;

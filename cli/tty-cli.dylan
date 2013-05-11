@@ -29,57 +29,41 @@ define method editor-execute (editor :: <tty-cli>)
     editor-clear(editor);
   exception (le :: <cli-lexer-error>)
     // print with annotations
-    format(*standard-error*, "%s%s\n%s\n",
-           n-spaces(size(editor-prompt(editor))),
-           cli-annotate(src, le.error-srcoff),
-           condition-to-string(le));
+    format-out("%s%s\n%s\n",
+               n-spaces(size(editor-prompt(editor))),
+               cli-annotate(src, le.error-srcoff),
+               condition-to-string(le));
   exception (pe :: <cli-parse-error>)
     // print with annotations
-    format(*standard-error*, "%s%s\n%s\n",
-           n-spaces(size(editor-prompt(editor))),
-           cli-annotate(src, token-srcloc(pe.error-token)),
-           condition-to-string(pe));
+    format-out("%s%s\n%s\n",
+               n-spaces(size(editor-prompt(editor))),
+               cli-annotate(src, token-srcloc(pe.error-token)),
+               condition-to-string(pe));
   end;
   // trigger a redraw
   editor-refresh-line(editor);
 end method;
 
-define method replace (editor :: <tty-cli>,
-                start-posn :: <integer>,
-                end-posn :: <integer>,
-                autospace? :: <boolean>,
-                replacement :: <string>)
- => ();
-  let str = editor-line(editor);
-  // insert automatic space
-  if (autospace?)
-    if (end-posn == size(str) | str[end-posn] ~= " ")
-      replacement := concatenate!(replacement, " ");
-    end;
-  end;
-  // compute new string and position
-  let new-str = replace-subsequence!
-  (str, replacement, start:  start-posn, end: end-posn);
-  let new-posn = start-posn + size(replacement);
-  // apply things to editor
-  editor-line(editor) := new-str;
-  editor-position(editor) := new-posn;
-  editor-refresh-line(editor);
-end method;
 
 define method replace-token (editor :: <tty-cli>, token :: <cli-token>, autospace? :: <boolean>, replacement :: <string>)
  => ();
   let reploc = token-srcloc(token);
-  replace(editor,
-          source-location-start-character(reploc),
-          source-location-end-character(reploc) + 1,
-          autospace?,
-          replacement);
+  let s = source-location-start-character(reploc);
+  let e = source-location-end-character(reploc) + 1;
+  if (autospace?)
+    editor-replace(editor, s, e, concatenate(replacement, " "));
+  else
+    editor-replace(editor, s, e, replacement);
+  end;
 end method;
 
 define method replace-position (editor :: <tty-cli>, position :: <integer>, autospace? :: <boolean>, replacement :: <string>)
  => ();
-  replace(editor, position, position, autospace?, replacement);
+  if (autospace?)
+    editor-replace(editor, position, position, concatenate(replacement, " "));
+  else
+    editor-replace(editor, position, position, replacement);
+  end;
 end method;
 
 
@@ -132,81 +116,89 @@ define method editor-complete-implicit (editor :: <tty-cli>)
     exception (pe :: <cli-parse-error>)
       values(#(), #f);
     end;
+  // get all completions as raw strings
+  let raw-completions = apply(concatenate, #(), map(completion-results, completions));
   // we only complete when there is an existing token
   if (complete-token)
     // act on the completion
-    select (size(completions))
+    select (size(raw-completions))
       // don't do anything if we have nothing
-      0 => #f;
+      0 => #t;
       // replace single completions
       1 =>
         begin
-          let completion = first(completions);
+          let completion = first(raw-completions);
           replace-token(editor, complete-token, #f, completion);
           #t;
         end;
       // else, insert the longest common prefix
       otherwise => 
         begin
-          let common = longest-common-prefix(completions);
+          let common = longest-common-prefix(raw-completions);
           replace-token(editor, complete-token, #f, common);
-          #f;
+          member?(common, raw-completions, test: \=);
         end;
     end;
   end;
+
 end method;
 
 define method editor-complete (editor :: <tty-cli>)
  => ();
-  // we print stuff, so clear the line
-  editor-finish(editor);
-  // perform completion, abort on error
-  let (completions, complete-token) =
-    block ()
-      editor-complete-internal(editor);
-    exception (le :: <cli-lexer-error>)
-      format(*standard-error*, "\n%s%s\n%s\n",
-             n-spaces(size(editor-prompt(editor))),
-             cli-annotate(le.error-source,
-                          le.error-srcoff),
-             condition-to-string(le));
-      editor-refresh-line(editor);
-      values(#(), #f);
-    exception (pe :: <cli-parse-error>)
-      format(*standard-error*, "\n%s%s\n%s\n",
-             n-spaces(size(editor-prompt(editor))),
-             cli-annotate(pe.error-parser.parser-source,
-                          token-srcloc(pe.error-token)),
-             condition-to-string(pe));
-      editor-refresh-line(editor);
-      values(#(), #f);
-    end;
-  // we need the position in case we don't have a token
-  let posn = editor-position(editor);
-  // act on completion results
-  select (size(completions))
-    // no completions -> say so
-    0 =>
-      begin
-        format-out("No completions.\n");
-        editor-refresh-line(editor);
+  block (return)
+    // perform completion, abort on error
+    let (completions, complete-token) =
+      block ()
+        editor-complete-internal(editor);
+      exception (le :: <cli-lexer-error>)
+        editor-finish(editor);
+        format-out("%s%s\n%s\n",
+                   n-spaces(size(editor-prompt(editor))),
+                   cli-annotate(le.error-source,
+                                le.error-srcoff),
+                   condition-to-string(le));
+        return();
+      exception (pe :: <cli-parse-error>)
+        editor-finish(editor);
+        format-out("%s%s\n%s\n",
+                   n-spaces(size(editor-prompt(editor))),
+                   cli-annotate(pe.error-parser.parser-source,
+                                token-srcloc(pe.error-token)),
+                   condition-to-string(pe));
+        return();
       end;
-    // one completion -> insert it
-    1 =>
-      let completion = first(completions);
-      if (complete-token)
-        replace-token(editor, complete-token, #t, completion);
-      else
-        replace-position(editor, posn, #t, completion);
-      end;
-    // many completions -> insert longest common prefix
-    otherwise =>
-      format-out("%s\n", join(completions, " "));
-      let common = longest-common-prefix(completions);
-      if (complete-token)
-        replace-token(editor, complete-token, #f, common);
-      else
-        replace-position(editor, posn, #f, common);
-      end;
-  end select;
+    // get all completions as raw strings
+    let raw-completions =
+      apply(concatenate, #(), map(completion-results, completions));
+    // we need the position in case we don't have a token
+    let posn = editor-position(editor);
+    // act on completion results
+    select (size(raw-completions))
+      // no completions -> say so
+      0 =>
+        begin
+          editor-finish(editor);
+          format-out("No completions.\n");
+        end;
+      // one completion -> insert it
+      1 =>
+        let completion = first(raw-completions);
+        if (complete-token)
+          replace-token(editor, complete-token, #t, completion);
+        else
+          replace-position(editor, posn, #t, completion);
+        end;
+      // many completions -> insert longest common prefix and print options
+      otherwise =>
+        editor-finish(editor);
+        format-out("%s\n", join(raw-completions, " "));
+        let common = longest-common-prefix(raw-completions);
+        if (complete-token)
+          replace-token(editor, complete-token, #f, common);
+        else
+          replace-position(editor, posn, #f, common);
+        end;
+    end select;
+  end block;
+  editor-refresh-line(editor);
 end method;

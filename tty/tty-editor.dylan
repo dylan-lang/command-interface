@@ -55,6 +55,7 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
     #"enter" =>
       begin
         editor-complete-implicit(editor);
+        editor-maybe-refresh(editor);
         editor-execute(editor);
       end;
     #"tab" => editor-complete(editor);
@@ -86,8 +87,8 @@ end method;
 define method editor-finish (editor :: <tty-editor>)
  => ();
   let tty = activity-tty(editor);
-  tty-linefeed(tty);
   tty-cursor-column(tty, 0);
+  tty-linefeed(tty);
 end method;
 
 /* Execute or act upon editor content
@@ -130,6 +131,7 @@ define method editor-maybe-refresh (editor :: <tty-editor>)
   if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
     tty-cursor-column(tty, size(prompt) + editor-position(editor));
   end;
+  tty-flush(tty);
   editor-dirty-line?(editor) := #f;
   editor-dirty-position?(editor) := #f;
 end method;
@@ -155,6 +157,23 @@ define method editor-clear (editor :: <tty-editor>)
  => ();
   editor-line(editor) := "";
   editor-position(editor) := 0;
+  editor-refresh-line(editor);
+end method;
+
+/* Replace the given range with a replacement
+ */
+define method editor-replace
+    (editor :: <tty-editor>, start-posn :: <integer>,
+     end-posn :: <integer>, replacement :: <string>)
+ => ();
+  let str = editor-line(editor);
+  // compute new string and position
+  let new-str = replace-subsequence!
+  (str, replacement, start:  start-posn, end: end-posn);
+  let new-posn = start-posn + size(replacement);
+  // apply things to editor
+  editor-line(editor) := new-str;
+  editor-position(editor) := new-posn;
   editor-refresh-line(editor);
 end method;
 
