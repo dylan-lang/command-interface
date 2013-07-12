@@ -41,17 +41,26 @@ define class <cli-lexer-error> (<simple-error>)
     init-keyword: srcoff:;
 end class;
 
+/* Tokenize a CLI string
+ *
+ * This uses a hand-written DFA for tokenization.
+ */
 define method cli-tokenize (source :: <cli-string-source>)
  => (tokens :: <sequence>);
+  // source string to tokenize
   let string = source-string(source);
+  // collected tokens
   let tokens = #();
+  // lexer DFA state
   let state = #"initial";
 
   let collected-start = #f;
   let collected-end = #f;
   let collected-chars = #();
 
+  // helper functions
   local
+    // push a single-char token
     method push-simple (char :: <character>, offset :: <integer>)
      => ();
       let srcloc = make-source-location(source,
@@ -62,6 +71,7 @@ define method cli-tokenize (source :: <cli-string-source>)
                        srcloc: srcloc);
       tokens := add(tokens, token);
     end,
+    // collect char into current token
     method collect-char (char :: <character>, offset :: <integer>)
      => ();
       unless (collected-start)
@@ -70,6 +80,7 @@ define method cli-tokenize (source :: <cli-string-source>)
       collected-end := offset;
       collected-chars := add(collected-chars, char);
     end,
+    // push current token if there is one
     method maybe-push-collected ()
      => ();
       if (collected-start)
@@ -88,6 +99,7 @@ define method cli-tokenize (source :: <cli-string-source>)
         collected-end := #f;
       end;
     end,
+    // complain about invalid character
     method invalid (char, offset, message)
       => ();
       signal(make(<cli-lexer-error>,
@@ -98,6 +110,7 @@ define method cli-tokenize (source :: <cli-string-source>)
                   srcoff: cli-srcoff(offset, 0, offset)));
     end method;
 
+  // this is the lexer itself
   for (char in string, offset from 0)
     select (state)
       #"initial" =>
@@ -139,16 +152,23 @@ define method cli-tokenize (source :: <cli-string-source>)
     end;
   end for;
 
+  // push the final token
   if (state == #"initial")
     maybe-push-collected();
   else
     invalid(' ', size(string), "incomplete token");
   end;
 
+  // we collect in reverse order, so reverse the result
   reverse(tokens);
 end method;
 
-/* CLI source code provided as a vector of strings */
+/* CLI source code provided as a vector of strings
+ *
+ * This is intended for commands being parsed from
+ * program arguments, such as when we are in bash
+ * completion mode.
+ */
 define class <cli-vector-source> (<cli-source>)
   slot source-vector :: <sequence>,
     init-keyword: strings:;
@@ -193,9 +213,10 @@ end method;
 
 define method cli-annotate (source :: <cli-string-source>, srcloc :: <cli-srcloc>)
  => (marks :: <string>);
-  let string = concatenate(source-string(source), " "); // for final locations
+  // expand source string for final/epsilon error locations
+  let string = concatenate(source-string(source), " ");
+  // collect string with error markers
   let marks :: <string> = "";
-
   for (char in string, posn from 0)
     let srcoff = cli-srcoff(posn, 0, posn);
     if (in-source-location?(srcloc, srcoff))
@@ -204,7 +225,7 @@ define method cli-annotate (source :: <cli-string-source>, srcloc :: <cli-srcloc
       marks := concatenate!(marks, " ");
     end;
   end for;
-
+  // return the result
   marks;
 end method;
 
