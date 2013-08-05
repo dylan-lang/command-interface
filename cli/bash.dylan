@@ -52,37 +52,37 @@ define method bash-complete-command (parser :: <cli-parser>, command)
   // skip argv[0]
   command := tail(command);
   position := position - 1;
-  // create a parser
-  let src = make(<cli-vector-source>,
-                 strings: command);
-  let p = make(<cli-parser>,
-               source: src,
-               initial-node: parser-initial-node(parser));
-  // tokenize the command
-  let tokens = cli-tokenize(src);
-  // perform completion
-  let completions = #f;
-  for (t in tokens, i from 0, while: i <= position)
-    if (i == position)
-      // complete with given token
-      completions := parser-complete(p, t);
-    else
-      // advance the parser
-      block ()
+  block ()
+    // create a parser
+    let src = make(<cli-vector-source>,
+                   strings: command);
+    let p = make(<cli-parser>,
+                 source: src,
+                 initial-node: parser-initial-node(parser));
+    // tokenize the command
+    let tokens = cli-tokenize(src);
+    // perform completion
+    let completions = #f;
+    for (t in tokens, i from 0, while: i <= position)
+      if (i == position)
+        // complete with given token
+        completions := parser-complete(p, t);
+      else
+        // advance the parser
         parser-advance(p, t);
-      exception (<error>)
-        "XXX";
-      end block;
-    end
-  end for;
-  // we are completing without a token
-  if (~completions)
-    completions := parser-complete(p, #f);
-  end if;
-  // print completion
-  let all-completion-results =
-    apply(concatenate, #(), map(completion-results, completions));
-  for (completion in all-completion-results)
-    format-out("%s\n", completion);
-  end for;
+      end
+    end for;
+    // we are completing without a token
+    if (~completions)
+      completions := parser-complete(p, #f);
+    end if;
+    // print completion
+    let all-completion-results =
+      apply(concatenate, #(), map(completion-results, completions));
+    for (completion in all-completion-results)
+      format-out("%s\n", completion);
+    end for;
+  exception (<error>)
+    "XXX";
+  end block;
 end method;
