@@ -20,6 +20,12 @@ define method help-handler (parser :: <cli-parser>)
   nodes := tail(nodes);
   tokens := tail(tokens);
 
+  // print help
+  show-command-help(nodes, tokens);
+end method;
+
+define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
+  => ();
   let cmd :: false-or(<cli-command>) = #f;
   let cmd-title :: <list> = #();
   let cmd-help :: false-or(<string>) = #f;
@@ -42,5 +48,5 @@ define method help-handler (parser :: <cli-parser>)
   cmd-title := map(as-uppercase, cmd-title);
 
   format-out("\n    %s\n\n", join(cmd-title, " "));
-  format-out("    %s\n\n", cmd-help);
+  format-out("    %s\n\n", cmd-help);  
 end method;
