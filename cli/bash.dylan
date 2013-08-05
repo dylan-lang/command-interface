@@ -3,6 +3,8 @@ synopsis: Reusable bash completion.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+/* Add hidden command for bash completion to given root
+ */
 define method root-add-bash-completion (root :: <cli-root>)
  => ();
   let command = root-define-command
@@ -12,6 +14,8 @@ define method root-add-bash-completion (root :: <cli-root>)
   make-simple-param(command, #"command", repeatable?: #t);
 end method;
 
+/* Handler for the "bashcomplete" command
+ */
 define method bash-complete-handler (parser :: <cli-parser>)
  => ();
   // get arguments passed by bash
@@ -23,6 +27,9 @@ define method bash-complete-handler (parser :: <cli-parser>)
   end if;
 end method;
 
+/* Generate and print a hookscript suitable for
+ * integrating the current binary into bash completion
+ */
 define method bash-complete-hookscript ()
  => ();
   let appname = application-name();
@@ -32,6 +39,10 @@ define method bash-complete-hookscript ()
   format-out("complete -F _%s_complete %s\n", appname, appname);
 end method;
 
+/* Handler for actual bash completion
+ *
+ * This should not print anything except for simple completion result tokens.
+ */
 define method bash-complete-command (parser :: <cli-parser>, command)
  => ();
   // parse position

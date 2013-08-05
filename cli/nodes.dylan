@@ -95,16 +95,22 @@ define method node-add-successor (node :: <cli-node>, successor :: <cli-node>)
   successor;
 end method;
 
+/* Default matcher (always false)
+ */
 define method node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   #f
 end;
 
+/* Default completer (no results)
+ */
 define method node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   #();
 end method;
 
+/* Default acceptor (no-op)
+ */
 define method node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
 end method;
@@ -145,7 +151,7 @@ end method;
 
 
 /*
- * Commands are symbols with handler and parameter requirements
+ * Commands are symbols with a handler and parameter requirements
  */
 define open class <cli-command> (<cli-symbol>)
   /* help source for the command */
