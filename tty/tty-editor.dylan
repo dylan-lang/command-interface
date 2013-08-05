@@ -105,9 +105,6 @@ end method;
  */
 define method editor-complete (editor :: <tty-editor>)
  => ();
-  editor-finish(editor);
-  format-out("complete: \"%s\" at %d\n", editor-line(editor), editor-position(editor));
-  editor-refresh-line(editor);
 end method;
 
 /* Complete editor content at current position silently (space completion)
