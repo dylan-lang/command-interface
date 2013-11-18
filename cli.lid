@@ -9,6 +9,8 @@ files: cli-library
        cli/building
        cli/bash
        cli/help
+       cli/macros
+       cli/main
        cli/tty-cli
        tty/tty
        tty/tty-char

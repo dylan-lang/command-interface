@@ -182,4 +182,8 @@ define module cli
   export
     longest-common-prefix;
 
+  export
+    cli-root-definer,
+    cli-command-definer;
+
 end module;
