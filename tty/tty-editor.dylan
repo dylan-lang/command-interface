@@ -11,7 +11,8 @@ copyright: see accompanying file COPYING
  *
  */
 define class <tty-editor> (<tty-activity>)
-  slot editor-prompt :: <string> = "> ";
+  slot editor-prompt :: <string> = "> ",
+    init-keyword: prompt:;
 
   slot editor-line :: <string> = "";
   slot editor-position :: <integer> = 0;
@@ -27,7 +28,6 @@ end class;
  */
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-pause>)
  => ();
-  editor-finish(editor);
 end method;
 
 /* Perform full redraw when resumed
@@ -50,6 +50,7 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
     #"cursor-right" => editor-move(editor, +1);
     #"cursor-left" => editor-move(editor, -1);
     #"quit" =>
+      editor-finish(editor);
       if (size(editor-line(editor)) = 0)
         tty-finish-activity(tty);
       end;
@@ -77,8 +78,10 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
         end;
       end;
   end;
-  editor-maybe-refresh(editor);
-  tty-flush(tty);
+  if (tty-activity(tty) == editor)
+    editor-maybe-refresh(editor);
+    tty-flush(tty);
+  end;
 end method;
 
 /* Finish use of the TTY
@@ -120,18 +123,20 @@ end method;
 define method editor-maybe-refresh (editor :: <tty-editor>)
  => ();
   let tty = activity-tty(editor);
-  let prompt = editor-prompt(editor);
-  if(editor-dirty-line?(editor))
-    tty-cursor-column(tty, 0);
-    tty-kill-whole-line(tty);
-    tty-write(tty, prompt);
-    tty-write(tty, editor-line(editor));
+  if (tty)
+    let prompt = editor-prompt(editor);
+    if(editor-dirty-line?(editor))
+      tty-cursor-column(tty, 0);
+      tty-kill-whole-line(tty);
+      tty-write(tty, prompt);
+      tty-write(tty, editor-line(editor));
+    end;
+    if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
+      tty-cursor-column(tty, size(prompt) + editor-position(editor));
+    end;
+    editor-dirty-line?(editor) := #f;
+    editor-dirty-position?(editor) := #f;
   end;
-  if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
-    tty-cursor-column(tty, size(prompt) + editor-position(editor));
-  end;
-  editor-dirty-line?(editor) := #f;
-  editor-dirty-position?(editor) := #f;
 end method;
 
 /* Request refresh of the entire line

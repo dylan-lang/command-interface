@@ -31,6 +31,15 @@ define abstract class <tty> (<object>)
     init-keyword: error:;
 end class;
 
+define thread variable *current-tty* :: false-or(<tty>) = #f;
+
+/* Returns the current tty if called from within the event loop
+ */
+define function current-tty()
+  => (tty :: false-or(<tty>));
+  *current-tty*;
+end function;
+
 /* Prepare terminal for use
  */
 define generic tty-start (t :: <tty>)
@@ -46,7 +55,12 @@ define generic tty-finish (t :: <tty>)
 define method tty-run (t :: <tty>, a :: <tty-activity>)
   let oo = *standard-output*;
   let oe = *standard-error*;
+  let ot = *current-tty*;
   block ()
+    if (ot)
+      tty-finish(ot);
+    end;
+    *current-tty* := t;
     tty-start(t);
     *standard-output* := make(<tty-stream>, inner-stream: tty-output(t));
     *standard-error* := make(<tty-stream>, inner-stream: tty-error(t) | tty-output(t));
@@ -70,7 +84,11 @@ define method tty-run (t :: <tty>, a :: <tty-activity>)
   cleanup
     *standard-output* := oo;
     *standard-error* := oe;
+    *current-tty* := ot;
     tty-finish(t);
+    if (ot)
+      tty-start(ot);
+    end;
   end;
 end method;
 
@@ -90,7 +108,8 @@ define method tty-start-activity (t :: <tty>, a :: <tty-activity>)
   let previous = tty-activity(t);
   // pause previous
   if (previous)
-    tty-event(t, previous, <tty-activity-start>);
+    tty-event(t, previous, <tty-activity-pause>);
+    activity-tty(a) := #f;
   end;
   // set activity slots
   activity-tty(a) := t;
@@ -125,6 +144,7 @@ define method tty-finish-activity (t :: <tty>)
     activity-previous(a) := #f;
     // resume previous
     if (previous)
+      activity-tty(previous) := t;
       tty-event(t, previous, <tty-activity-resume>);
     end;
   end;
