@@ -31,7 +31,7 @@ define module tty
   use format,
     import: { format };
   use format-out,
-    import: { format-out };
+    import: { format-out, force-out };
 
   // tty
   export
@@ -100,7 +100,7 @@ define module cli
   use format,
     import: { format };
   use format-out,
-    import: { format-out };
+    import: { format-out, force-out };
   use streams,
     import: { force-output };
   // used by <cli-file>
