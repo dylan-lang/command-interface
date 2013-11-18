@@ -3,71 +3,65 @@ synopsis: Demo code.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
-define constant $cli-root = make(<cli-root>);
+define cli-root $root;
 
-root-add-bash-completion($cli-root);
-root-add-help($cli-root);
+define cli-command $root (show configuration)
+  help "Query configuration";
+end;
 
+define cli-command $root (show interface)
+  help "Query interfaces";
+  named parameter type;
+end;
 
-define variable $show-if = root-define-command($cli-root, #["show", "interface"],
-                                               help: "Query the interface database");
+define cli-command $root (show route)
+  help "Query routes";
+  named parameter destination;
+  named parameter source;
+end;
 
-// property params
-make-inline-param($show-if, #"name");
-make-named-param($show-if, #"type");
+define cli-command $root (show log)
+  help "Query logs";
+  named parameter service;
+  named parameter level;
+end;
 
+define cli-command $root (configure)
+  help "Modify configuration";
+  handler method (p :: <cli-parser>)
+            tty-start-activity(current-tty(),
+                               make(<tty-cli>,
+                                    root-node: $configure,
+                                    prompt: "config$ "));
+          end;
+end;
 
-root-define-command($cli-root, #"shell",
-                    handler:
-                      method(p :: <cli-parser>)
-                          let t = application-controlling-tty();
-                          let e = make(<tty-cli>, root-node: $cli-root);
-                          tty-run(t, e);
-                      end method);
+define cli-root $configure;
 
-define variable $show-rt = root-define-command($cli-root, #["show", "route"],
-                                               help: "Query the route database");
+define cli-command $configure (diff)
+  help "Show changes";
+end;
 
-// lookup params
-make-inline-param($show-rt, #"to");
-make-named-param($show-rt,  #"from");
+define cli-command $configure (set)
+  help "Change a parameter";
+end;
 
-// property params
-make-named-param($show-rt,  #"device");
-make-named-param($show-rt,  #"source");
-make-named-param($show-rt,  #"nexthop");
+define cli-command $configure (show)
+  help "Show configuration";
+end;
 
+define cli-command $configure (abort)
+  handler method (p :: <cli-parser>)
+            tty-finish-activity(current-tty());
+          end;
+end;
 
-let sl = root-define-command($cli-root, #["show", "log"],
-                    help: "Show system log");
-let fp = make(<cli-file>, name: #"file");
-node-add-successor(sl, fp);
+define cli-command $configure (commit)
+  handler method (p :: <cli-parser>)
+            tty-finish-activity(current-tty());
+          end;
+end;
 
-root-define-command($cli-root, #["show", "configuration"],
-                    help: "Show active system configuration");
-
-
-
-define function main (name :: <string>, arguments :: <vector>)
-  let source = make(<cli-vector-source>, strings: arguments);
-  let parser = make(<cli-parser>, source: source, initial-node: $cli-root);
-
-  let tokens = cli-tokenize(source);
-
-  block ()
-    parser-parse(parser, tokens);
-    parser-execute(parser);
-  exception (pe :: <cli-parse-error>)
-    format(*standard-error*,
-           " %s\n %s\n%s\n",
-           source-string(source),
-           cli-annotate(source,
-                        token-srcloc(pe.error-token)),
-           condition-to-string(pe));
-    force-output(*standard-error*);
-  end;
-
-  exit-application(0);
-end function main;
-
-main(application-name(), application-arguments());
+tty-cli-main(application-name(), application-arguments(),
+             application-controlling-tty(),
+             $root);
