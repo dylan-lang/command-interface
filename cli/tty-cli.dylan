@@ -178,7 +178,7 @@ define method editor-complete (editor :: <tty-cli>)
       0 =>
         begin
           editor-finish(editor);
-          format-out("No completions.\n");
+          format-out("no completions\n");
         end;
       // one completion -> insert it
       1 =>

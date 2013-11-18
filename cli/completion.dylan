@@ -1,5 +1,5 @@
 module: cli
-synopsis: CLI completion
+synopsis: CLI completion.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
