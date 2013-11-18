@@ -37,6 +37,10 @@ define module tty
   export
     <tty>,
     tty-run,
+    tty-activity,
+    tty-start-activity,
+    tty-finish-activity,
+    current-tty,
     application-controlling-tty;
 
   // tty activities
