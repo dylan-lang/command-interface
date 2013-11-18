@@ -168,7 +168,8 @@ define module cli
     <cli-file>;
 
   export
-    <tty-cli>;
+    <tty-cli>,
+    tty-cli-main;
 
   export
     root-define-command,
