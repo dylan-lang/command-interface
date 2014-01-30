@@ -230,9 +230,7 @@ define method cli-tokenize (source :: <cli-string-source>)
   end;
 
   // we collect in reverse order, so reverse the result
-  let tokens = reverse(tokens);
-  let types = map(token-type, tokens);
-  choose-by(curry(\~=, #"whitespace"), types, tokens);
+  reverse(tokens);
 end method;
 
 /* CLI source code provided as a vector of strings

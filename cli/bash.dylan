@@ -64,13 +64,15 @@ define method bash-complete-command (parser :: <cli-parser>, command)
     // perform completion
     let completions = #f;
     for (t in tokens, i from 0, while: i <= position)
-      if (i == position)
-        // complete with given token
-        completions := parser-complete(p, t);
-      else
-        // advance the parser
-        parser-advance(p, t);
-      end
+      if (token-type(t) ~= #"whitespace")
+        if (i == position)
+          // complete with given token
+          completions := parser-complete(p, t);
+        else
+          // advance the parser
+          parser-advance(p, t);
+        end;
+      end;
     end for;
     // we are completing without a token
     if (~completions)

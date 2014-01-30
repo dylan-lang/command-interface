@@ -88,13 +88,15 @@ define method editor-complete-internal (editor :: <tty-cli>)
   let parse-tokens = #();
   let complete-token = #f;
   for (token in tokens, until: true?(complete-token))
-    if (in-completion-location?(token-srcloc(token), comploff))
-      // XXX we should cut this token off at the cursor
-      //     location, probably make parser-complete()
-      //     and node-complete take a string instead of a token.
-      complete-token := token;
-    else
-      parse-tokens := add(parse-tokens, token);
+    if (token-type(token) ~= #"whitespace")
+      if (in-completion-location?(token-srcloc(token), comploff))
+        // XXX we should cut this token off at the cursor
+        //     location, probably make parser-complete()
+        //     and node-complete take a string instead of a token.
+        complete-token := token;
+      else
+        parse-tokens := add(parse-tokens, token);
+      end;
     end;
   end for;
   // parse everything before the compl token
