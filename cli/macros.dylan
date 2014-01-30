@@ -42,19 +42,24 @@ define macro cli-command-aux-definer
     { } => { }
     { ?definition; ... } => { }
   definition:
-    { help ?text:expression   } => { }
-    { handler ?:expression    } => { }
-    { named  parameter ?:name } => { }
-    { inline parameter ?:name } => { }
-    { simple parameter ?:name } => { }
+    { help ?text:expression       } => { }
+    { implementation ?:expression } => { }
+    { named  parameter ?:name     } => { }
+    { inline parameter ?:name     } => { }
+    { simple parameter ?:name     } => { }
 
   // definitions that expand into keywords
   keywords:
     { } => { }
     { ?keyword; ... } => { ?keyword, ... }
   keyword:
-    { help ?text:expression } => { help: ?text }
-    { handler ?:expression } => { handler: ?expression }
+    { help ?text:expression }
+      => { help: ?text }
+    { implementation ?:expression }
+      => { handler: method (p :: <cli-parser>)
+                      => ();
+                      ?expression
+                    end method }
     { ?other:* } => { }
 
   // definitions that define parameters

@@ -28,12 +28,11 @@ end;
 
 define cli-command $root (configure)
   help "Modify configuration";
-  handler method (p :: <cli-parser>)
-            tty-start-activity(current-tty(),
-                               make(<tty-cli>,
-                                    root-node: $configure,
-                                    prompt: "config$ "));
-          end;
+  implementation
+    tty-start-activity(current-tty(),
+                       make(<tty-cli>,
+                            root-node: $configure,
+                            prompt: "config$ "));
 end;
 
 define cli-root $configure;
@@ -51,15 +50,13 @@ define cli-command $configure (show)
 end;
 
 define cli-command $configure (abort)
-  handler method (p :: <cli-parser>)
-            tty-finish-activity(current-tty());
-          end;
+  implementation
+    tty-finish-activity(current-tty());
 end;
 
 define cli-command $configure (commit)
-  handler method (p :: <cli-parser>)
-            tty-finish-activity(current-tty());
-          end;
+  implementation
+    tty-finish-activity(current-tty());
 end;
 
 tty-cli-main(application-name(), application-arguments(),
