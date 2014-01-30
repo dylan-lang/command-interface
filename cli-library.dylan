@@ -123,6 +123,7 @@ define module cli
     <cli-srcoff>,
     // tokens
     <cli-token>,
+    token-type,
     token-string,
     token-srcloc,
     // source record ops
