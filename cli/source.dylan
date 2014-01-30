@@ -9,6 +9,8 @@ copyright: see accompanying file COPYING
 define class <cli-token> (<object>)
   slot token-string :: <string>,
     init-keyword: string:;
+  slot token-type :: <symbol> = #"unknown",
+    init-keyword: type:;
   slot token-srcloc :: <source-location>,
     init-keyword: srcloc:;
 end class;
@@ -44,6 +46,8 @@ end class;
 /* Tokenize a CLI string
  *
  * This uses a hand-written DFA for tokenization.
+ *
+ * XXX Misses line counting and line offsets in srclocs.
  */
 define method cli-tokenize (source :: <cli-string-source>)
  => (tokens :: <sequence>);
@@ -51,116 +55,187 @@ define method cli-tokenize (source :: <cli-string-source>)
   let string = source-string(source);
   // collected tokens
   let tokens = #();
+
   // lexer DFA state
   let state = #"initial";
+  // token building state
+  let ttype :: false-or(<symbol>) = #f;
+  let tstart :: <integer> = 0;
+  let tend :: <integer> = 0;
 
-  let collected-start = #f;
-  let collected-end = #f;
-  let collected-chars = #();
-
-  // helper functions
+  // these can be used at epsilon
   local
-    // push a single-char token
-    method push-simple (char :: <character>, offset :: <integer>)
-     => ();
+    method reset()
+      ttype := #f;
+      tstart := 0;
+      tend := 0;
+      state := #"initial";
+    end,
+    method reduce(remove-me :: <symbol>)
+      format-out("  reduce()\n");
       let srcloc = make-source-location(source,
-                                        offset, 0, offset,
-                                        offset, 0, offset);
+                                        tstart, 0, tstart,
+                                        tend, 0, tend);
       let token = make(<cli-token>,
-                       string: as(<string>, vector(char)),
+                       type: ttype,
+                       string: copy-sequence(string,
+                                              start: tstart,
+                                              end: tend + 1),
                        srcloc: srcloc);
+      format-out("  token \"%s\" type %= start %d end %d\n",
+                 token-string(token), token-type(token),
+                 tstart, tend);
       tokens := add(tokens, token);
-    end,
-    // collect char into current token
-    method collect-char (char :: <character>, offset :: <integer>)
-     => ();
-      unless (collected-start)
-        collected-start := offset;
-      end;
-      collected-end := offset;
-      collected-chars := add(collected-chars, char);
-    end,
-    // push current token if there is one
-    method maybe-push-collected ()
-     => ();
-      if (collected-start)
-        let str = as(<string>, reverse(collected-chars));
-        let srcloc = make-source-location(source,
-                                          collected-start, 0, collected-start,
-                                          collected-end, 0, collected-end);
+      reset();
+    end;
 
-        let token = make(<cli-token>,
-                         string: str,
-                         srcloc: srcloc);
-        tokens := add(tokens, token);
-
-        collected-chars := #();
-        collected-start := #f;
-        collected-end := #f;
-      end;
-    end,
-    // complain about invalid character
-    method invalid (char, offset, message)
-      => ();
-      signal(make(<cli-lexer-error>,
-                  format-string: "Lexical error: %s",
-                  format-arguments: vector(message),
-                  source: source,
-                  string: string,
-                  srcoff: cli-srcoff(offset, 0, offset)));
-    end method;
-
-  // this is the lexer itself
+  // the lexer itself
   for (char in string, offset from 0)
+    // someone hand me an IDE with code folding...
+    local
+      method shift(next-state)
+        format-out("  shift(%=)\n", next-state);
+        if (~ttype)
+          ttype := next-state;
+          tstart := offset;
+        end;
+        tend := offset;
+        state := next-state;
+      end,
+      method recognize(type)
+        // use this to override token type
+        // before shift() if state and type differ
+        if (~ttype)
+          ttype := type;
+          tstart := offset;
+        end
+      end,
+      method special();
+        format-out("  special()\n");
+        shift(#"special");
+        reduce(#"special");
+      end,
+      method initial()
+          case
+            char.whitespace? =>
+              shift(#"whitespace");
+            char = ';' =>
+              special();
+            char = '?' =>
+              special();
+            char = '|' =>
+              special();
+            char = '"' =>
+              shift(#"dquote");
+            char = '\\' =>
+              recognize(#"word");
+              shift(#"word-backslash");
+            char.graphic? =>
+              shift(#"word");
+            otherwise =>
+              invalid("character not allowed here");
+          end;
+      end,
+      method invalid (message)
+        => ();
+        signal(make(<cli-lexer-error>,
+                    format-string: "Lexical error: %s",
+                    format-arguments: vector(message),
+                    source: source,
+                    string: string,
+                    srcoff: cli-srcoff(offset, 0, offset)));
+      end;
+    format-out(" state %= char %= offset %d\n",
+               state, char, offset);
+    // lexer state machine (except for epsilon)
     select (state)
       #"initial" =>
+        initial();
+      #"whitespace" =>
+        if (char.whitespace?)
+          shift(#"whitespace");
+        else
+          reduce(#"whitespace");
+          initial();
+        end;
+      #"word" =>
         case
           char.whitespace? =>
-            maybe-push-collected();
+            reduce(#"word");
+            shift(#"whitespace");
+          char = ';' =>
+            reduce(#"word");
+            special();
+          char = '|' =>
+            reduce(#"word");
+            special();
           char = '"' =>
-            state := #"dquote";
-          char = '?' =>
-            if (collected-start)
-              collect-char(char, offset);
-            else
-              push-simple(char, offset);
-            end;
+            reduce(#"word");
+            shift(#"dquote");
+          char = '\\' =>
+            shift(#"word-backslash");
           char.graphic? =>
-            collect-char(char, offset);
+            shift(#"word");
           otherwise =>
-            invalid(char, offset, "character not allowed here");
+            invalid("character not allowed here");
+        end;
+      #"word-backslash" =>
+        if (char.graphic?)
+          shift(#"word");
+        else
+          invalid("character not allowed here");
         end;
       #"dquote" =>
         select (char)
           '"' =>
-            state := #"initial";
+            shift(#"dquote");
+            reduce(#"dquote");
           '\\' =>
-            state := #"dquote-backslash";
+            shift(#"dquote-backslash");
           otherwise =>
-            collect-char(char, offset);
+            shift(#"dquote");
         end;
       #"dquote-backslash" =>
-        select (char)
-          '\\', '"' =>
-            begin
-              collect-char(char, offset);
-              state := #"dquote";
-            end;
-          otherwise =>
-            invalid(char, offset, "character not allowed here");
+        if (char.graphic?)
+          shift(#"dquote");
+        else
+          invalid("character not allowed here");
         end;
     end;
+    format-out("  now in %= type %= start %d end %d\n",
+               state, ttype, tstart, tend);
   end for;
 
-  // push the final token
-  if (state == #"initial")
-    maybe-push-collected();
-  else
-    invalid(' ', size(string), "incomplete token");
+  let source-length = size(string) - 1; // XXX defensive
+  local method invalid-eof(message)
+          signal(make(<cli-lexer-error>,
+                      format-string: "Lexical error: %s",
+                      format-arguments: vector(message),
+                      source: source,
+                      string: string,
+                      srcoff: cli-srcoff(source-length, 0, source-length)));
+        end;
+
+  format-out(" state %=\n", state);
+
+  // handle epsilon / end of source
+  select (state)
+    #"initial", #"whitespace" =>
+      #f;
+    #"word" =>
+      reduce(#"word");
+    #"word-backslash" =>
+      invalid-eof("Escaping backslash at end of file");
+    #"dquote", #"dquote-backslash" =>
+      invalid-eof("Unclosed dquote at end of file");
+    otherwise =>
+      invalid-eof("BUG: Unknown lexer state at end of file");
   end;
 
   // we collect in reverse order, so reverse the result
-  reverse(tokens);
+  let tokens = reverse(tokens);
+  let types = map(token-type, tokens);
+  choose-by(curry(\~=, #"whitespace"), types, tokens);
 end method;
 
 /* CLI source code provided as a vector of strings
