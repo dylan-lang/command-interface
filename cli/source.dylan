@@ -243,10 +243,16 @@ end method;
  * This is intended for commands being parsed from
  * program arguments, such as when we are in bash
  * completion mode.
+ *
+ * With regards to source locations and the source
+ * string we simply join the strings with " ".
+ *
+ * XXX this needs to escape strings
+ *     using dquote in the source
  */
 define class <cli-vector-source> (<cli-source>)
   slot source-vector :: <sequence>,
-    init-keyword: strings:;
+    required-init-keyword: strings:;
 end class;
 
 define method source-string (source :: <cli-vector-source>)
