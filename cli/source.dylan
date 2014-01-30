@@ -95,10 +95,7 @@ define method cli-tokenize (source :: <cli-string-source>)
     local
       method shift(next-state)
         //format-out("  shift(%=)\n", next-state);
-        if (~ttype)
-          ttype := next-state;
-          tstart := offset;
-        end;
+        recognize(next-state);
         tend := offset;
         state := next-state;
       end,
