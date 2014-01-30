@@ -1,7 +1,7 @@
 module: cli-test
-synopsis: 
-author: 
-copyright: 
+synopsis: Various tests for the CLI.
+author: Ingo Albrecht <prom@berlin.ccc.de>
+copyright: see accompanying file COPYING
 
 define test cli-tokenizer-test()
   local
@@ -16,8 +16,10 @@ define test cli-tokenizer-test()
                     token-ends :: <list>)
       let source = make-source(string);
       let tokens = cli-tokenize(source);
+      // check we got the right number of tokens
       check-equal(concatenate("token count in \"", string, "\""),
                   size(token-strings), size(tokens));
+      // check against our fixtures
       check-equal(concatenate("token strings in \"", string, "\""),
                   token-strings, map(token-string, tokens));
       check-equal(concatenate("token types in \"", string, "\""),
