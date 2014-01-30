@@ -1,7 +1,6 @@
 library: cli
 files: cli-library
        cli/util
-       cli/predicate
        cli/source
        cli/parser
        cli/nodes

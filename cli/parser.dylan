@@ -137,7 +137,7 @@ define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-to
   let current-node = parser-current-node(parser);
 
   // get all non-hidden successors
-  let acceptable = choose(predicate-not(node-hidden?), node-successors(current-node));
+  let acceptable = choose(complement(node-hidden?), node-successors(current-node));
 
   // filter out non-acceptable nodes
   acceptable := choose(rcurry(node-acceptable?, parser), acceptable);
