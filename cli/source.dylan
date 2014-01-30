@@ -71,7 +71,7 @@ define method cli-tokenize (source :: <cli-string-source>)
       tend := 0;
       state := #"initial";
     end,
-    method reduce(remove-me :: <symbol>)
+    method reduce()
       //format-out("  reduce()\n");
       let srcloc = make-source-location(source,
                                         tstart, 0, tstart,
@@ -113,7 +113,7 @@ define method cli-tokenize (source :: <cli-string-source>)
       method special();
         //format-out("  special()\n");
         shift(#"special");
-        reduce(#"special");
+        reduce();
       end,
       method initial()
           case
@@ -155,22 +155,22 @@ define method cli-tokenize (source :: <cli-string-source>)
         if (char.whitespace?)
           shift(#"whitespace");
         else
-          reduce(#"whitespace");
+          reduce();
           initial();
         end;
       #"word" =>
         case
           char.whitespace? =>
-            reduce(#"word");
+            reduce();
             shift(#"whitespace");
           char = ';' =>
-            reduce(#"word");
+            reduce();
             special();
           char = '|' =>
-            reduce(#"word");
+            reduce();
             special();
           char = '"' =>
-            reduce(#"word");
+            reduce();
             shift(#"dquote");
           char = '\\' =>
             shift(#"word-backslash");
@@ -189,7 +189,7 @@ define method cli-tokenize (source :: <cli-string-source>)
         select (char)
           '"' =>
             shift(#"dquote");
-            reduce(#"dquote");
+            reduce();
           '\\' =>
             shift(#"dquote-backslash");
           otherwise =>
@@ -223,7 +223,7 @@ define method cli-tokenize (source :: <cli-string-source>)
     #"initial", #"whitespace" =>
       #f;
     #"word" =>
-      reduce(#"word");
+      reduce();
     #"word-backslash" =>
       invalid-eof("Escaping backslash at end of file");
     #"dquote", #"dquote-backslash" =>
