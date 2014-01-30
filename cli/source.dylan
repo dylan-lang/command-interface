@@ -217,9 +217,9 @@ define method cli-tokenize (source :: <cli-string-source>)
 
   // handle epsilon / end of source
   select (state)
-    #"initial", #"whitespace" =>
+    #"initial" =>
       #f;
-    #"word" =>
+    #"word", #"whitespace" =>
       reduce();
     #"word-backslash" =>
       invalid-eof("Escaping backslash at end of file");
