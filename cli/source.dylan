@@ -72,7 +72,7 @@ define method cli-tokenize (source :: <cli-string-source>)
       state := #"initial";
     end,
     method reduce(remove-me :: <symbol>)
-      format-out("  reduce()\n");
+      //format-out("  reduce()\n");
       let srcloc = make-source-location(source,
                                         tstart, 0, tstart,
                                         tend, 0, tend);
@@ -82,9 +82,9 @@ define method cli-tokenize (source :: <cli-string-source>)
                                               start: tstart,
                                               end: tend + 1),
                        srcloc: srcloc);
-      format-out("  token \"%s\" type %= start %d end %d\n",
-                 token-string(token), token-type(token),
-                 tstart, tend);
+      //format-out("  token \"%s\" type %= start %d end %d\n",
+      //           token-string(token), token-type(token),
+      //           tstart, tend);
       tokens := add(tokens, token);
       reset();
     end;
@@ -94,7 +94,7 @@ define method cli-tokenize (source :: <cli-string-source>)
     // someone hand me an IDE with code folding...
     local
       method shift(next-state)
-        format-out("  shift(%=)\n", next-state);
+        //format-out("  shift(%=)\n", next-state);
         if (~ttype)
           ttype := next-state;
           tstart := offset;
@@ -111,7 +111,7 @@ define method cli-tokenize (source :: <cli-string-source>)
         end
       end,
       method special();
-        format-out("  special()\n");
+        //format-out("  special()\n");
         shift(#"special");
         reduce(#"special");
       end,
@@ -145,8 +145,8 @@ define method cli-tokenize (source :: <cli-string-source>)
                     string: string,
                     srcoff: cli-srcoff(offset, 0, offset)));
       end;
-    format-out(" state %= char %= offset %d\n",
-               state, char, offset);
+    //format-out(" state %= char %= offset %d\n",
+    //           state, char, offset);
     // lexer state machine (except for epsilon)
     select (state)
       #"initial" =>
@@ -202,8 +202,8 @@ define method cli-tokenize (source :: <cli-string-source>)
           invalid("character not allowed here");
         end;
     end;
-    format-out("  now in %= type %= start %d end %d\n",
-               state, ttype, tstart, tend);
+    //format-out("  now in %= type %= start %d end %d\n",
+    //           state, ttype, tstart, tend);
   end for;
 
   let source-length = size(string) - 1; // XXX defensive
@@ -216,7 +216,7 @@ define method cli-tokenize (source :: <cli-string-source>)
                       srcoff: cli-srcoff(source-length, 0, source-length)));
         end;
 
-  format-out(" state %=\n", state);
+  //format-out(" state %=\n", state);
 
   // handle epsilon / end of source
   select (state)
