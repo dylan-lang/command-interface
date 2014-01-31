@@ -42,8 +42,8 @@ define macro cli-command-aux-definer
     { } => { }
     { help ?text:expression; ...       } => { }
     { implementation ?:expression; ... } => { }
-    { ?parameter-adjectives parameter ?:name; ... } => { }
-    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... } => { }
+    { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... } => { }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... } => { }
 
   // definitions that expand into keywords
   keywords:
@@ -60,10 +60,10 @@ define macro cli-command-aux-definer
   // definitions that define parameters
   parameters:
     { } => { }
-    { ?parameter-adjectives parameter ?:name; ... }
-      => { make-param(%command, ?#"name", ?parameter-adjectives); ... }
-    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... }
-      => { make-param(%command, ?#"name", type: ?type, ?parameter-adjectives); ... }
+    { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... }
+      => { make-param(%command, ?#"name", ?parameter-options, ?parameter-adjectives); ... }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... }
+      => { make-param(%command, ?#"name", node-class: ?type, ?parameter-options, ?parameter-adjectives); ... }
     { ?other:*; ... } => { ... }
 
   // parameter adjectives
@@ -72,5 +72,10 @@ define macro cli-command-aux-definer
     { named ... } => { syntax: #"named", ... }
     { inline ... } => { syntax: #"inline", ... }
     { simple ... } => { syntax: #"simple", ... }
+
+  // parameter options
+  parameter-options:
+    { #rest ?all:* }
+      => { ?all }
 
 end macro;
