@@ -251,6 +251,11 @@ end class;
 
 /*
  * Parameter pointing to a file
+ *
+ * XXX This is still flawed in many ways.
+ *     It works around locator limitations,
+ *     doesn't deal well with symlinks
+ *     and implements ~, . and .. using hacks.
  */
 define class <cli-file> (<cli-parameter>)
   slot file-accept-directory? :: <boolean> = #f,
@@ -321,7 +326,7 @@ define method node-complete (node :: <cli-file>, parser :: <cli-parser>, token :
   // filter out files if we don't want them
   // we don't do this for directories because they lead to files
   if (~file-accept-file?(node))
-    completions := choose(rcurry(instance?, <file-locator>), completions);
+    completions := choose(complement(rcurry(instance?, <file-locator>)), completions);
   end;
 
   // if we have only one completion and it is
@@ -344,7 +349,7 @@ define method node-accept (node :: <cli-file>, parser :: <cli-parser>, token :: 
  => ();
   next-method();
   let str = token-string(token);
-  if (~file-exists?(str))
+  if (file-must-exist?(node) & ~file-exists?(str))
     error("File does not exist");
   end;
 end method;
@@ -354,6 +359,13 @@ define class <cli-oneof> (<cli-parameter>)
   slot node-alternatives :: <list>,
     required-init-keyword: alternatives:;
 end class;
+
+define method initialize (node :: <cli-oneof>, #rest keys, #key, #all-keys)
+  => ();
+  next-method();
+  // lowercase the alternatives (XXX should canonicalize unicode)
+  node-alternatives(node) := map(as-lowercase, node-alternatives(node));
+end method;
 
 define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
