@@ -53,8 +53,6 @@ define macro cli-command-aux-definer
     { implementation ?:expression; ... }
       => { handler: method (p :: <cli-parser>)
                       => ();
-                      format-out("\n\nXXX\n\n");
-                      force-out();
                       ?expression
                     end method, ... }
     { ?parameter-adjectives parameter ?:name; ... } => { ... }
