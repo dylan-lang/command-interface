@@ -8,11 +8,11 @@ copyright: see accompanying file COPYING
 
 define class <cli-token> (<object>)
   slot token-string :: <string>,
-    init-keyword: string:;
-  slot token-type :: <symbol> = #"unknown",
-    init-keyword: type:;
+    required-init-keyword: string:;
+  slot token-type :: <symbol>,
+    required-init-keyword: type:;
   slot token-srcloc :: <source-location>,
-    init-keyword: srcloc:;
+    required-init-keyword: srcloc:;
 end class;
 
 
