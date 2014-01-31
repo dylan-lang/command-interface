@@ -52,21 +52,19 @@ define macro cli-command-aux-definer
       => { help: ?text, ... }
     { implementation ?:expression; ... }
       => { handler: method (p :: <cli-parser>)
-                      => ();
+                     => ();
                       ?expression
                     end method, ... }
-    { ?parameter-adjectives parameter ?:name; ... } => { ... }
-    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... } => { ... }
+    { ?other:*; ... } => { ... }
 
   // definitions that define parameters
   parameters:
     { } => { }
-    { help ?text:expression; ...       } => { ... }
-    { implementation ?:expression; ... } => { ... }
     { ?parameter-adjectives parameter ?:name; ... }
       => { make-param(%command, ?#"name", ?parameter-adjectives); ... }
     { ?parameter-adjectives parameter ?:name :: ?type:expression; ... }
       => { make-param(%command, ?#"name", type: ?type, ?parameter-adjectives); ... }
+    { ?other:*; ... } => { ... }
 
   // parameter adjectives
   parameter-adjectives:
