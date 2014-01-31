@@ -5,12 +5,20 @@ copyright: see accompanying file COPYING
 
 define cli-root $root;
 
+define cli-command $root (directory)
+  help "Show information about directory";
+  implementation
+    format-out("Nothing to show...\n");
+  simple parameter directory :: <cli-file>,
+    accept-file?: #f,
+    must-exist?: #t;
+end;
+
 define cli-command $root (show configuration)
   help "Query configuration";
   implementation
     format-out("Nothing to show...\n");
 end;
-
 
 define cli-command $root (show interface)
   help "Query interfaces";
@@ -29,8 +37,10 @@ end;
 
 define cli-command $root (show log)
   help "Query logs";
-  named parameter service;
-  named parameter level;
+  named parameter service :: <cli-oneof>,
+    alternatives: #("dhcp-server","dhcp-client","kernel");
+  named parameter level :: <cli-oneof>,
+    alternatives: #("fatal","error","warning","notice","info","debug","trace");
   implementation
     format-out("Nothing to show...\n");
 end;
