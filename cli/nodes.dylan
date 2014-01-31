@@ -124,6 +124,16 @@ end method;
 define class <cli-root> (<cli-node>)
 end class;
 
+define method node-match (node :: <cli-root>, parser :: <cli-parser>, token :: <cli-token>)
+ => (matched? :: <boolean>);
+  error("BUG: Tried to match a CLI root node");
+end;
+
+define method node-complete (node :: <cli-root>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+  error("BUG: Tried to complete a CLI root node");
+end method;
+
 
 /* A fixed string
  *
