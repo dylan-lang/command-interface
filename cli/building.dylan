@@ -61,7 +61,7 @@ end method;
 define function make-param (anchor :: <cli-command>, name :: <symbol>,
                             #rest keys,
                             #key syntax :: <symbol> = #"named",
-                                 node-class :: <class> = <cli-parameter>,
+                                 node-class :: <class> = <cli-string>,
                             #all-keys)
  => (entry :: <cli-node>);
   select (syntax)
@@ -73,7 +73,7 @@ define function make-param (anchor :: <cli-command>, name :: <symbol>,
 end;
 
 define function make-simple-param (anchor :: <cli-command>, name :: <symbol>,
-                                   #rest keys, #key node-class :: <class> = <cli-parameter>, #all-keys)
+                                   #rest keys, #key node-class :: <class> = <cli-string>, #all-keys)
  => (entry :: <cli-node>);
   let param = apply(make, node-class,
                     name:, name,
@@ -86,7 +86,7 @@ define function make-simple-param (anchor :: <cli-command>, name :: <symbol>,
 end function;
 
 define method make-named-param (anchor :: <cli-command>, names :: <sequence>,
-                                #rest keys, #key node-class :: <class> = <cli-parameter>, #all-keys)
+                                #rest keys, #key node-class :: <class> = <cli-string>, #all-keys)
  => (param :: <cli-node>, symbols :: <sequence>);
   let param = apply(make, node-class,
                     name:, element(names, 0),
