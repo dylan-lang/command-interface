@@ -40,6 +40,7 @@ end class;
 
 define method initialize (parser :: <cli-parser>, #rest keys, #key, #all-keys)
  => ();
+  next-method();
   parser-current-node(parser) := parser-initial-node(parser);
 end method;
 
