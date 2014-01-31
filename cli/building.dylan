@@ -58,6 +58,19 @@ define method root-define-command (root :: <cli-root>, name :: <symbol>,
 end method;
 
 
+define function make-param (anchor :: <cli-command>, name :: <symbol>,
+                            #rest keys,
+                            #key syntax :: <symbol> = #"named",
+                            #all-keys)
+ => (entry :: <cli-node>);
+  select (syntax)
+      #"named" => apply(make-named-param, anchor, name, keys);
+      #"simple" => apply(make-simple-param, anchor, name, keys);
+      #"inline" => apply(make-inline-param, anchor, name, keys);
+      otherwise => error("Invalid parameter syntax %=", syntax);
+  end;
+end;
+
 define function make-simple-param (anchor :: <cli-command>, name :: <symbol>,
                                    #rest keys, #key node-class :: <class> = <cli-parameter>, #all-keys)
  => (entry :: <cli-node>);

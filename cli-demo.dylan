@@ -7,23 +7,32 @@ define cli-root $root;
 
 define cli-command $root (show configuration)
   help "Query configuration";
+  implementation
+    format-out("Nothing to show...\n");
 end;
+
 
 define cli-command $root (show interface)
   help "Query interfaces";
   named parameter type;
+  implementation
+    format-out("Nothing to show...\n");
 end;
 
 define cli-command $root (show route)
   help "Query routes";
   named parameter destination;
   named parameter source;
+  implementation
+    format-out("Nothing to show...\n");
 end;
 
 define cli-command $root (show log)
   help "Query logs";
   named parameter service;
   named parameter level;
+  implementation
+    format-out("Nothing to show...\n");
 end;
 
 define cli-command $root (configure)
@@ -58,6 +67,7 @@ define cli-command $configure (commit)
   implementation
     tty-finish-activity(current-tty());
 end;
+
 
 tty-cli-main(application-name(), application-arguments(),
              application-controlling-tty(),

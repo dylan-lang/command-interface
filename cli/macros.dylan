@@ -40,36 +40,41 @@ define macro cli-command-aux-definer
   // all definitions (syntax check)
   definitions:
     { } => { }
-    { ?definition; ... } => { }
-  definition:
-    { help ?text:expression       } => { }
-    { implementation ?:expression } => { }
-    { named  parameter ?:name     } => { }
-    { inline parameter ?:name     } => { }
-    { simple parameter ?:name     } => { }
+    { help ?text:expression; ...       } => { }
+    { implementation ?:expression; ... } => { }
+    { ?parameter-adjectives parameter ?:name; ... } => { }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... } => { }
 
   // definitions that expand into keywords
   keywords:
     { } => { }
-    { ?keyword; ... } => { ?keyword, ... }
-  keyword:
-    { help ?text:expression }
-      => { help: ?text }
-    { implementation ?:expression }
+    { help ?text:expression; ... }
+      => { help: ?text, ... }
+    { implementation ?:expression; ... }
       => { handler: method (p :: <cli-parser>)
                       => ();
+                      format-out("\n\nXXX\n\n");
+                      force-out();
                       ?expression
-                    end method }
-    { ?other:* } => { }
+                    end method, ... }
+    { ?parameter-adjectives parameter ?:name; ... } => { }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... } => { }
 
   // definitions that define parameters
   parameters:
     { } => { }
-    { ?parameter; ... } => { ?parameter; ... }
-  parameter:
-    { named  parameter ?:name } => { make-named-param(%command, ?#"name")  }
-    { inline parameter ?:name } => { make-inline-param(%command, ?#"name") }
-    { simple parameter ?:name } => { make-simple-param(%command, ?#"name") }
-    { ?other:* } => { #f }
+    { help ?text:expression; ...       } => { }
+    { implementation ?:expression; ... } => { }
+    { ?parameter-adjectives parameter ?:name; ... }
+      => { make-param(%command, ?#"name", ?parameter-adjectives); ... }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression; ... }
+      => { make-param(%command, ?#"name", type: ?type, ?parameter-adjectives); ... }
+
+  // parameter adjectives
+  parameter-adjectives:
+    { } => { }
+    { named ... } => { syntax: #"named", ... }
+    { inline ... } => { syntax: #"inline", ... }
+    { simple ... } => { syntax: #"simple", ... }
 
 end macro;
