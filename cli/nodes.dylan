@@ -205,10 +205,9 @@ define method node-successors (node :: <cli-wrapper>)
 end method;
 
 
-/*
- * A captured parameter
+/* A captured parameter
  */
-define open class <cli-parameter> (<cli-node>)
+define open abstract class <cli-parameter> (<cli-node>)
   slot parameter-name :: <symbol>,
     init-keyword: name:;
   slot parameter-anchor :: false-or(<cli-node>) = #f,
@@ -252,11 +251,51 @@ define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>
 end method;
 
 
-/*
- * Simple string parameter
+/* Simple string parameter
  */
 define class <cli-string> (<cli-parameter>)
 end class;
+
+
+/* One-of parameters
+ *
+ * Allows any of the given alternatives.
+ */
+define class <cli-oneof> (<cli-parameter>)
+  slot oneof-case-sensitive? :: <boolean> = #f,
+    init-keyword: case-sensitive?:;
+  slot oneof-alternatives :: <list>,
+    required-init-keyword: alternatives:;
+end class;
+
+define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
+ => (matched? :: <boolean>);
+  let string = token-string(token);
+  unless (oneof-case-sensitive?(node))
+    string := as-lowercase(string);
+  end;
+  let alts = map(curry(as, <string>), oneof-alternatives(node));
+  unless (oneof-case-sensitive?(node))
+    alts := map(as-lowercase, alts);
+  end;
+  let found = choose(rcurry(starts-with?, string), alts);
+  ~empty?(found);
+end method;
+
+define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+ => (completions :: <list>);
+  let alts = map(curry(as, <string>), oneof-alternatives(node));
+  if (token)
+    let string = token-string(token);
+    unless (oneof-case-sensitive?(node))
+      alts := map(as-lowercase, alts);
+      string := as-lowercase(string);
+    end;
+    choose(rcurry(starts-with?, string), alts);
+  else
+    alts;
+  end;
+end method;
 
 
 /*
@@ -361,37 +400,5 @@ define method node-accept (node :: <cli-file>, parser :: <cli-parser>, token :: 
   let str = token-string(token);
   if (file-must-exist?(node) & ~file-exists?(str))
     error("File does not exist");
-  end;
-end method;
-
-
-define class <cli-oneof> (<cli-parameter>)
-  slot node-alternatives :: <list>,
-    required-init-keyword: alternatives:;
-end class;
-
-define method initialize (node :: <cli-oneof>, #rest keys, #key, #all-keys)
-  => ();
-  next-method();
-  // lowercase the alternatives (XXX should canonicalize unicode)
-  node-alternatives(node) := map(as-lowercase, node-alternatives(node));
-end method;
-
-define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
- => (matched? :: <boolean>);
-  let string = as-lowercase(token-string(token));
-  let alts = map(curry(as, <string>), node-alternatives(node));
-  let found = choose(rcurry(starts-with?, string), alts);
-  ~empty?(found);
-end method;
-
-define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
- => (completions :: <list>);
-  let alts = map(curry(as, <string>), node-alternatives(node));
-  if (token)
-    let string = as-lowercase(token-string(token));
-    choose(rcurry(starts-with?, string), alts);
-  else
-    alts;
   end;
 end method;
