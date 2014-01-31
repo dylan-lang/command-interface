@@ -352,7 +352,7 @@ end method;
 
 define class <cli-oneof> (<cli-parameter>)
   slot node-alternatives :: <list>,
-    init-keyword: alternatives:;
+    required-init-keyword: alternatives:;
 end class;
 
 define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
