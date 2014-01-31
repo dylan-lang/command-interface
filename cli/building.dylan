@@ -61,6 +61,7 @@ end method;
 define function make-param (anchor :: <cli-command>, name :: <symbol>,
                             #rest keys,
                             #key syntax :: <symbol> = #"named",
+                                 node-class :: <class> = <cli-parameter>,
                             #all-keys)
  => (entry :: <cli-node>);
   select (syntax)
