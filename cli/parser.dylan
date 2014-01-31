@@ -3,6 +3,8 @@ synopsis: CLI phrase parser and completer.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+/* PARSE ERRORS */
+
 define class <cli-parse-error> (<simple-error>)
   slot error-parser :: <cli-parser>,
     init-keyword: parser:;
@@ -16,6 +18,8 @@ end class;
 define class <cli-unknown-error> (<cli-parse-error>)
 end class;
 
+
+/* PARSER */
 
 define class <cli-parser> (<object>)
   slot parser-source :: <cli-source>,
@@ -39,6 +43,14 @@ define method initialize (parser :: <cli-parser>, #rest keys, #key, #all-keys)
   parser-current-node(parser) := parser-initial-node(parser);
 end method;
 
+/* Execute the parsed command
+ *
+ * This will call the OUTERMOST handler.
+ *
+ * XXX we should expose a next-handler somehow
+ *     so we can have wrapper commands like
+ *     "with-log $logfile $command"
+ */
 define method parser-execute (parser :: <cli-parser>)
  => ();
   let handlers = reverse(parser-handlers(parser));
@@ -48,6 +60,11 @@ define method parser-execute (parser :: <cli-parser>)
   end;
 end method;
 
+/* Parse the given token sequence
+ *
+ * Iterates over tokens and performs our regular phrase parse.
+ * 
+ */
 define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
  => ();
   for (token in tokens)
@@ -91,7 +108,8 @@ define method parser-push-node (parser :: <cli-parser>, token :: <cli-token>, no
   node;
 end method;
 
-
+/* Advance the parser by one step
+ */
 define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
   let current-node = parser-current-node(parser);
   // filter out non-acceptable nodes
@@ -129,24 +147,21 @@ define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
                   parser: parser,
                   token: token));
   end select;
-
 end method;
 
+/* Perform completion on the current parser state
+ */
 define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <sequence>);
   let current-node = parser-current-node(parser);
-
   // get all non-hidden successors
   let acceptable = choose(complement(node-hidden?), node-successors(current-node));
-
   // filter out non-acceptable nodes
   acceptable := choose(rcurry(node-acceptable?, parser), acceptable);
-
   // filter with token if available
   if (token)
     acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
-
   // collect completions from each node
   local method completion-for-node (node :: <cli-node>)
          => (completion :: <cli-completion>);
@@ -155,7 +170,6 @@ define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-to
                results: node-complete(node, parser, token));
         end method;
   let completions = map(completion-for-node, acceptable);
-
   // return
   completions;
 end method;
