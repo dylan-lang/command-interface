@@ -274,6 +274,7 @@ define method cli-tokenize (source :: <cli-vector-source>)
          token-end, 0, token-end);
 
     let token = make(<cli-token>,
+                     type: #"string", // XXX this isn't right of course, we should really be implementing vector source using string source at some point
                      string: string,
                      srcloc: srcloc);
 
