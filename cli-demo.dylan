@@ -22,7 +22,12 @@ end;
 
 define cli-command $root (show interface)
   help "Query interfaces";
-  named parameter type;
+  simple parameter name :: <cli-oneof>,
+    alternatives: #("eth0", "eth1", "eth2", "eth3");
+  named parameter type :: <cli-oneof>,
+    alternatives: #("ethernet","atm");
+  named parameter protocol :: <cli-oneof>,
+    alternatives: #("ip","ip4","ip6","lldp");
   implementation
     format-out("Nothing to show...\n");
 end;
@@ -58,26 +63,46 @@ define cli-root $configure;
 
 define cli-command $configure (diff)
   help "Show changes";
+  implementation
+    format-out("Configuration unchanged.\n");
 end;
 
 define cli-command $configure (set)
   help "Change a parameter";
+  implementation
+    format-out("Not implemented...\n");
 end;
 
 define cli-command $configure (show)
   help "Show configuration";
+  implementation
+    format-out("Nothing to show...\n");
+end;
+
+define cli-command $configure (remark)
+  help "Add remark on current config transaction";
+  implementation
+    format-out("Not implemented...\n");
+  simple parameter remark;
 end;
 
 define cli-command $configure (abort)
+  help "Abort current config transaction";
   implementation
-    tty-finish-activity(current-tty());
+    begin
+      format-out("Aborting configuration change.\n");
+      tty-finish-activity(current-tty());
+    end;
 end;
 
 define cli-command $configure (commit)
+  help "Commit current config transaction";
   implementation
-    tty-finish-activity(current-tty());
+    begin
+      format-out("Not really doing anything but we might...\n");
+      tty-finish-activity(current-tty());
+    end;
 end;
-
 
 tty-cli-main(application-name(), application-arguments(),
              application-controlling-tty(),
