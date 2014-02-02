@@ -17,18 +17,23 @@ define macro cli-command-definer
       ?definitions:*
     end }
     => { define cli-command-aux ?root (?symbols)
-           (?definitions) (?definitions) (?definitions)
+           (?definitions) (?definitions) (?definitions) (?definitions) (?definitions)
          end }
 end macro;
 
 define macro cli-command-aux-definer
   { define cli-command-aux ?root:name (?symbols)
-      (?definitions) (?keywords) (?parameters)
+      (?definitions) (?bindings) (?implementation) (?keywords) (?parameters)
     end }
     => { begin
            let %root :: <cli-root> = ?root;
            let %symbols :: <list> = #(?symbols);
-           let %command = root-define-command(%root, %symbols, ?keywords);
+           let %handler = method (%parser :: <cli-parser>)
+                           => ();
+                            ?bindings;
+                            ?implementation;
+                          end method;
+           let %command = root-define-command(%root, %symbols, handler: %handler, ?keywords);
            ?parameters
          end }
 
@@ -45,16 +50,27 @@ define macro cli-command-aux-definer
     { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... } => { }
     { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... } => { }
 
+  // parameter bindings
+  bindings:
+    { } => { }
+    { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... }
+      => { let ?name = parser-get-parameter(%parser, ?#"name"); ... }
+    { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... }
+      => { let ?name = parser-get-parameter(%parser, ?#"name"); ... }
+    { ?other:*; ... } => { ... }
+
+  // command implementation
+  implementation:
+    { } => { }
+    { implementation ?:expression; ... }
+      => { ?expression; ... }
+    { ?other:*; ... } => { ... }
+
   // definitions that expand into keywords
   keywords:
     { } => { }
     { help ?text:expression; ... }
       => { help: ?text, ... }
-    { implementation ?:expression; ... }
-      => { handler: method (p :: <cli-parser>)
-                     => ();
-                      ?expression
-                    end method, ... }
     { ?other:*; ... } => { ... }
 
   // definitions that define parameters

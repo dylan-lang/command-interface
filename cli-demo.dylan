@@ -37,7 +37,7 @@ define cli-command $root (show route)
   named parameter destination;
   named parameter source;
   implementation
-    format-out("Nothing to show...\n");
+    format-out("Nothing to show...\n src %= dst %= \n", source, destination);
 end;
 
 define cli-command $root (show log)
