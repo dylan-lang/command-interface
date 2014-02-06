@@ -126,8 +126,6 @@ end method;
 /* Begin executing the given TTY activity
  *
  * This will finish the current activity and continue in the previous one.
- *
- * XXX this should quit if there is no activity left
  */
 define method tty-finish-activity (t :: <tty>)
  => ();
