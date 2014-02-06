@@ -32,7 +32,7 @@ define constant $cli-priority-default   =  0;
  *
  */
 define abstract class <cli-node> (<object>)
-  /* possible successors */
+  /* possible (static) successors */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
   /* match and completion priority */
@@ -216,6 +216,19 @@ define open abstract class <cli-parameter> (<cli-node>)
     init-keyword: mandatory?:;
 end class;
 
+/* Parameters can be converted to values
+ *
+ * By default they convert to simple strings.
+ */
+define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
+ => (value :: <object>);
+  token-string(token);
+end method;
+
+/* Parameters have the successors of their anchor in addition to their own
+ *
+ * This is what allows having several parameters.
+ */ 
 define method node-successors (node :: <cli-parameter>)
  => (successors :: <sequence>);
   if (parameter-anchor(node))
@@ -225,11 +238,15 @@ define method node-successors (node :: <cli-parameter>)
   end
 end method;
 
+/* Parameters match any token by default
+ */
 define method node-match (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
  => (matched? :: <boolean>);
   #t
 end method;
 
+/* Parameters complete only to themselves
+ */
 define method node-complete (node :: <cli-parameter>, parser :: <cli-parser>, token :: false-or(<cli-token>))
  => (completions :: <list>);
   if (token)
@@ -239,15 +256,12 @@ define method node-complete (node :: <cli-parameter>, parser :: <cli-parser>, to
   end
 end method;
 
+/* Parameters get registered as such when accepted
+ */
 define method node-accept (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
  => ();
   next-method();
   parser-push-param(parser, node, parameter-convert(parser, node, token));
-end method;
-
-define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
- => (value :: <object>);
-  token-string(token);
 end method;
 
 
