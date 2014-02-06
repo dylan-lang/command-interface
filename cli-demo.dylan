@@ -5,13 +5,19 @@ copyright: see accompanying file COPYING
 
 define cli-root $root;
 
+define cli-command $root (quit)
+  help "Quit the shell";
+  implementation
+      tty-finish-activity(current-tty());
+end;
+
 define cli-command $root (directory)
   help "Show information about directory";
-  implementation
-    format-out("Nothing to show...\n");
   simple parameter directory :: <cli-file>,
     accept-file?: #f,
     must-exist?: #t;
+  implementation
+    format-out("Nothing to show...\n");
 end;
 
 define cli-command $root (show configuration)
