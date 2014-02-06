@@ -70,12 +70,7 @@ define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
  => ();
   for (token in tokens)
     if (token-type(token) ~= #"whitespace")
-      if (token-string(token) = "?")
-        let completions = parser-complete(parser, #f);
-        format-out("completions: %=\n", completions);
-      else
-        parser-advance(parser, token);
-      end;
+      parser-advance(parser, token);
     end;
   end for;
 end method;
