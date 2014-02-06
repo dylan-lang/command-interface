@@ -98,5 +98,6 @@ define function finish-controlling-tty ()
  => ();
   if (*controlling-tty*)
     tty-finish(*controlling-tty*);
+    *controlling-tty* := #f;
   end;
 end function;
