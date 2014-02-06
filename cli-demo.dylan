@@ -13,7 +13,8 @@ end;
 
 define cli-command $root (directory)
   help "Show information about directory";
-  simple parameter directory :: <cli-file>,
+  simple parameter directory :: <string>,
+    node-class: <cli-file>,
     accept-file?: #f,
     must-exist?: #t;
   implementation
@@ -28,11 +29,14 @@ end;
 
 define cli-command $root (show interface)
   help "Query interfaces";
-  simple parameter name :: <cli-oneof>,
+  simple parameter name :: <string>,
+    node-class: <cli-oneof>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
-  named parameter type :: <cli-oneof>,
+  named parameter type :: <string>,
+    node-class: <cli-oneof>,
     alternatives: #("ethernet","atm");
-  named parameter protocol :: <cli-oneof>,
+  named parameter protocol :: <string>,
+    node-class: <cli-oneof>,
     alternatives: #("ip","ip4","ip6","lldp");
   implementation
     format-out("Nothing to show...\n");
@@ -40,17 +44,19 @@ end;
 
 define cli-command $root (show route)
   help "Query routes";
-  named parameter destination;
-  named parameter source;
+  named parameter destination :: <symbol>;
+  named parameter source :: <symbol>;
   implementation
     format-out("Nothing to show...\n src %= dst %= \n", source, destination);
 end;
 
 define cli-command $root (show log)
   help "Query logs";
-  named parameter service :: <cli-oneof>,
+  named parameter service :: <string>,
+    node-class: <cli-oneof>,
     alternatives: #("dhcp-server","dhcp-client","kernel");
-  named parameter level :: <cli-oneof>,
+  named parameter level :: <string>,
+    node-class: <cli-oneof>,
     alternatives: #("fatal","error","warning","notice","info","debug","trace");
   implementation
     format-out("Nothing to show...\n");

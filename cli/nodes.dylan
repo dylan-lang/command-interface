@@ -214,6 +214,8 @@ define open abstract class <cli-parameter> (<cli-node>)
     init-keyword: anchor:;
   slot parameter-mandatory? :: <boolean> = #f,
     init-keyword: mandatory?:;
+  slot parameter-value-type :: <type> = <string>,
+    init-keyword: value-type:;
 end class;
 
 /* Parameters can be converted to values
@@ -222,7 +224,7 @@ end class;
  */
 define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
  => (value :: <object>);
-  token-string(token);
+  as(parameter-value-type(node), token-string(token));
 end method;
 
 /* Parameters have the successors of their anchor in addition to their own

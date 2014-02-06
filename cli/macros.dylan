@@ -79,7 +79,7 @@ define macro cli-command-aux-definer
     { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... }
       => { make-param(%command, ?#"name", ?parameter-options, ?parameter-adjectives); ... }
     { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... }
-      => { make-param(%command, ?#"name", node-class: ?type, ?parameter-options, ?parameter-adjectives); ... }
+      => { make-param(%command, ?#"name", value-type: ?type, ?parameter-options, ?parameter-adjectives); ... }
     { ?other:*; ... } => { ... }
 
   // parameter adjectives
