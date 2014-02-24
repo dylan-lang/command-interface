@@ -31,6 +31,8 @@ define abstract class <tty> (<object>)
     init-keyword: error:;
 end class;
 
+/* Represents the "current" tty for this thread
+ */
 define thread variable *current-tty* :: false-or(<tty>) = #f;
 
 /* Returns the current tty if called from within the event loop

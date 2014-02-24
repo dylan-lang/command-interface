@@ -185,15 +185,13 @@ define cli-command $dylan-cli (build)
                          save-databases?: #t,
                          progress-callback:    curry(note-build-progress, $cli, p),
                          warning-callback:     curry(note-compiler-warning, $cli, p),
-                         error-handler:        curry(compiler-condition-handler, $cli)
-                           ))
+                         error-handler:        curry(compiler-condition-handler, $cli)))
           link-project
             (p,
              build-script: default-build-script(),
              process-subprojects?: #t,
              progress-callback:    curry(note-build-progress, $cli, p),
              error-handler:        curry(compiler-condition-handler, $cli));
-          
         end;
       end;
     end;
