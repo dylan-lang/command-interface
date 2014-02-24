@@ -129,6 +129,20 @@ define cli-command $dylan-cli (show dylan copyright)
 end;
 
 define cli-command $dylan-cli (show project)
+  simple parameter project :: <string>,
+    node-class: <cli-dylan-project>;
+  implementation
+    begin
+      let p = dylan-project($cli, project);
+      if (p)
+        format-out("Project %s\n\n", project-name(p));
+        format-out("  class %s\n", object-class(p));
+        format-out("  directory %s\n", project-directory(p));
+      end;
+      for (p in open-projects())
+        format-out("Open %s\n", project-name(p));
+      end;
+    end;
 end;
 
 define cli-command $dylan-cli (open)
