@@ -3,6 +3,46 @@ synopsis: Various tests for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file COPYING
 
+define cli-root $simple-root;
+
+define variable progress :: <symbol> = #"init";
+
+define cli-command $simple-root (simple one)
+  simple parameter alpha;
+  implementation
+    begin
+      progress := #"one";
+      check-equal("Value of alpha", "alpha-value", alpha);
+    end;
+end;
+
+define cli-command $simple-root (simple two)
+  named parameter alpha;
+  named parameter beta;
+  implementation
+    begin
+      progress := #"two";
+      check-equal("Value of alpha", "alpha-value", alpha);
+      check-equal("Value of beta",  "beta-value", beta);
+    end;
+end;
+
+define cli-command $simple-root (simple three)
+  simple parameter alpha;
+  simple parameter beta;
+  implementation
+    begin
+      progress := #"three";
+      check-equal("Value of alpha", "alpha-value", alpha);
+      check-equal("Value of beta",  "beta-value", beta);
+    end;
+end;
+
+define test cli-integration-test()
+  
+end;
+
+
 define test cli-tokenizer-test()
   local
     method make-source(string :: <string>)
