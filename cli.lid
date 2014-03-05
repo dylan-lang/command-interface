@@ -1,4 +1,5 @@
 library: cli
+target-type: dll
 files: cli-library
        cli/util
        cli/source
