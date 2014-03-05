@@ -1,7 +1,7 @@
 module: cli
 synopsis: TTY activity for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define class <tty-cli> (<tty-editor>)
   slot tty-cli-root-node :: <cli-node>,

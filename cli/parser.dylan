@@ -1,7 +1,7 @@
 module: cli
 synopsis: CLI phrase parser and completer.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 /* PARSE ERRORS */
 

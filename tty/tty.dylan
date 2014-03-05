@@ -1,7 +1,7 @@
 module: tty
 synopsis: TTY base class and generics.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 /* Numeric parser state for ANSI parser
  */

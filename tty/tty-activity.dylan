@@ -1,7 +1,7 @@
 module: tty
 synopsis: TTY activity abstraction.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 /* Activities are interactive components that use a TTY
  *

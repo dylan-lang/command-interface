@@ -1,7 +1,7 @@
 module: tty
 synposis: TTY wrapper streams.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 /* STDIO wrapper stream for TTY raw mode
  *

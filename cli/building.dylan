@@ -1,7 +1,7 @@
 module: cli
 synopsis: Utilities for constructing CLI node structures.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define method root-define-command (root :: <cli-root>, name :: <sequence>,
                                    #rest node-keys,

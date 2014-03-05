@@ -1,7 +1,7 @@
 module: cli
 synopsis: Convenience main functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <tty>, root :: <cli-root>)
   let source = make(<cli-vector-source>, strings: arguments);

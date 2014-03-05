@@ -1,7 +1,7 @@
 module: cli-demo
 synopsis: Demo code.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define cli-root $root;
 

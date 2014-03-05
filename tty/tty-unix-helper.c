@@ -2,7 +2,7 @@
  * Binding helper functions for UNIX TTY support
  *
  * Author: Ingo Albrecht <prom@berlin.ccc.de>
- * Copyright: see accompanying file COPYING
+ * Copyright: see accompanying file LICENSE
  *
  */
 #include <termios.h>

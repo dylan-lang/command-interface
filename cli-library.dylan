@@ -1,7 +1,7 @@
 module: dylan-user
 synopsis: Library and module declarations.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define library cli
   use common-dylan;
