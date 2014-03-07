@@ -1,7 +1,7 @@
 module: tty
 synopsis: TTY event classes.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 
 /* Base class of all TTY events

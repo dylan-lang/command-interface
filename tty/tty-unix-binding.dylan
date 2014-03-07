@@ -1,7 +1,7 @@
 module: tty
 synopsis: Binding for UNIX tcsetattr.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 /* UNIX representation of various TTY attributes
  */

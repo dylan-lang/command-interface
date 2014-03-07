@@ -1,7 +1,7 @@
 module: cli
 synopsis: CLI node classes and functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define constant $cli-priority-minimum   = -10000;
 define constant $cli-priority-parameter = -10;

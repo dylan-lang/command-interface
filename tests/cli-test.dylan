@@ -1,7 +1,7 @@
 module: cli-test
 synopsis: Various tests for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define cli-root $simple-root;
 

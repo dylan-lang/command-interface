@@ -1,7 +1,7 @@
 module: cli
 synopsis: Macros for definining CLI grammar.
 author: Ingo Albrecht <prom@berlin.ccc.de>
-copyright: see accompanying file COPYING
+copyright: see accompanying file LICENSE
 
 define macro cli-root-definer
   { define cli-root ?:name }
