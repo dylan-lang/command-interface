@@ -7,7 +7,7 @@ define cli-root $simple-root;
 
 define variable progress :: <symbol> = #"init";
 
-define cli-command $simple-root (simple one)
+define cli-command simple one ($simple-root)
   simple parameter alpha;
   implementation
     begin
@@ -16,7 +16,7 @@ define cli-command $simple-root (simple one)
     end;
 end;
 
-define cli-command $simple-root (simple two)
+define cli-command simple two ($simple-root)
   named parameter alpha;
   named parameter beta;
   implementation
@@ -27,7 +27,7 @@ define cli-command $simple-root (simple two)
     end;
 end;
 
-define cli-command $simple-root (simple three)
+define cli-command simple three ($simple-root)
   simple parameter alpha;
   simple parameter beta;
   implementation
