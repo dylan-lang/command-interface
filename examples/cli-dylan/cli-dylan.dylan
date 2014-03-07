@@ -118,17 +118,17 @@ define constant $cli = make(<dylan-cli>);
 
 define cli-root $dylan-cli;
 
-define cli-command $dylan-cli (show dylan version)
+define cli-command show dylan version ($dylan-cli)
   implementation
     format-out("%s\n", release-full-name());
 end;
 
-define cli-command $dylan-cli (show dylan copyright)
+define cli-command show dylan copyright ($dylan-cli)
   implementation
     format-out("%s", release-full-copyright());
 end;
 
-define cli-command $dylan-cli (show project)
+define cli-command show project ($dylan-cli)
   simple parameter project :: <string>,
     node-class: <cli-dylan-project>;
   implementation
@@ -145,7 +145,7 @@ define cli-command $dylan-cli (show project)
     end;
 end;
 
-define cli-command $dylan-cli (open)
+define cli-command open ($dylan-cli)
   simple parameter project :: <string>,
     node-class: <cli-dylan-project>;
   implementation
@@ -174,7 +174,7 @@ define cli-command $dylan-cli (open)
     end;
 end;
 
-define cli-command $dylan-cli (close)
+define cli-command close ($dylan-cli)
   simple parameter project :: <string>,
     node-class: <cli-dylan-project>;
   implementation
@@ -185,7 +185,7 @@ define cli-command $dylan-cli (close)
     end;
 end;
 
-define cli-command $dylan-cli (build)
+define cli-command build ($dylan-cli)
   simple parameter project :: <string>,
     node-class: <cli-dylan-project>;
   implementation
@@ -211,7 +211,7 @@ define cli-command $dylan-cli (build)
     end;
 end;
 
-define cli-command $dylan-cli (clean)
+define cli-command clean ($dylan-cli)
   simple parameter project :: <string>,
     node-class: <cli-dylan-project>;
   implementation
@@ -224,7 +224,7 @@ define cli-command $dylan-cli (clean)
     end;
 end;
 
-define cli-command $dylan-cli (report)
+define cli-command report ($dylan-cli)
   simple parameter report :: <symbol>,
     node-class: <cli-report-type>;
   named parameter project :: <string>,

@@ -13,16 +13,16 @@ define macro cli-root-definer
 end macro;
 
 define macro cli-command-definer
-  { define cli-command ?root:name (?symbols:*)
+  { define cli-command ?symbols:* (?root:name)
       ?definitions:*
     end }
-    => { define cli-command-aux ?root (?symbols)
+    => { define cli-command-aux (?symbols) (?root)
            (?definitions) (?definitions) (?definitions) (?definitions) (?definitions)
          end }
 end macro;
 
 define macro cli-command-aux-definer
-  { define cli-command-aux ?root:name (?symbols)
+  { define cli-command-aux (?symbols) (?root:name)
       (?definitions) (?bindings) (?implementation) (?keywords) (?parameters)
     end }
     => { begin
