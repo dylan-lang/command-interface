@@ -352,7 +352,7 @@ define method cli-srcoff (char, line, column)
   make(<cli-srcoff>, char: char, line: line, column: column);
 end method;
 
-define method source-offset-character-in
+define sideways method source-offset-character-in
     (record :: <source-record>, offset :: <source-offset>)
  => (pos :: <integer>);
   offset.source-offset-char;
