@@ -19,7 +19,12 @@ end class;
  */
 define method tty-file-descriptor (t :: <unix-tty>)
  => (fd :: <integer>);
-  0; // XXX take from input stream
+  let fd? = t.tty-input.accessor.accessor-fd;
+  if (fd?)
+    as(<integer>, fd?)
+  else
+    error("tty has no file descriptor")
+  end if
 end method;
 
 /* Initialize the TTY for use

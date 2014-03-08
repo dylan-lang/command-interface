@@ -20,6 +20,7 @@ define module tty
 
   // we use streams and also wrap them
   use streams;
+  use streams-internals, import: { accessor, accessor-fd };
   // we override stdio
   use standard-io;
   // the unix binding uses c-ffi
