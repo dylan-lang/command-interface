@@ -17,14 +17,6 @@ define constant $unix-termios-raw =
     termios;
   end;
 
-/* Check if the given FD revers to a UNIX TTY
- */
-define c-function %unix-isatty
-  parameter fd :: <c-int>;
-  result code :: <c-int>;
-  c-name: "isatty";
-end;
-
 /* Initialize the given termios as RAW
  */
 define c-function %unix-cfmakeraw
