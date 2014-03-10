@@ -11,6 +11,12 @@ define cli-command quit ($root)
       tty-finish-activity(current-tty());
 end;
 
+define cli-command fail ($root)
+  help "Fail miserably";
+  implementation
+      error("Demo error");
+end;
+
 define cli-command directory ($root)
   help "Show information about directory";
   simple parameter directory :: <string>,
