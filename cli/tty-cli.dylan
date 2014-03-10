@@ -39,6 +39,10 @@ define method editor-execute (editor :: <tty-cli>)
                n-spaces(size(editor-prompt(editor))),
                cli-annotate(src, token-srcloc(pe.error-token)),
                condition-to-string(pe));
+  exception (e :: <error>)
+    // print condition and clear
+    format-out("Error: %=\n", e);
+    editor-clear(editor);
   end;
   // trigger a redraw
   editor-refresh-line(editor);

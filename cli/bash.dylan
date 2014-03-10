@@ -84,7 +84,8 @@ define method bash-complete-command (parser :: <cli-parser>, command)
     for (completion in all-completion-results)
       format-out("%s\n", completion);
     end for;
-  exception (<error>)
-    "XXX";
+  exception (e :: <error>)
+    format(*standard-error*, "Error: %=\n", e);
+    force-output(*standard-error*);
   end block;
 end method;
