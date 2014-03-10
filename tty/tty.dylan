@@ -54,42 +54,15 @@ define generic tty-finish (t :: <tty>)
 
 /* Loop over TTY events
  */
-define method tty-run (t :: <tty>, a :: <tty-activity>)
-  let oo = *standard-output*;
-  let oe = *standard-error*;
-  let ot = *current-tty*;
-  block ()
-    if (ot)
-      tty-finish(ot);
-    end;
-    *current-tty* := t;
-    tty-start(t);
-    *standard-output* := make(<tty-stream>, inner-stream: tty-output(t));
-    *standard-error* := make(<tty-stream>, inner-stream: tty-error(t) | tty-output(t));
-    block ()
-      tty-start-activity(t, a);
-      iterate read-more()
-        let c = read-element(tty-input(t), on-end-of-stream: #f);
-        if (c)
-          tty-feed(t, c);
-          tty-flush(t);
-          if (tty-activity(t))
-            read-more();
-          end;
-        end;
+define method tty-run (t :: <tty>)
+  iterate read-more()
+    if (tty-activity(t))
+      let c = read-element(tty-input(t), on-end-of-stream: #f);
+      if (c)
+        tty-feed(t, c);
+        tty-flush(t);
+        read-more();
       end;
-    cleanup
-      while (tty-activity(t))
-        tty-finish-activity(t);
-      end;
-    end;
-  cleanup
-    *standard-output* := oo;
-    *standard-error* := oe;
-    *current-tty* := ot;
-    tty-finish(t);
-    if (ot)
-      tty-start(ot);
     end;
   end;
 end method;
