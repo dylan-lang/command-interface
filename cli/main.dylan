@@ -7,6 +7,8 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
   let source = make(<cli-vector-source>, strings: arguments);
   let parser = make(<cli-parser>, source: source, initial-node: root);
 
+  let status = 1;
+
   block ()
     let tokens = cli-tokenize(source);
 
@@ -27,6 +29,8 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
         tty-run(tty);
       end;
     end;
+
+    status := 0;
   exception (le :: <cli-lexer-error>)
     format(*standard-error*,
            " %s\n %s\n%s\n",
@@ -47,5 +51,5 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
     force-output(*standard-error*);
   end;
 
-  exit-application(0);
+  exit-application(status);
 end function;
