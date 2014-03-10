@@ -47,7 +47,7 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
     force-output(*standard-error*);
   exception (e :: <error>)
     format(*standard-error*,
-           "Error: %=", e);
+           "Error: %=\n", e);
     force-output(*standard-error*);
   end;
 
