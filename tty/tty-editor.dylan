@@ -61,6 +61,8 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
         editor-execute(editor);
       end;
     #"tab" => editor-complete(editor);
+    #"home" => editor-jump(editor, 0);
+    #"end" => editor-jump(editor, size(editor-line(editor)));
     otherwise =>
       begin
         if (key-control?(key))

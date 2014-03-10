@@ -9,6 +9,7 @@ define constant <tty-state> = <integer>;
 define constant $tty-state-plain = 0;
 define constant $tty-state-esc   = 1;
 define constant $tty-state-csi   = 2;
+define constant $tty-state-esc-o = 3;
 
 /* Base class of TTYs
  *
@@ -152,6 +153,11 @@ define method tty-dispatch-event (t :: <tty>, e :: <tty-event>)
   end;
 end method;
 
+define method tty-dispatch-key (t :: <tty>, #rest keywords)
+  => ();
+  tty-dispatch-event(t, apply(make, <tty-key>, tty: t, keywords));
+end method;
+
 define method tty-feed (t :: <tty>, c :: <byte-character>)
  => ();
   tty-state(t) :=
@@ -162,6 +168,8 @@ define method tty-feed (t :: <tty>, c :: <byte-character>)
         tty-feed-esc(t, c);
       $tty-state-csi =>
         tty-feed-csi(t, c);
+      $tty-state-esc-o =>
+        tty-feed-esc-o(t, c);
     end;
 end method;
 
@@ -184,12 +192,10 @@ define method tty-feed-plain (t :: <tty>, c :: <byte-character>)
 
     otherwise =>
       begin
-        tty-dispatch-event
-          (t, make(<tty-key>,
-                   tty: t,
-                   control?: is-ctrl-char?(c),
-                   function: char-function(c),
-                   character: char-character(c)));
+        tty-dispatch-key(t,
+                         control?: is-ctrl-char?(c),
+                         function: char-function(c),
+                         character: char-character(c));
         $tty-state-plain;
       end;
   end;
@@ -199,9 +205,12 @@ define method tty-feed-esc (t :: <tty>, c :: <byte-character>)
  => (new-state :: <tty-state>);
   select (c)
     // ANSI sequence
-    '['       => $tty-state-csi;
+    '[' => $tty-state-csi;
+    // various keys
+    'O' => $tty-state-esc-o;
     // fall back to plain
-    otherwise => $tty-state-plain;
+    otherwise =>
+      $tty-state-plain;
   end;
 end method;
 
@@ -210,23 +219,40 @@ define method tty-feed-csi (t :: <tty>, c :: <byte-character>)
   select (c)
     // cursor events
     'A', 'B', 'C', 'D' =>
-      begin
-        tty-dispatch-event
-          (t, make(<tty-key>,
-                   tty: t,
-                   function:
-                     select (c)
-                       'A' => #"cursor-up";
-                       'B' => #"cursor-down";
-                       'C' => #"cursor-right";
-                       'D' => #"cursor-left";
-                     end));
-        $tty-state-plain;
-      end;
+      tty-dispatch-key(t,
+                       function:
+                         select (c)
+                           'A' => #"cursor-up";
+                           'B' => #"cursor-down";
+                           'C' => #"cursor-right";
+                           'D' => #"cursor-left";
+                         end);
+      $tty-state-plain;
     // fall back to plain
-    otherwise => $tty-state-plain;
+    otherwise =>
+      $tty-state-plain;
   end;
 end method;
+
+define method tty-feed-esc-o (t :: <tty>, c :: <byte-character>)
+ => (new-state :: <tty-state>);
+  select (c)
+    'P', 'Q', 'R', 'S', 'H', 'F' =>
+      tty-dispatch-key(t,
+                       function:
+                         select (c)
+                           'P' => #"f1";
+                           'Q' => #"f2";
+                           'R' => #"f3";
+                           'S' => #"f4";
+                           'H' => #"home";
+                           'F' => #"end";
+                         end);
+      $tty-state-plain;
+    otherwise =>
+      $tty-state-plain;
+  end;
+end;
 
 define constant $ansi-csi = "\<1b>[";
 
