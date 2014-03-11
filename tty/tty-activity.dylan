@@ -48,6 +48,9 @@ end class;
  * Dispatch may be used to distinguish between event classes.
  *
  */
+define open generic tty-activity-event (a :: <tty-activity>, e :: <tty-event>)
+  => ();
+
 define method tty-activity-event (a :: <tty-activity>, e :: <tty-event>)
  => ();
 end method;

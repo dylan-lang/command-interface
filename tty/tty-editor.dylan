@@ -10,7 +10,7 @@ copyright: see accompanying file LICENSE
  * Completion and execution can be implemented by inheritors.
  *
  */
-define class <tty-editor> (<tty-activity>)
+define open class <tty-editor> (<tty-activity>)
   slot editor-prompt :: <string> = "> ",
     init-keyword: prompt:;
 
@@ -23,6 +23,7 @@ define class <tty-editor> (<tty-activity>)
   slot editor-history-list :: <list> = #();
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
+
 
 /* Finish the editor when paused
  */
@@ -100,6 +101,9 @@ end method;
 
 /* Execute or act upon editor content
  */
+define open generic editor-execute (editor :: <tty-editor>)
+ => ();
+
 define method editor-execute (editor :: <tty-editor>)
  => ();
   editor-finish(editor);
@@ -108,12 +112,18 @@ end method;
 
 /* Complete editor content at current position
  */
+define open generic editor-complete (editor :: <tty-editor>)
+ => ();
+
 define method editor-complete (editor :: <tty-editor>)
  => ();
 end method;
 
 /* Complete editor content at current position silently (space completion)
  */
+define open generic editor-complete-implicit (editor :: <tty-editor>)
+ => (accepted? :: <boolean>);
+
 define method editor-complete-implicit (editor :: <tty-editor>)
  => (accepted? :: <boolean>);
   #f;
