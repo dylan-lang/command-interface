@@ -133,6 +133,9 @@ define method tty-flush (t :: <tty>)
   end;
 end method;
 
+/*
+ * Dispatches a TTY event to activities
+ */
 define method tty-dispatch-event (t :: <tty>, e :: <tty-event>)
  => ();
   if (tty-activity(t))
@@ -153,6 +156,9 @@ define method tty-dispatch-event (t :: <tty>, e :: <tty-event>)
   end;
 end method;
 
+/*
+ * Convenience function for dispatching key events
+ */
 define method tty-dispatch-key (t :: <tty>, #rest keywords)
   => ();
   tty-dispatch-event(t, apply(make, <tty-key>, tty: t, keywords));
