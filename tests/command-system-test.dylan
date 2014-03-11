@@ -1,4 +1,4 @@
-module: cli-test
+module: command-system-test
 synopsis: Various tests for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

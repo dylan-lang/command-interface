@@ -1,4 +1,4 @@
-module: cli
+module: command-system
 synopsis: Reusable bash completion.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

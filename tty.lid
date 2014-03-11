@@ -1,6 +1,6 @@
-library: cli
+library: tty
 target-type: dll
-files: cli-library
+files: tty-library
        tty/tty-macros
        tty/tty
        tty/tty-char
@@ -10,15 +10,4 @@ files: cli-library
        tty/tty-editor
        tty/tty-unix
        tty/tty-unix-binding
-       cli/util
-       cli/source
-       cli/parser
-       cli/nodes
-       cli/completion
-       cli/building
-       cli/bash
-       cli/help
-       cli/macros
-       cli/main
-       cli/tty-cli
 c-source-files: tty/tty-unix-helper.c

@@ -1,4 +1,4 @@
-module: cli
+module: command-system
 synopsis: Utilities for constructing CLI node structures.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

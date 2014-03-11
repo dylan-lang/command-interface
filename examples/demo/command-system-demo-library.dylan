@@ -1,12 +1,13 @@
 module: dylan-user
 
-define library cli-demo
+define library command-system-demo
   use common-dylan;
   use io;
-  use cli;
+  use command-system;
+  use tty; // XXX eliminate
 end library;
 
-define module cli-demo
+define module command-system-demo
   use common-dylan;
   use streams;
   use format,
@@ -14,7 +15,6 @@ define module cli-demo
   use format-out,
     import: { format-out };
   use standard-io;
-
-  use cli;
-  use tty;
+  use command-system;
+  use tty; // XXX eliminate
 end module;

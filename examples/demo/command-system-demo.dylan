@@ -1,4 +1,4 @@
-module: cli-demo
+module: command-system-demo
 synopsis: Demo code.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

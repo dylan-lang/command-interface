@@ -1,4 +1,4 @@
-module: cli
+module: command-system
 synsopsis: Utility functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

@@ -1,11 +1,11 @@
 module: dylan-user
 
-define library cli-dylan
+define library command-system-dylan
   use common-dylan;
   use io;
   use system;
   use strings;
-  use cli;
+  use command-system;
   use release-info;
   use projects;
   use user-projects;
@@ -18,7 +18,7 @@ define library cli-dylan
   use dfmc-back-end-implementations;
 end library;
 
-define module cli-dylan
+define module command-system-dylan
   use common-dylan;
   use streams;
   use format,
@@ -30,8 +30,7 @@ define module cli-dylan
   use locators;
   use strings;
 
-  use cli;
-  use tty;
+  use command-system;
 
   use release-info;
 

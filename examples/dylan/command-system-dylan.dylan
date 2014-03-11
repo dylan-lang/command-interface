@@ -1,4 +1,4 @@
-module: cli-dylan
+module: command-system-dylan
 
 define class <dylan-cli> (<object>)
   slot dylan-current-project :: false-or(<project-object>) = #f;
