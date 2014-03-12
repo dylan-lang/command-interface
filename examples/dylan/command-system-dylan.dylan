@@ -25,10 +25,10 @@ end method;
 
 
 
-define class <cli-open-dylan-project> (<cli-parameter>)
+define class <command-open-dylan-project> (<command-parameter>)
 end class;
 
-define method node-complete (param :: <cli-open-dylan-project>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (param :: <command-open-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   let names = map(project-name, open-projects());
   let compls =
@@ -42,10 +42,10 @@ define method node-complete (param :: <cli-open-dylan-project>, parser :: <cli-p
   as(<list>, compls);
 end method;
 
-define class <cli-dylan-project> (<cli-parameter>)
+define class <command-dylan-project> (<command-parameter>)
 end class;
 
-define method node-complete (param :: <cli-dylan-project>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (param :: <command-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   let names = map(project-name, open-projects());
   let compls =
@@ -63,10 +63,10 @@ define method node-complete (param :: <cli-dylan-project>, parser :: <cli-parser
   as(<list>, compls);
 end method;
 
-define class <cli-report-type> (<cli-parameter>)
+define class <command-report-type> (<command-parameter>)
 end class;
 
-define method node-complete (param :: <cli-report-type>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (param :: <command-report-type>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   let names = map(curry(as, <string>), key-sequence(available-reports()));
   let compls =
@@ -116,21 +116,21 @@ end function;
 define constant $cli = make(<dylan-cli>);
 
 
-define cli-root $dylan-cli;
+define command-root $dylan-cli;
 
-define cli-command show dylan version ($dylan-cli)
+define command show dylan version ($dylan-cli)
   implementation
     format-out("%s\n", release-full-name());
 end;
 
-define cli-command show dylan copyright ($dylan-cli)
+define command show dylan copyright ($dylan-cli)
   implementation
     format-out("%s", release-full-copyright());
 end;
 
-define cli-command show project ($dylan-cli)
+define command show project ($dylan-cli)
   simple parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   implementation
     begin
       let p = dylan-project($cli, project);
@@ -145,9 +145,9 @@ define cli-command show project ($dylan-cli)
     end;
 end;
 
-define cli-command open ($dylan-cli)
+define command open ($dylan-cli)
   simple parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   implementation
     begin
       format-out("Opening %s!\n", project);
@@ -174,9 +174,9 @@ define cli-command open ($dylan-cli)
     end;
 end;
 
-define cli-command close ($dylan-cli)
+define command close ($dylan-cli)
   simple parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   implementation
     begin
       format-out("Closing %s!\n", project);
@@ -185,9 +185,9 @@ define cli-command close ($dylan-cli)
     end;
 end;
 
-define cli-command build ($dylan-cli)
+define command build ($dylan-cli)
   simple parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   implementation
     begin
       let p = dylan-project($cli, project);
@@ -211,9 +211,9 @@ define cli-command build ($dylan-cli)
     end;
 end;
 
-define cli-command clean ($dylan-cli)
+define command clean ($dylan-cli)
   simple parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   implementation
     begin
       let p = dylan-project($cli, project);
@@ -224,13 +224,13 @@ define cli-command clean ($dylan-cli)
     end;
 end;
 
-define cli-command report ($dylan-cli)
+define command report ($dylan-cli)
   simple parameter report :: <symbol>,
-    node-class: <cli-report-type>;
+    node-class: <command-report-type>;
   named parameter project :: <string>,
-    node-class: <cli-dylan-project>;
+    node-class: <command-dylan-project>;
   named parameter format :: <symbol>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("text", "dot", "html", "xml", "rst");
   implementation
     begin
@@ -315,6 +315,6 @@ define method compiler-condition-handler
 end method compiler-condition-handler;
 
 
-tty-cli-main(application-name(), application-arguments(),
-             application-controlling-tty(),
-             $dylan-cli);
+tty-command-shell-main(application-name(), application-arguments(),
+                       application-controlling-tty(),
+                       $dylan-cli);

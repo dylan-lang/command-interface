@@ -3,14 +3,14 @@ synopsis: Convenience main functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <tty>, root :: <cli-root>)
-  let source = make(<cli-vector-source>, strings: arguments);
-  let parser = make(<cli-parser>, source: source, initial-node: root);
+define function tty-command-shell-main (name :: <string>, arguments :: <vector>, tty :: <tty>, root :: <command-root>)
+  let source = make(<command-vector-source>, strings: arguments);
+  let parser = make(<command-parser>, source: source, initial-node: root);
 
   let status = 1;
 
   block ()
-    let tokens = cli-tokenize(source);
+    let tokens = command-tokenize(source);
 
     // XXX This special case for bash completion is a hack.
     //     It ensures that completion results don't get garbled by tty handling.
@@ -20,7 +20,7 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
     else
       with-tty (tty)
         if (empty?(tokens))
-          let editor = make(<tty-cli>, root-node: root);
+          let editor = make(<tty-command-shell>, root-node: root);
           tty-start-activity(tty, editor);
         else
           parser-parse(parser, tokens);
@@ -31,18 +31,18 @@ define function tty-cli-main (name :: <string>, arguments :: <vector>, tty :: <t
     end;
 
     status := 0;
-  exception (le :: <cli-lexer-error>)
+  exception (le :: <command-lexer-error>)
     format(*standard-error*,
            " %s\n %s\n%s\n",
            source-string(source),
-           cli-annotate(source, le.error-srcoff),
+           command-annotate(source, le.error-srcoff),
            condition-to-string(le));
     force-output(*standard-error*);
-  exception (pe :: <cli-parse-error>)
+  exception (pe :: <command-parse-error>)
     format(*standard-error*,
            " %s\n %s\n%s\n",
            source-string(source),
-           cli-annotate(source, token-srcloc(pe.error-token)),
+           command-annotate(source, token-srcloc(pe.error-token)),
            condition-to-string(pe));
     force-output(*standard-error*);
   exception (e :: <error>)

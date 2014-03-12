@@ -3,32 +3,32 @@ synopsis: Macros for definining CLI grammar.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define macro cli-root-definer
-  { define cli-root ?:name }
-    => { define constant ?name = make(<cli-root>);
+define macro command-root-definer
+  { define command-root ?:name }
+    => { define constant ?name = make(<command-root>);
          begin
            root-add-bash-completion(?name);
            root-add-help(?name);
          end }
 end macro;
 
-define macro cli-command-definer
-  { define cli-command ?symbols:* (?root:name)
+define macro command-definer
+  { define command ?symbols:* (?root:name)
       ?definitions:*
     end }
-    => { define cli-command-aux (?symbols) (?root)
+    => { define command-aux (?symbols) (?root)
            (?definitions) (?definitions) (?definitions) (?definitions) (?definitions)
          end }
 end macro;
 
-define macro cli-command-aux-definer
-  { define cli-command-aux (?symbols) (?root:name)
+define macro command-aux-definer
+  { define command-aux (?symbols) (?root:name)
       (?definitions) (?bindings) (?implementation) (?keywords) (?parameters)
     end }
     => { begin
-           let %root :: <cli-root> = ?root;
+           let %root :: <command-root> = ?root;
            let %symbols :: <list> = #(?symbols);
-           let %handler = method (%parser :: <cli-parser>)
+           let %handler = method (%parser :: <command-parser>)
                            => ();
                             ?bindings;
                             ?implementation;

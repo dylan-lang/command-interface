@@ -5,7 +5,7 @@ copyright: see accompanying file LICENSE
 
 /* Add hidden command for bash completion to given root
  */
-define method root-add-bash-completion (root :: <cli-root>)
+define method root-add-bash-completion (root :: <command-root>)
  => ();
   let command = root-define-command
     (root, "bashcomplete",
@@ -16,7 +16,7 @@ end method;
 
 /* Handler for the "bashcomplete" command
  */
-define method bash-complete-handler (parser :: <cli-parser>)
+define method bash-complete-handler (parser :: <command-parser>)
  => ();
   // get arguments passed by bash
   let command = parser-get-parameter(parser, #"command");
@@ -43,7 +43,7 @@ end method;
  *
  * This should not print anything except for simple completion result tokens.
  */
-define method bash-complete-command (parser :: <cli-parser>, command)
+define method bash-complete-command (parser :: <command-parser>, command)
  => ();
   // parse position
   let position = string-to-integer(element(command, 0), default: 9999);
@@ -54,13 +54,13 @@ define method bash-complete-command (parser :: <cli-parser>, command)
   position := position - 1;
   block ()
     // create a parser
-    let src = make(<cli-vector-source>,
+    let src = make(<command-vector-source>,
                    strings: command);
-    let p = make(<cli-parser>,
+    let p = make(<command-parser>,
                  source: src,
                  initial-node: parser-initial-node(parser));
     // tokenize the command
-    let tokens = cli-tokenize(src);
+    let tokens = command-tokenize(src);
     // perform completion
     let completions = #f;
     for (t in tokens, i from 0, while: i <= position)

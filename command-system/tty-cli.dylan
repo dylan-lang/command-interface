@@ -3,41 +3,41 @@ synopsis: TTY activity for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define class <tty-cli> (<tty-editor>)
-  slot tty-cli-root-node :: <cli-node>,
+define class <tty-command-shell> (<tty-editor>)
+  slot tty-command-shell-root-node :: <command-node>,
     required-init-keyword: root-node:;
 end class;
 
-define method editor-execute (editor :: <tty-cli>)
+define method editor-execute (editor :: <tty-command-shell>)
  => ();
   // clean line for command
   editor-finish(editor);
   // instantiate source and parser
   let str = editor-line(editor);
-  let src = make(<cli-string-source>, string: str);
-  let parser = make(<cli-parser>, source: src,
-                    initial-node: tty-cli-root-node(editor));
+  let src = make(<command-string-source>, string: str);
+  let parser = make(<command-parser>, source: src,
+                    initial-node: tty-command-shell-root-node(editor));
   // process the command
   block ()
     // tokenize
-    let tokens = cli-tokenize(src);
+    let tokens = command-tokenize(src);
     // parse
     parser-parse(parser, tokens);
     // execute
     parser-execute(parser);
     // clear editor if successful
     editor-clear(editor);
-  exception (le :: <cli-lexer-error>)
+  exception (le :: <command-lexer-error>)
     // print with annotations
     format-out("%s%s\n%s\n",
                n-spaces(size(editor-prompt(editor))),
-               cli-annotate(src, le.error-srcoff),
+               command-annotate(src, le.error-srcoff),
                condition-to-string(le));
-  exception (pe :: <cli-parse-error>)
+  exception (pe :: <command-parse-error>)
     // print with annotations
     format-out("%s%s\n%s\n",
                n-spaces(size(editor-prompt(editor))),
-               cli-annotate(src, token-srcloc(pe.error-token)),
+               command-annotate(src, token-srcloc(pe.error-token)),
                condition-to-string(pe));
   exception (e :: <error>)
     // print condition and clear
@@ -49,7 +49,7 @@ define method editor-execute (editor :: <tty-cli>)
 end method;
 
 
-define method replace-token (editor :: <tty-cli>, token :: <cli-token>, autospace? :: <boolean>, replacement :: <string>)
+define method replace-token (editor :: <tty-command-shell>, token :: <command-token>, autospace? :: <boolean>, replacement :: <string>)
  => ();
   let reploc = token-srcloc(token);
   let s = source-location-start-character(reploc);
@@ -61,7 +61,7 @@ define method replace-token (editor :: <tty-cli>, token :: <cli-token>, autospac
   end;
 end method;
 
-define method replace-position (editor :: <tty-cli>, position :: <integer>, autospace? :: <boolean>, replacement :: <string>)
+define method replace-position (editor :: <tty-command-shell>, position :: <integer>, autospace? :: <boolean>, replacement :: <string>)
  => ();
   if (autospace?)
     editor-replace(editor, position, position, concatenate(replacement, " "));
@@ -72,18 +72,18 @@ end method;
 
 
 // this should possibly be merged with the bashcomp version somehow.
-define method editor-complete-internal (editor :: <tty-cli>)
- => (completions :: <sequence>, complete-token :: false-or(<cli-token>));
+define method editor-complete-internal (editor :: <tty-command-shell>)
+ => (completions :: <sequence>, complete-token :: false-or(<command-token>));
   // get editor state
   let str = editor-line(editor);
   let posn = editor-position(editor);
   // construct source and parser
-  let src = make(<cli-string-source>, string: str);
-  let parser = make(<cli-parser>, source: src,
-                    initial-node: tty-cli-root-node(editor));
-  let comploff = cli-srcoff(posn, 0, posn);
+  let src = make(<command-string-source>, string: str);
+  let parser = make(<command-parser>, source: src,
+                    initial-node: tty-command-shell-root-node(editor));
+  let comploff = command-srcoff(posn, 0, posn);
   // tokenize the line
-  let tokens = cli-tokenize(src);
+  let tokens = command-tokenize(src);
   // get all tokens before the completion token and
   // the completion token itself, if there is one.
   // not having a completion token means that we
@@ -111,15 +111,15 @@ define method editor-complete-internal (editor :: <tty-cli>)
   values(parser-complete(parser, complete-token), complete-token);
 end method;
 
-define method editor-complete-implicit (editor :: <tty-cli>)
+define method editor-complete-implicit (editor :: <tty-command-shell>)
  => (accepted? :: <boolean>);
   // perform completion
   let (completions, complete-token) =
     block ()
       editor-complete-internal(editor);
-    exception (le :: <cli-lexer-error>)
+    exception (le :: <command-lexer-error>)
       values(#(), #f);
-    exception (pe :: <cli-parse-error>)
+    exception (pe :: <command-parse-error>)
       values(#(), #f);
     end;
   // get all completions as raw strings
@@ -149,26 +149,26 @@ define method editor-complete-implicit (editor :: <tty-cli>)
 
 end method;
 
-define method editor-complete (editor :: <tty-cli>)
+define method editor-complete (editor :: <tty-command-shell>)
  => ();
   block (return)
     // perform completion, abort on error
     let (completions, complete-token) =
       block ()
         editor-complete-internal(editor);
-      exception (le :: <cli-lexer-error>)
+      exception (le :: <command-lexer-error>)
         editor-finish(editor);
         format-out("%s%s\n%s\n",
                    n-spaces(size(editor-prompt(editor))),
-                   cli-annotate(le.error-source,
+                   command-annotate(le.error-source,
                                 le.error-srcoff),
                    condition-to-string(le));
         return();
-      exception (pe :: <cli-parse-error>)
+      exception (pe :: <command-parse-error>)
         editor-finish(editor);
         format-out("%s%s\n%s\n",
                    n-spaces(size(editor-prompt(editor))),
-                   cli-annotate(pe.error-parser.parser-source,
+                   command-annotate(pe.error-parser.parser-source,
                                 token-srcloc(pe.error-token)),
                    condition-to-string(pe));
         return();

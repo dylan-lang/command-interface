@@ -28,7 +28,7 @@ define module command-system
   use streams,
     import: { force-output };
   use tty;
-  // used by <cli-file>
+  // used by <command-file>
   use file-system;
   use locators;
   // used in source.dylan
@@ -38,27 +38,27 @@ define module command-system
 
   export
     // source records
-    <cli-source>,
-    <cli-string-source>,
+    <command-source>,
+    <command-string-source>,
     source-string,
-    <cli-vector-source>,
+    <command-vector-source>,
     source-vector,
     // source locations
-    <cli-srcloc>,
-    <cli-srcoff>,
+    <command-srcloc>,
+    <command-srcoff>,
     // tokens
-    <cli-token>,
+    <command-token>,
     token-type,
     token-string,
     token-srcloc,
     // source record ops
-    cli-tokenize,
-    cli-annotate,
+    command-tokenize,
+    command-annotate,
     // errors
-    <cli-lexer-error>;
+    <command-lexer-error>;
 
   export
-    <cli-parser>,
+    <command-parser>,
     // getters and setters
     parser-source,
     // operations
@@ -68,14 +68,14 @@ define module command-system
     parser-execute,
     parser-get-parameter,
     // errors
-    <cli-parse-error>,
+    <command-parse-error>,
     error-parser,
     error-token,
-    <cli-ambiguous-error>,
-    <cli-unknown-error>;
+    <command-ambiguous-error>,
+    <command-unknown-error>;
 
   export
-    <cli-node>,
+    <command-node>,
     // getters and setters
     node-hidden?,
     node-repeatable?,
@@ -86,20 +86,20 @@ define module command-system
     node-complete,
     node-match,
     // subclasses
-    <cli-root>,
-    <cli-symbol>,
-    <cli-command>,
-    <cli-wrapper>,
-    <cli-parameter>,
-    <cli-string>,
-    <cli-oneof>,
+    <command-root>,
+    <command-symbol>,
+    <command-command>,
+    <command-wrapper>,
+    <command-parameter>,
+    <command-string>,
+    <command-oneof>,
     parameter-name,
     parameter-mandatory?,
-    <cli-file>;
+    <command-file>;
 
   export
-    <tty-cli>,
-    tty-cli-main;
+    <tty-command-shell>,
+    tty-command-shell-main;
 
   export
     root-define-command,
@@ -113,7 +113,7 @@ define module command-system
     longest-common-prefix;
 
   export
-    cli-root-definer,
-    cli-command-definer;
+    command-definer,
+    command-root-definer;
 
 end module;

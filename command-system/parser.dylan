@@ -5,30 +5,30 @@ copyright: see accompanying file LICENSE
 
 /* PARSE ERRORS */
 
-define class <cli-parse-error> (<simple-error>)
-  slot error-parser :: <cli-parser>,
+define class <command-parse-error> (<simple-error>)
+  slot error-parser :: <command-parser>,
     init-keyword: parser:;
-  slot error-token :: <cli-token>,
+  slot error-token :: <command-token>,
     init-keyword: token:;
 end class;
 
-define class <cli-ambiguous-error> (<cli-parse-error>)
+define class <command-ambiguous-error> (<command-parse-error>)
 end class;
 
-define class <cli-unknown-error> (<cli-parse-error>)
+define class <command-unknown-error> (<command-parse-error>)
 end class;
 
 
 /* PARSER */
 
-define class <cli-parser> (<object>)
-  slot parser-source :: <cli-source>,
+define class <command-parser> (<object>)
+  slot parser-source :: <command-source>,
     init-keyword: source:;
 
-  slot parser-initial-node :: <cli-node>,
+  slot parser-initial-node :: <command-node>,
     required-init-keyword: initial-node:;
 
-  slot parser-current-node :: <cli-node>;
+  slot parser-current-node :: <command-node>;
 
   slot parser-handlers :: <list> = #();
 
@@ -38,7 +38,7 @@ define class <cli-parser> (<object>)
   slot parser-parameters :: <table> = make(<object-table>);
 end class;
 
-define method initialize (parser :: <cli-parser>, #rest keys, #key, #all-keys)
+define method initialize (parser :: <command-parser>, #rest keys, #key, #all-keys)
  => ();
   next-method();
   parser-current-node(parser) := parser-initial-node(parser);
@@ -52,7 +52,7 @@ end method;
  *     so we can have wrapper commands like
  *     "with-log $logfile $command"
  */
-define method parser-execute (parser :: <cli-parser>)
+define method parser-execute (parser :: <command-parser>)
  => ();
   let handlers = reverse(parser-handlers(parser));
   if (size(handlers) > 0)
@@ -66,7 +66,7 @@ end method;
  * Iterates over tokens and performs our regular phrase parse.
  * 
  */
-define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
+define method parser-parse (parser :: <command-parser>, tokens :: <sequence>)
  => ();
   for (token in tokens)
     if (token-type(token) ~= #"whitespace")
@@ -75,12 +75,12 @@ define method parser-parse (parser :: <cli-parser>, tokens :: <sequence>)
   end for;
 end method;
 
-define method parser-get-parameter (parser :: <cli-parser>, name :: <symbol>, #key default :: <object> = #f)
+define method parser-get-parameter (parser :: <command-parser>, name :: <symbol>, #key default :: <object> = #f)
  => (value :: <object>);
   element(parser-parameters(parser), name, default: default);
 end method;
 
-define method parser-push-param (parser :: <cli-parser>, param :: <cli-parameter>, value :: <object>)
+define method parser-push-param (parser :: <command-parser>, param :: <command-parameter>, value :: <object>)
  => (value :: <object>);
   if (node-repeatable?(param))
     element(parser-parameters(parser), parameter-name(param)) :=
@@ -91,13 +91,13 @@ define method parser-push-param (parser :: <cli-parser>, param :: <cli-parameter
   value;
 end method;
 
-define method parser-push-handler (parser :: <cli-parser>, h :: <function>)
+define method parser-push-handler (parser :: <command-parser>, h :: <function>)
  => ();
   parser-handlers(parser) := add(parser-handlers(parser), h);
 end method;
 
-define method parser-push-node (parser :: <cli-parser>, token :: <cli-token>, node :: <cli-node>)
- => (node :: <cli-node>);
+define method parser-push-node (parser :: <command-parser>, token :: <command-token>, node :: <command-node>)
+ => (node :: <command-node>);
   parser-current-node(parser) := node;
   parser-nodes(parser) := add(parser-nodes(parser), node);
   parser-tokens(parser) := add(parser-tokens(parser), token);
@@ -106,7 +106,7 @@ end method;
 
 /* Advance the parser by one step
  */
-define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
+define method parser-advance (parser :: <command-parser>, token :: <command-token>)
   let current-node = parser-current-node(parser);
   // filter out non-acceptable nodes
   let acceptable = choose(rcurry(node-acceptable?, parser),
@@ -116,7 +116,7 @@ define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
   // get match priorities
   let possible-match-prios = map(node-priority, possible-matches);
   // find maximum priority
-  let match-priority = reduce(max, $cli-priority-minimum, possible-match-prios);
+  let match-priority = reduce(max, $command-priority-minimum, possible-match-prios);
   // filter by priority
   let matches = choose-by(curry(\==, match-priority), possible-match-prios, possible-matches);
   // act on matches
@@ -130,14 +130,14 @@ define method parser-advance (parser :: <cli-parser>, token :: <cli-token>)
       end;
     // no match: unknown token
     0 =>
-      signal(make(<cli-unknown-error>,
+      signal(make(<command-unknown-error>,
                   format-string: "Unrecognized token \"%s\"",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
                   token: token));
     // more than one: ambiguous token
     otherwise =>
-      signal(make(<cli-ambiguous-error>,
+      signal(make(<command-ambiguous-error>,
                   format-string: "Ambiguous token \"%s\"",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
@@ -147,7 +147,7 @@ end method;
 
 /* Perform completion on the current parser state
  */
-define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method parser-complete (parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <sequence>);
   let current-node = parser-current-node(parser);
   // get all non-hidden successors
@@ -159,9 +159,9 @@ define method parser-complete (parser :: <cli-parser>, token :: false-or(<cli-to
     acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
   // collect completions from each node
-  local method completion-for-node (node :: <cli-node>)
-         => (completion :: <cli-completion>);
-          make(<cli-completion>,
+  local method completion-for-node (node :: <command-node>)
+         => (completion :: <command-completion>);
+          make(<command-completion>,
                node: node,
                results: node-complete(node, parser, token));
         end method;

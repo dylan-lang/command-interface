@@ -5,6 +5,7 @@ define library command-system-dylan
   use io;
   use system;
   use strings;
+  use tty;
   use command-system;
   use tty;
   use release-info;
@@ -31,6 +32,7 @@ define module command-system-dylan
   use locators;
   use strings;
 
+  use tty;
   use command-system;
   use tty;
 

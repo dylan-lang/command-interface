@@ -3,19 +3,19 @@ synopsis: Utilities for constructing CLI node structures.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define method root-define-command (root :: <cli-root>, name :: <sequence>,
+define method root-define-command (root :: <command-root>, name :: <sequence>,
                                    #rest node-keys,
-                                   #key node-class :: <class> = <cli-command>, #all-keys)
- => (cmd :: <cli-symbol>);
+                                   #key node-class :: <class> = <command-command>, #all-keys)
+ => (cmd :: <command-symbol>);
   local
-    method find-or-make-successor (node :: <cli-node>,
+    method find-or-make-successor (node :: <command-node>,
                                    symbol :: <symbol>,
                                    node-class :: <class>,
                                    node-keys :: <sequence>)
       // find symbol in existing successors
       let found = #f;
       for (s in node-successors(node), until: found)
-        if (instance?(s, <cli-symbol>) & (node-symbol(s) == symbol))
+        if (instance?(s, <command-symbol>) & (node-symbol(s) == symbol))
           found := s;
         end if;
       end for;
@@ -35,7 +35,7 @@ define method root-define-command (root :: <cli-root>, name :: <sequence>,
       if (i == size(name) - 1)
         values(node-class, node-keys);
       else
-        values(<cli-symbol>, #[]);
+        values(<command-symbol>, #[]);
       end;
     // find or make the node
     cur := find-or-make-successor
@@ -45,25 +45,25 @@ define method root-define-command (root :: <cli-root>, name :: <sequence>,
   cur;
 end method;
 
-define method root-define-command (root :: <cli-root>, name :: <string>,
+define method root-define-command (root :: <command-root>, name :: <string>,
                                    #rest keys, #key, #all-keys)
- => (cmd :: <cli-symbol>);
+ => (cmd :: <command-symbol>);
   apply(root-define-command, root, list(name), keys);
 end method;
 
-define method root-define-command (root :: <cli-root>, name :: <symbol>,
+define method root-define-command (root :: <command-root>, name :: <symbol>,
                                    #rest keys, #key, #all-keys)
- => (cmd :: <cli-symbol>);
+ => (cmd :: <command-symbol>);
   apply(root-define-command, root, list(name), keys);
 end method;
 
 
-define function make-param (anchor :: <cli-command>, name :: <symbol>,
+define function make-param (anchor :: <command-command>, name :: <symbol>,
                             #rest keys,
                             #key syntax :: <symbol> = #"named",
-                                 node-class :: <class> = <cli-string>,
+                                 node-class :: <class> = <command-string>,
                             #all-keys)
- => (entry :: <cli-node>);
+ => (entry :: <command-node>);
   select (syntax)
       #"named" => apply(make-named-param, anchor, name, keys);
       #"simple" => apply(make-simple-param, anchor, name, keys);
@@ -72,30 +72,30 @@ define function make-param (anchor :: <cli-command>, name :: <symbol>,
   end;
 end;
 
-define function make-simple-param (anchor :: <cli-command>, name :: <symbol>,
-                                   #rest keys, #key node-class :: <class> = <cli-string>, #all-keys)
- => (entry :: <cli-node>);
+define function make-simple-param (anchor :: <command-command>, name :: <symbol>,
+                                   #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
+ => (entry :: <command-node>);
   let param = apply(make, node-class,
                     name:, name,
                     anchor:, anchor,
-                    priority:, $cli-priority-parameter,
+                    priority:, $command-priority-parameter,
                     keys);
   node-add-successor(anchor, param);
   command-add-parameter(anchor, param);
   param;
 end function;
 
-define method make-named-param (anchor :: <cli-command>, names :: <sequence>,
-                                #rest keys, #key node-class :: <class> = <cli-string>, #all-keys)
- => (param :: <cli-node>, symbols :: <sequence>);
+define method make-named-param (anchor :: <command-command>, names :: <sequence>,
+                                #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
+ => (param :: <command-node>, symbols :: <sequence>);
   let param = apply(make, node-class,
                     name:, element(names, 0),
                     anchor:, anchor,
-                    priority:, $cli-priority-parameter,
+                    priority:, $command-priority-parameter,
                     keys);
   let syms = #();
   for (name in names)
-    let sym = make(<cli-symbol>,
+    let sym = make(<command-symbol>,
                    name: as(<symbol>, name),
                    repeatable?: node-repeatable?(param),
                    repeat-marker: param,
@@ -107,15 +107,15 @@ define method make-named-param (anchor :: <cli-command>, names :: <sequence>,
   values(param, syms);
 end method;
 
-define method make-named-param (anchor :: <cli-command>, name :: <symbol>,
+define method make-named-param (anchor :: <command-command>, name :: <symbol>,
                                 #rest keys, #key, #all-keys)
- => (param :: <cli-parameter>, symbols :: <sequence>);
+ => (param :: <command-parameter>, symbols :: <sequence>);
   apply(make-named-param, anchor, list(name), keys);
 end method;
 
-define method make-inline-param (anchor :: <cli-command>, names,
+define method make-inline-param (anchor :: <command-command>, names,
                                  #rest keys, #key, #all-keys)
- => (param :: <cli-node>, symbols :: <sequence>);
+ => (param :: <command-node>, symbols :: <sequence>);
   let (param, syms) = apply(make-named-param, anchor, names, keys);
 
   node-add-successor(anchor, param);

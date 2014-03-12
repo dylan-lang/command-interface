@@ -3,11 +3,11 @@ synopsis: Various tests for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define cli-root $simple-root;
+define command-root $simple-root;
 
 define variable progress :: <symbol> = #"init";
 
-define cli-command simple one ($simple-root)
+define command simple one ($simple-root)
   simple parameter alpha;
   implementation
     begin
@@ -16,7 +16,7 @@ define cli-command simple one ($simple-root)
     end;
 end;
 
-define cli-command simple two ($simple-root)
+define command simple two ($simple-root)
   named parameter alpha;
   named parameter beta;
   implementation
@@ -27,7 +27,7 @@ define cli-command simple two ($simple-root)
     end;
 end;
 
-define cli-command simple three ($simple-root)
+define command simple three ($simple-root)
   simple parameter alpha;
   simple parameter beta;
   implementation
@@ -38,15 +38,15 @@ define cli-command simple three ($simple-root)
     end;
 end;
 
-define test cli-integration-test()
+define test command-integration-test()
   
 end;
 
 
-define test cli-tokenizer-test()
+define test command-tokenizer-test()
   local
     method make-source(string :: <string>)
-      make(<cli-string-source>,
+      make(<command-string-source>,
            string: string);
     end,
     method test-one(string :: <string>,
@@ -55,7 +55,7 @@ define test cli-tokenizer-test()
                     token-starts :: <list>,
                     token-ends :: <list>)
       let source = make-source(string);
-      let tokens = cli-tokenize(source);
+      let tokens = command-tokenize(source);
       // check we got the right number of tokens
       check-equal(concatenate("token count in \"", string, "\""),
                   size(token-strings), size(tokens));
@@ -104,8 +104,8 @@ define test cli-tokenizer-test()
            #(0, 2, 3, 5, 6, 8, 9));
 end;
 
-define suite cli-test-suite()
-  test cli-tokenizer-test;
+define suite command-system-test-suite()
+  test command-tokenizer-test;
 end;
 
-run-test-application(cli-test-suite);
+run-test-application(command-system-test-suite);

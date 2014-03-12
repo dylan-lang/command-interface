@@ -3,52 +3,52 @@ synopsis: Demo code.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define cli-root $root;
+define command-root $root;
 
-define cli-command quit ($root)
+define command quit ($root)
   help "Quit the shell";
   implementation
       tty-finish-activity(current-tty());
 end;
 
-define cli-command fail ($root)
+define command fail ($root)
   help "Fail miserably";
   implementation
       error("Demo error");
 end;
 
-define cli-command directory ($root)
+define command directory ($root)
   help "Show information about directory";
   simple parameter directory :: <string>,
-    node-class: <cli-file>,
+    node-class: <command-file>,
     accept-file?: #f,
     must-exist?: #t;
   implementation
     format-out("Nothing to show...\n");
 end;
 
-define cli-command show configuration ($root)
+define command show configuration ($root)
   help "Query configuration";
   implementation
     format-out("Nothing to show...\n");
 end;
 
-define cli-command show interface ($root)
+define command show interface ($root)
   help "Query interfaces";
   simple parameter name :: <string>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
   named parameter type :: <string>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("ethernet","atm");
   named parameter protocol :: <string>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("ip","ip4","ip6","lldp");
   implementation
     format-out("Nothing to show...\n");
 end;
 
-define cli-command show route ($root)
+define command show route ($root)
   help "Query routes";
   named parameter destination :: <symbol>;
   named parameter source :: <symbol>;
@@ -56,55 +56,55 @@ define cli-command show route ($root)
     format-out("Nothing to show...\n src %= dst %= \n", source, destination);
 end;
 
-define cli-command show log ($root)
+define command show log ($root)
   help "Query logs";
   named parameter service :: <string>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("dhcp-server","dhcp-client","kernel");
   named parameter level :: <string>,
-    node-class: <cli-oneof>,
+    node-class: <command-oneof>,
     alternatives: #("fatal","error","warning","notice","info","debug","trace");
   implementation
     format-out("Nothing to show...\n");
 end;
 
-define cli-command configure ($root)
+define command configure ($root)
   help "Modify configuration";
   implementation
     tty-start-activity(current-tty(),
-                       make(<tty-cli>,
+                       make(<tty-command-shell>,
                             root-node: $configure,
                             prompt: "config$ "));
 end;
 
-define cli-root $configure;
+define command-root $configure;
 
-define cli-command diff ($configure)
+define command diff ($configure)
   help "Show changes";
   implementation
     format-out("Configuration unchanged.\n");
 end;
 
-define cli-command set ($configure)
+define command set ($configure)
   help "Change a parameter";
   implementation
     format-out("Not implemented...\n");
 end;
 
-define cli-command show ($configure)
+define command show ($configure)
   help "Show configuration";
   implementation
     format-out("Nothing to show...\n");
 end;
 
-define cli-command remark ($configure)
+define command remark ($configure)
   help "Add remark on current config transaction";
   implementation
     format-out("Not implemented...\n");
   simple parameter remark;
 end;
 
-define cli-command abort ($configure)
+define command abort ($configure)
   help "Abort current config transaction";
   implementation
     begin
@@ -113,7 +113,7 @@ define cli-command abort ($configure)
     end;
 end;
 
-define cli-command commit ($configure)
+define command commit ($configure)
   help "Commit current config transaction";
   implementation
     begin
@@ -122,6 +122,6 @@ define cli-command commit ($configure)
     end;
 end;
 
-tty-cli-main(application-name(), application-arguments(),
-             application-controlling-tty(),
-             $root);
+tty-command-shell-main(application-name(), application-arguments(),
+                       application-controlling-tty(),
+                       $root);

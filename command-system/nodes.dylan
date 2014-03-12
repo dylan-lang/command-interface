@@ -3,9 +3,9 @@ synopsis: CLI node classes and functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define constant $cli-priority-minimum   = -10000;
-define constant $cli-priority-parameter = -10;
-define constant $cli-priority-default   =  0;
+define constant $command-priority-minimum   = -10000;
+define constant $command-priority-parameter = -10;
+define constant $command-priority-default   =  0;
 
 
 /* Grammar node for the CLI
@@ -31,12 +31,12 @@ define constant $cli-priority-default   =  0;
  *  commands install their handlers.
  *
  */
-define abstract class <cli-node> (<object>)
+define abstract class <command-node> (<object>)
   /* possible (static) successors */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
   /* match and completion priority */
-  slot node-priority :: <integer> = $cli-priority-default,
+  slot node-priority :: <integer> = $command-priority-default,
     init-keyword: priority:;
   /* hidden nodes are not completed */
   slot node-hidden? :: <boolean> = #f,
@@ -45,7 +45,7 @@ define abstract class <cli-node> (<object>)
   slot node-repeatable? :: <boolean> = #f,
     init-keyword: repeatable?:;
   /* don't repeat if this node is already present */
-  slot node-repeat-marker :: false-or(<cli-node>) = #f,
+  slot node-repeat-marker :: false-or(<command-node>) = #f,
     init-keyword: repeat-marker:;
 end class;
 
@@ -53,19 +53,19 @@ end class;
  *
  * May or may not be provided a partial token.
  */
-define open generic node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define open generic node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
 
 /* Check if the given token matches this node partially or completely
  */
-define open generic node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define open generic node-match (node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
 
 /* Accept the given node with the given token as data
  *
  * This is where parameters do conversion and command handlers are added.
  */
-define open generic node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define open generic node-accept ( node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => ();
 
 
@@ -76,7 +76,7 @@ define open generic node-accept ( node :: <cli-node>, parser :: <cli-parser>, to
  * Note how we also check for the repeat-marker of the node for
  * cases where another node can preclude our occurence.
  */
-define method node-acceptable? (node :: <cli-node>, parser :: <cli-parser>)
+define method node-acceptable? (node :: <command-node>, parser :: <command-parser>)
  => (acceptable? :: <boolean>);
   if (node-repeatable?(node))
     #t
@@ -89,29 +89,29 @@ end method;
 
 /* Add a possible successor node
  */
-define method node-add-successor (node :: <cli-node>, successor :: <cli-node>)
- => (successor :: <cli-node>);
+define method node-add-successor (node :: <command-node>, successor :: <command-node>)
+ => (successor :: <command-node>);
   node-successors(node) := add(node-successors(node), successor);
   successor;
 end method;
 
 /* Default matcher (always false)
  */
-define method node-match (node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   #f
 end;
 
 /* Default completer (no results)
  */
-define method node-complete (node :: <cli-node>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   #();
 end method;
 
 /* Default acceptor (no-op)
  */
-define method node-accept ( node :: <cli-node>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept ( node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => ();
 end method;
 
@@ -121,15 +121,15 @@ end method;
  *
  * May not be completed or matched.
  */
-define class <cli-root> (<cli-node>)
+define class <command-root> (<command-node>)
 end class;
 
-define method node-match (node :: <cli-root>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <command-root>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   error("BUG: Tried to match a CLI root node");
 end;
 
-define method node-complete (node :: <cli-root>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-root>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   error("BUG: Tried to complete a CLI root node");
 end method;
@@ -139,18 +139,18 @@ end method;
  *
  * Used to build commands and parameter prefixes.
  */
-define class <cli-symbol> (<cli-node>)
+define class <command-symbol> (<command-node>)
   slot node-symbol :: <symbol>,
     init-keyword: name:;
 end class;
 
-define method node-match (node :: <cli-symbol>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <command-symbol>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   starts-with?(as(<string>, node-symbol(node)),
                as-lowercase(token-string(token)));
 end method;
 
-define method node-complete (node :: <cli-symbol>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-symbol>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   if (~token | node-match(node, parser, token))
     list(as(<string>, node-symbol(node)))
@@ -163,7 +163,7 @@ end method;
 /*
  * Commands are symbols with a handler and parameter requirements
  */
-define open class <cli-command> (<cli-symbol>)
+define open class <command-command> (<command-symbol>)
   /* help source for the command */
   slot command-help :: false-or(<string>) = #f,
     init-keyword: help:;
@@ -174,14 +174,14 @@ define open class <cli-command> (<cli-symbol>)
   slot command-parameters :: <list> = #();
 end class;
 
-define method node-accept (node :: <cli-command>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <command-command>, parser :: <command-parser>, token :: <command-token>)
  => ();
   if (command-handler(node))
     parser-push-handler(parser, command-handler(node));
   end
 end method;
 
-define method command-add-parameter (node :: <cli-command>, parameter :: <cli-parameter>)
+define method command-add-parameter (node :: <command-command>, parameter :: <command-parameter>)
  => ();
   command-parameters(node) := add!(command-parameters(node), parameter);
 end method;
@@ -194,12 +194,12 @@ end method;
  * They will have the successors of the given WRAPPER-ROOT.
  *
  */
-define class <cli-wrapper> (<cli-command>)
-  slot wrapper-root :: <cli-node>,
+define class <command-wrapper> (<command-command>)
+  slot wrapper-root :: <command-node>,
     init-keyword: root:;
 end class;
 
-define method node-successors (node :: <cli-wrapper>)
+define method node-successors (node :: <command-wrapper>)
  => (successors :: <sequence>);
   concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
@@ -207,10 +207,10 @@ end method;
 
 /* A captured parameter
  */
-define open abstract class <cli-parameter> (<cli-node>)
+define open abstract class <command-parameter> (<command-node>)
   slot parameter-name :: <symbol>,
     init-keyword: name:;
-  slot parameter-anchor :: false-or(<cli-node>) = #f,
+  slot parameter-anchor :: false-or(<command-node>) = #f,
     init-keyword: anchor:;
   slot parameter-mandatory? :: <boolean> = #f,
     init-keyword: mandatory?:;
@@ -222,7 +222,7 @@ end class;
  *
  * By default they convert to simple strings.
  */
-define method parameter-convert (parser :: <cli-parser>, node :: <cli-parameter>, token :: <cli-token>)
+define method parameter-convert (parser :: <command-parser>, node :: <command-parameter>, token :: <command-token>)
  => (value :: <object>);
   as(parameter-value-type(node), token-string(token));
 end method;
@@ -231,7 +231,7 @@ end method;
  *
  * This is what allows having several parameters.
  */ 
-define method node-successors (node :: <cli-parameter>)
+define method node-successors (node :: <command-parameter>)
  => (successors :: <sequence>);
   if (parameter-anchor(node))
     concatenate(node-successors(parameter-anchor(node)), next-method());
@@ -242,14 +242,14 @@ end method;
 
 /* Parameters match any token by default
  */
-define method node-match (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <command-parameter>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   #t
 end method;
 
 /* Parameters complete only to themselves
  */
-define method node-complete (node :: <cli-parameter>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-parameter>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   if (token)
     list(token-string(token));
@@ -260,7 +260,7 @@ end method;
 
 /* Parameters get registered as such when accepted
  */
-define method node-accept (node :: <cli-parameter>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <command-parameter>, parser :: <command-parser>, token :: <command-token>)
  => ();
   next-method();
   parser-push-param(parser, node, parameter-convert(parser, node, token));
@@ -269,7 +269,7 @@ end method;
 
 /* Simple string parameter
  */
-define class <cli-string> (<cli-parameter>)
+define class <command-string> (<command-parameter>)
 end class;
 
 
@@ -277,14 +277,14 @@ end class;
  *
  * Allows any of the given alternatives.
  */
-define class <cli-oneof> (<cli-parameter>)
+define class <command-oneof> (<command-parameter>)
   slot oneof-case-sensitive? :: <boolean> = #f,
     init-keyword: case-sensitive?:;
   slot oneof-alternatives :: <list>,
     required-init-keyword: alternatives:;
 end class;
 
-define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-match (node :: <command-oneof>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   let string = token-string(token);
   unless (oneof-case-sensitive?(node))
@@ -298,7 +298,7 @@ define method node-match (node :: <cli-oneof>, parser :: <cli-parser>, token :: 
   ~empty?(found);
 end method;
 
-define method node-complete (node :: <cli-oneof>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-oneof>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   let alts = map(curry(as, <string>), oneof-alternatives(node));
   if (token)
@@ -322,7 +322,7 @@ end method;
  *     doesn't deal well with symlinks
  *     and implements ~, . and .. using hacks.
  */
-define class <cli-file> (<cli-parameter>)
+define class <command-file> (<command-parameter>)
   slot file-accept-directory? :: <boolean> = #f,
     init-keyword: accept-directory?:;
   slot file-accept-file? :: <boolean> = #t,
@@ -331,7 +331,7 @@ define class <cli-file> (<cli-parameter>)
     init-keyword: must-exist?:;
 end class;
 
-define method node-complete (node :: <cli-file>, parser :: <cli-parser>, token :: false-or(<cli-token>))
+define method node-complete (node :: <command-file>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <list>);
   let completions = #();
 
@@ -410,7 +410,7 @@ define method node-complete (node :: <cli-file>, parser :: <cli-parser>, token :
   map(curry(as, <string>), completions);
 end method;
 
-define method node-accept (node :: <cli-file>, parser :: <cli-parser>, token :: <cli-token>)
+define method node-accept (node :: <command-file>, parser :: <command-parser>, token :: <command-token>)
  => ();
   next-method();
   let str = token-string(token);

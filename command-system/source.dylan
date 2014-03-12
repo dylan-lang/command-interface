@@ -6,7 +6,7 @@ copyright: see accompanying file LICENSE
 
 /* TOKENS */
 
-define class <cli-token> (<object>)
+define class <command-token> (<object>)
   slot token-string :: <string>,
     required-init-keyword: string:;
   slot token-type :: <symbol>,
@@ -18,28 +18,28 @@ end class;
 
 /* SOURCE RECORDS */
 
-define abstract class <cli-source> (<source-record>)
+define abstract class <command-source> (<source-record>)
 end class;
 
-define generic cli-tokenize (source :: <cli-source>)
+define generic command-tokenize (source :: <command-source>)
  => (tokens :: <sequence>);
 
-define generic source-string (source :: <cli-source>)
+define generic source-string (source :: <command-source>)
  => (whole-source :: <string>);
 
 
 /* CLI source code provided as a string */
-define class <cli-string-source> (<cli-source>)
+define class <command-string-source> (<command-source>)
   slot source-string :: <string>,
     init-keyword: string:;
 end class;
 
-define class <cli-lexer-error> (<simple-error>)
-  slot error-source :: <cli-source>,
+define class <command-lexer-error> (<simple-error>)
+  slot error-source :: <command-source>,
     init-keyword: source:;
   slot error-string :: <string>,
     init-keyword: string:;
-  slot error-srcoff :: <cli-srcoff>,
+  slot error-srcoff :: <command-srcoff>,
     init-keyword: srcoff:;
 end class;
 
@@ -49,7 +49,7 @@ end class;
  *
  * XXX Misses line counting and line offsets in srclocs.
  */
-define method cli-tokenize (source :: <cli-string-source>)
+define method command-tokenize (source :: <command-string-source>)
  => (tokens :: <sequence>);
   // source string to tokenize
   let string = source-string(source);
@@ -76,7 +76,7 @@ define method cli-tokenize (source :: <cli-string-source>)
       let srcloc = make-source-location(source,
                                         tstart, 0, tstart,
                                         tend, 0, tend);
-      let token = make(<cli-token>,
+      let token = make(<command-token>,
                        type: ttype,
                        string: copy-sequence(string,
                                               start: tstart,
@@ -135,12 +135,12 @@ define method cli-tokenize (source :: <cli-string-source>)
       end,
       method invalid (message)
         => ();
-        signal(make(<cli-lexer-error>,
+        signal(make(<command-lexer-error>,
                     format-string: "Lexical error: %s",
                     format-arguments: vector(message),
                     source: source,
                     string: string,
-                    srcoff: cli-srcoff(offset, 0, offset)));
+                    srcoff: command-srcoff(offset, 0, offset)));
       end;
     //format-out(" state %= char %= offset %d\n",
     //           state, char, offset);
@@ -205,12 +205,12 @@ define method cli-tokenize (source :: <cli-string-source>)
 
   let source-length = size(string) - 1; // XXX defensive
   local method invalid-eof(message)
-          signal(make(<cli-lexer-error>,
+          signal(make(<command-lexer-error>,
                       format-string: "Lexical error: %s",
                       format-arguments: vector(message),
                       source: source,
                       string: string,
-                      srcoff: cli-srcoff(source-length, 0, source-length)));
+                      srcoff: command-srcoff(source-length, 0, source-length)));
         end;
 
   //format-out(" state %=\n", state);
@@ -245,17 +245,17 @@ end method;
  * XXX this needs to escape strings
  *     using dquote in the source
  */
-define class <cli-vector-source> (<cli-source>)
+define class <command-vector-source> (<command-source>)
   slot source-vector :: <sequence>,
     required-init-keyword: strings:;
 end class;
 
-define method source-string (source :: <cli-vector-source>)
+define method source-string (source :: <command-vector-source>)
  => (string :: <string>);
   join(source-vector(source), " ");
 end method;
 
-define method cli-tokenize (source :: <cli-vector-source>)
+define method command-tokenize (source :: <command-vector-source>)
  => (tokens :: <sequence>);
   let tokens :: <list> = #();
   let concat :: <string> = "";
@@ -273,7 +273,7 @@ define method cli-tokenize (source :: <cli-vector-source>)
          token-start, 0, token-start,
          token-end, 0, token-end);
 
-    let token = make(<cli-token>,
+    let token = make(<command-token>,
                      type: #"string", // XXX this isn't right of course, we should really be implementing vector source using string source at some point
                      string: string,
                      srcloc: srcloc);
@@ -283,19 +283,19 @@ define method cli-tokenize (source :: <cli-vector-source>)
   reverse(tokens);
 end method;
 
-define method cli-annotate (source :: <cli-source>, srcoff :: <cli-srcoff>)
+define method command-annotate (source :: <command-source>, srcoff :: <command-srcoff>)
  => (marks :: <string>);
-  cli-annotate(source, make(<cli-srcloc>, source: source, start: srcoff, end: srcoff));
+  command-annotate(source, make(<command-srcloc>, source: source, start: srcoff, end: srcoff));
 end method;
 
-define method cli-annotate (source :: <cli-string-source>, srcloc :: <cli-srcloc>)
+define method command-annotate (source :: <command-string-source>, srcloc :: <command-srcloc>)
  => (marks :: <string>);
   // expand source string for final/epsilon error locations
   let string = concatenate(source-string(source), " ");
   // collect string with error markers
   let marks :: <string> = "";
   for (char in string, posn from 0)
-    let srcoff = cli-srcoff(posn, 0, posn);
+    let srcoff = command-srcoff(posn, 0, posn);
     if (in-source-location?(srcloc, srcoff))
       marks := concatenate!(marks, "^");
     else
@@ -306,9 +306,9 @@ define method cli-annotate (source :: <cli-string-source>, srcloc :: <cli-srcloc
   marks;
 end method;
 
-define method cli-annotate (source :: <cli-vector-source>, srcloc :: <cli-srcloc>)
+define method command-annotate (source :: <command-vector-source>, srcloc :: <command-srcloc>)
  => (marks :: <string>);
-  let tokens = cli-tokenize(source);
+  let tokens = command-tokenize(source);
   let code :: <string> = "  ";
   let marks :: <string> = "";
 
@@ -339,7 +339,7 @@ end method;
 
 /* SOURCE OFFSETS */
 
-define class <cli-srcoff> (<big-source-offset>)
+define class <command-srcoff> (<big-source-offset>)
   slot source-offset-char :: <integer>,
     init-keyword: char:;
   slot source-offset-line :: <integer>,
@@ -348,8 +348,8 @@ define class <cli-srcoff> (<big-source-offset>)
     init-keyword: column:;
 end class;
 
-define method cli-srcoff (char, line, column)
-  make(<cli-srcoff>, char: char, line: line, column: column);
+define method command-srcoff (char, line, column)
+  make(<command-srcoff>, char: char, line: line, column: column);
 end method;
 
 define sideways method source-offset-character-in
@@ -361,28 +361,28 @@ end method;
 
 /* SOURCE LOCATIONS */
 
-define class <cli-srcloc> (<source-location>)
-  slot source-location-source-record :: <cli-source>,
+define class <command-srcloc> (<source-location>)
+  slot source-location-source-record :: <command-source>,
     init-keyword: source:;
-  slot source-location-start-offset :: <cli-srcoff>,
+  slot source-location-start-offset :: <command-srcoff>,
     init-keyword: start:;
-  slot source-location-end-offset :: <cli-srcoff>,
+  slot source-location-end-offset :: <command-srcoff>,
     init-keyword: end:;
 end class;
 
 define method make-source-location
-    (source :: <cli-source>,
+    (source :: <command-source>,
      start-char :: <integer>, start-line :: <integer>, start-col :: <integer>,
      end-char :: <integer>, end-line :: <integer>, end-col :: <integer>)
- => (loc :: <cli-srcloc>);
-  make(<cli-srcloc>,
+ => (loc :: <command-srcloc>);
+  make(<command-srcloc>,
        source: source,
-       start: cli-srcoff(start-char, start-line, start-col),
-       end: cli-srcoff(end-char, end-line, end-col));
+       start: command-srcoff(start-char, start-line, start-col),
+       end: command-srcoff(end-char, end-line, end-col));
 end method;
 
 define method in-source-location?
-    (srcloc :: <cli-srcloc>, other :: <cli-srcloc>)
+    (srcloc :: <command-srcloc>, other :: <command-srcloc>)
  => (within? :: <boolean>);
   (other.source-location-start-character
      >= srcloc.source-location-start-character)
@@ -391,7 +391,7 @@ define method in-source-location?
 end method;
 
 define method in-source-location?
-    (srcloc :: <cli-srcloc>, other :: <cli-srcoff>)
+    (srcloc :: <command-srcloc>, other :: <command-srcoff>)
  => (within? :: <boolean>);
   (other.source-offset-char
      >= srcloc.source-location-start-character)
@@ -401,7 +401,7 @@ end method;
 
 // this allows for being just after the srcloc
 define method in-completion-location?
-    (srcloc :: <cli-srcloc>, other :: <cli-srcoff>)
+    (srcloc :: <command-srcloc>, other :: <command-srcoff>)
  => (within? :: <boolean>);
   (other.source-offset-char
      >= srcloc.source-location-start-character)
