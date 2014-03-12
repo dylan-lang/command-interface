@@ -36,8 +36,8 @@ define module command-system-dylan
 
   use release-info;
 
-  use projects;
+  use projects, import: { default-build-script };
   use environment-protocols,
-    exclude: { application-filename, application-arguments };
+    exclude: { application-filename, application-arguments, parameter-name };
   use environment-reports;
 end module;
