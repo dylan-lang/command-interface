@@ -10,4 +10,4 @@ files: tty-library
        tty-editor
        tty-unix
        tty-unix-binding
-c-source-files: tty/tty-unix-helper.c
+c-source-files: tty-unix-helper.c
