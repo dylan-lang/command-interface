@@ -3,7 +3,7 @@ synopsis: Library and module declarations.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define library command-system
+define library command-interface
   use common-dylan;
   use source-records;
   use io;
@@ -12,10 +12,10 @@ define library command-system
   use strings;
   use tty;
 
-  export command-system;
+  export command-interface;
 end library;
 
-define module command-system
+define module command-interface
   use common-dylan;
 
   // all over the place

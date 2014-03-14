@@ -1,6 +1,6 @@
-library: command-system
+library: command-interface
 target-type: dll
-files: command-system-library
+files: command-interface-library
        util
        source
        parser

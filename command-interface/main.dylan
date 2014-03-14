@@ -1,4 +1,4 @@
-module: command-system
+module: command-interface
 synopsis: Convenience main functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

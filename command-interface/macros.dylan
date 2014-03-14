@@ -1,4 +1,4 @@
-module: command-system
+module: command-interface
 synopsis: Macros for definining CLI grammar.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
