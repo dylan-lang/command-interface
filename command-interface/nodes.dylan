@@ -54,7 +54,7 @@ end class;
  * May or may not be provided a partial token.
  */
 define open generic node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
+ => (completions :: <command-completion>);
 
 /* Check if the given token matches this node partially or completely
  */
@@ -105,8 +105,8 @@ end;
 /* Default completer (no results)
  */
 define method node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
-  #();
+ => (completion :: <command-completion>);
+  make-exhaustive-completion(node, token);
 end method;
 
 /* Default acceptor (no-op)
@@ -130,7 +130,7 @@ define method node-match (node :: <command-root>, parser :: <command-parser>, to
 end;
 
 define method node-complete (node :: <command-root>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
+ => (completions :: <command-completion>);
   error("BUG: Tried to complete a CLI root node");
 end method;
 
@@ -151,12 +151,13 @@ define method node-match (node :: <command-symbol>, parser :: <command-parser>, 
 end method;
 
 define method node-complete (node :: <command-symbol>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
-  if (~token | node-match(node, parser, token))
-    list(as(<string>, node-symbol(node)))
-  else
-    #()
-  end
+ => (completions :: <command-completion>);
+  let options = if (~token | node-match(node, parser, token))
+                  list(as(<string>, node-symbol(node)));
+                else
+                  #();
+                end;
+  make-exhaustive-completion(node, token, complete-options: options);
 end method;
 
 
@@ -250,12 +251,16 @@ end method;
 /* Parameters complete only to themselves
  */
 define method node-complete (node :: <command-parameter>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
-  if (token)
-    list(token-string(token));
-  else
-    #();
-  end
+ => (completions :: <command-completion>);
+  let options =
+    if (token)
+      list(make(<command-completion-option>, string: token-string(token)));
+    else
+      #()
+    end;
+  make(<command-completion>,
+       node: node, token: token,
+       exhaustive?: #f, options: options);
 end method;
 
 /* Parameters get registered as such when accepted
@@ -299,18 +304,23 @@ define method node-match (node :: <command-oneof>, parser :: <command-parser>, t
 end method;
 
 define method node-complete (node :: <command-oneof>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
-  let alts = map(curry(as, <string>), oneof-alternatives(node));
-  if (token)
-    let string = token-string(token);
-    unless (oneof-case-sensitive?(node))
-      alts := map(as-lowercase, alts);
-      string := as-lowercase(string);
-    end;
-    choose(rcurry(starts-with?, string), alts);
-  else
-    alts;
+ => (completions :: <command-completion>);
+  let case-sensitive? = node.oneof-case-sensitive?;
+  let alternatives = map(curry(as, <string>), oneof-alternatives(node));
+  unless (case-sensitive?)
+    alternatives := map(as-lowercase, alternatives);
   end;
+  let filtered = if (token)
+                   let token-string = token-string(token);
+                   unless (case-sensitive?)
+                     token-string := as-lowercase(token-string);
+                   end;
+                   choose(rcurry(starts-with?, token-string), alternatives);
+                 else
+                   alternatives;
+                 end;
+  make-exhaustive-completion(node, token,
+                             complete-options: filtered);
 end method;
 
 
@@ -332,13 +342,12 @@ define class <command-file> (<command-parameter>)
 end class;
 
 define method node-complete (node :: <command-file>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
-  let completions = #();
+ => (completion :: <command-completion>);
 
   // fixups to make locators treat magic things as directory locators
   //  XXX does not work for ~USER - locators not up to it?
   //  XXX this is crappy - locators are brain-dead in places
-  let tstring =
+  let token-string =
     if (token)
       let s = token-string(token);
       case
@@ -354,11 +363,10 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
     else
       #f
     end;
-
   // locator of current token as hint
   let tloc =
-    if (tstring)
-      as(<file-locator>, tstring);
+    if (token-string)
+      as(<file-locator>, token-string);
     else
       #f
     end;
@@ -372,6 +380,7 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
     end;
 
   // complete in that directory
+  let completions = #();
   let children = directory-contents(dir);
   for (child in children)
     let filename = locator-name(child);
@@ -407,7 +416,13 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
     completions := add(completions, elipsis);
   end;
 
-  map(curry(as, <string>), completions);
+  local method as-option(string)
+          make(<command-completion-option>,
+               string: string);
+        end;
+  make(<command-completion>,
+       node: node, token: token,
+       exhaustive?: #f, options: map(as-option, completions));
 end method;
 
 define method node-accept (node :: <command-file>, parser :: <command-parser>, token :: <command-token>)

@@ -73,7 +73,7 @@ end method;
 
 // this should possibly be merged with the bashcomp version somehow.
 define method editor-complete-internal (editor :: <tty-command-shell>)
- => (completions :: <sequence>, complete-token :: false-or(<command-token>));
+ => (completions :: <list>, token :: false-or(<command-token>));
   // get editor state
   let str = editor-line(editor);
   let posn = editor-position(editor);
@@ -123,7 +123,9 @@ define method editor-complete-implicit (editor :: <tty-command-shell>)
       values(#(), #f);
     end;
   // get all completions as raw strings
-  let raw-completions = apply(concatenate, #(), map(completion-results, completions));
+  let raw-completions = map(option-string,
+                            apply(concatenate, #(),
+                                  map(completion-options, completions)));
   // we only complete when there is an existing token
   if (complete-token)
     // act on the completion
@@ -174,8 +176,9 @@ define method editor-complete (editor :: <tty-command-shell>)
         return();
       end;
     // get all completions as raw strings
-    let raw-completions =
-      apply(concatenate, #(), map(completion-results, completions));
+    let raw-completions = map(option-string,
+                            apply(concatenate, #(),
+                                  map(completion-options, completions)));
     // we need the position in case we don't have a token
     let posn = editor-position(editor);
     // act on completion results

@@ -161,9 +161,7 @@ define method parser-complete (parser :: <command-parser>, token :: false-or(<co
   // collect completions from each node
   local method completion-for-node (node :: <command-node>)
          => (completion :: <command-completion>);
-          make(<command-completion>,
-               node: node,
-               results: node-complete(node, parser, token));
+          node-complete(node, parser, token);
         end method;
   let completions = map(completion-for-node, acceptable);
   // return
