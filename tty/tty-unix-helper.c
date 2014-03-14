@@ -8,11 +8,11 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <run-time.h>
+extern void *MMAllocMisc(size_t size);
 
 /* allocation wrapper for "struct termios" */
 struct termios *unix_make_termios() {
-  return (struct termios *)primitive_allocate(sizeof(struct termios));
+  return (struct termios *)MMAllocMisc(sizeof(struct termios));
 }
 
 /* enum wrapper for tcsetattr(x, TCSANOW, y) */
