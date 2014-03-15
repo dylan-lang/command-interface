@@ -44,9 +44,26 @@ define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
     end if;
   end for;
 
+  if (~cmd)
+    error("Incomplete command.");
+  end;
+
   cmd-title := reverse(cmd-title);
   cmd-title := map(as-uppercase, cmd-title);
 
   format-out("\n    %s\n\n", join(cmd-title, " "));
-  format-out("    %s\n\n", cmd-help);  
+  format-out("    %s\n\n",
+             if (cmd-help)
+               cmd-help
+             else
+               "No help."
+             end);
+
+  for (parameter in command-parameters(cmd))
+    let parmhelp = parameter-help(parameter);
+    if (~parmhelp)
+      parmhelp := "No help.";
+    end;
+    format-out("    PARAMETER %s\n     %s\n", parameter-name(parameter), parmhelp);
+  end;
 end method;

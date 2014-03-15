@@ -211,6 +211,8 @@ end method;
 define open abstract class <command-parameter> (<command-node>)
   slot parameter-name :: <symbol>,
     init-keyword: name:;
+  slot parameter-help :: false-or(<string>) = #f,
+    init-keyword: help:;
   slot parameter-command :: false-or(<command-command>) = #f,
     init-keyword: command:;
   slot parameter-mandatory? :: <boolean> = #f,
