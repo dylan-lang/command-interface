@@ -22,6 +22,15 @@ define class <command-completion> (<object>)
     init-keyword: options:;
 end class;
 
+define method initialize(completion :: <command-completion>,
+                         #rest args, #key, #all-keys)
+ => ();
+  next-method();
+  for(option in completion.completion-options)
+    option-completion(option) := completion;
+  end;
+end method;
+
 /**
  * Represents a single option returned by completion
  *
@@ -29,6 +38,7 @@ end class;
  * This means that we would accept it in execution.
  */
 define class <command-completion-option> (<object>)
+  slot option-completion :: false-or(<command-completion>) = #f;
   /* string for this option */
   slot option-string :: <string>,
     required-init-keyword: string:;
