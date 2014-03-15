@@ -30,11 +30,10 @@ define class <command-parser> (<object>)
 
   slot parser-current-node :: <command-node>;
 
-  slot parser-handlers :: <list> = #();
-
   slot parser-tokens :: <list> = #();
   slot parser-nodes :: <list> = #();
 
+  slot parser-commands :: <list> = #();
   slot parser-parameters :: <table> = make(<object-table>);
 end class;
 
@@ -54,10 +53,11 @@ end method;
  */
 define method parser-execute (parser :: <command-parser>)
  => ();
-  let handlers = reverse(parser-handlers(parser));
-  if (size(handlers) > 0)
-    let hn = element(handlers, 0);
-    hn(parser);
+  let commands = reverse(parser-commands(parser));
+  if (size(commands) > 0)
+    let hn :: <command-command> = element(commands, 0);
+    let fn = command-handler(hn);
+    fn(parser);
   end;
 end method;
 
@@ -80,7 +80,7 @@ define method parser-get-parameter (parser :: <command-parser>, name :: <symbol>
   element(parser-parameters(parser), name, default: default);
 end method;
 
-define method parser-push-param (parser :: <command-parser>, param :: <command-parameter>, value :: <object>)
+define method parser-push-parameter (parser :: <command-parser>, param :: <command-parameter>, value :: <object>)
  => (value :: <object>);
   if (node-repeatable?(param))
     element(parser-parameters(parser), parameter-name(param)) :=
@@ -91,9 +91,9 @@ define method parser-push-param (parser :: <command-parser>, param :: <command-p
   value;
 end method;
 
-define method parser-push-handler (parser :: <command-parser>, h :: <function>)
+define method parser-push-command (parser :: <command-parser>, h :: <command-command>)
  => ();
-  parser-handlers(parser) := add(parser-handlers(parser), h);
+  parser-commands(parser) := add(parser-commands(parser), h);
 end method;
 
 define method parser-push-node (parser :: <command-parser>, token :: <command-token>, node :: <command-node>)

@@ -178,7 +178,7 @@ end class;
 define method node-accept (node :: <command-command>, parser :: <command-parser>, token :: <command-token>)
  => ();
   if (command-handler(node))
-    parser-push-handler(parser, command-handler(node));
+    parser-push-command(parser, node);
   end
 end method;
 
@@ -211,8 +211,8 @@ end method;
 define open abstract class <command-parameter> (<command-node>)
   slot parameter-name :: <symbol>,
     init-keyword: name:;
-  slot parameter-anchor :: false-or(<command-node>) = #f,
-    init-keyword: anchor:;
+  slot parameter-command :: false-or(<command-command>) = #f,
+    init-keyword: command:;
   slot parameter-mandatory? :: <boolean> = #f,
     init-keyword: mandatory?:;
   slot parameter-value-type :: <type> = <string>,
@@ -228,14 +228,14 @@ define method parameter-convert (parser :: <command-parser>, node :: <command-pa
   as(parameter-value-type(node), token-string(token));
 end method;
 
-/* Parameters have the successors of their anchor in addition to their own
+/* Parameters have the successors of their command in addition to their own
  *
  * This is what allows having several parameters.
  */ 
 define method node-successors (node :: <command-parameter>)
  => (successors :: <sequence>);
-  if (parameter-anchor(node))
-    concatenate(node-successors(parameter-anchor(node)), next-method());
+  if (parameter-command(node))
+    concatenate(node-successors(parameter-command(node)), next-method());
   else
     next-method();
   end
@@ -268,7 +268,7 @@ end method;
 define method node-accept (node :: <command-parameter>, parser :: <command-parser>, token :: <command-token>)
  => ();
   next-method();
-  parser-push-param(parser, node, parameter-convert(parser, node, token));
+  parser-push-parameter(parser, node, parameter-convert(parser, node, token));
 end method;
 
 
