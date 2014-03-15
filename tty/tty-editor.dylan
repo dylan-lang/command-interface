@@ -74,7 +74,14 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
           end;
         else
           if (key-character?(key))
-            if (key-character(key) ~= ' ' | editor-complete-implicit(editor))
+            if (key-character(key) == ' ')
+              let accepted = editor-complete-implicit(editor);
+              if (accepted) 
+                editor-insert(editor, key-character(key));
+              else
+                editor-complete(editor);
+              end;
+            else
               editor-insert(editor, key-character(key));
             end;
           end;
@@ -137,13 +144,13 @@ define method editor-maybe-refresh (editor :: <tty-editor>)
   let tty = activity-tty(editor);
   if (tty)
     let prompt = editor-prompt(editor);
-    if(editor-dirty-line?(editor))
+    if (editor-dirty-line?(editor))
       tty-cursor-column(tty, 0);
       tty-kill-whole-line(tty);
       tty-write(tty, prompt);
       tty-write(tty, editor-line(editor));
     end;
-    if(editor-dirty-line?(editor) | editor-dirty-position?(editor))
+    if (editor-dirty-line?(editor) | editor-dirty-position?(editor))
       tty-cursor-column(tty, size(prompt) + editor-position(editor));
     end;
     editor-dirty-line?(editor) := #f;

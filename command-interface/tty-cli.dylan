@@ -73,7 +73,7 @@ end method;
 
 // this should possibly be merged with the bashcomp version somehow.
 define method editor-complete-internal (editor :: <tty-command-shell>)
- => (completions :: <sequence>, complete-token :: false-or(<command-token>));
+ => (completions :: <list>, token :: false-or(<command-token>));
   // get editor state
   let str = editor-line(editor);
   let posn = editor-position(editor);
@@ -123,30 +123,33 @@ define method editor-complete-implicit (editor :: <tty-command-shell>)
       values(#(), #f);
     end;
   // get all completions as raw strings
-  let raw-completions = apply(concatenate, #(), map(completion-results, completions));
+  let options = apply(concatenate, #(),
+                      map(completion-options, completions));
   // we only complete when there is an existing token
   if (complete-token)
     // act on the completion
-    select (size(raw-completions))
+    select (size(options))
       // don't do anything if we have nothing
       0 => #t;
       // replace single completions
       1 =>
         begin
-          let completion = first(raw-completions);
+          let option = first(options);
+          let completion = option-string(first(options));
           replace-token(editor, complete-token, #f, completion);
-          #t;
+          option.option-complete? | ~option.option-completion.completion-exhaustive?;
         end;
       // else, insert the longest common prefix
-      otherwise => 
+      otherwise =>
         begin
-          let common = longest-common-prefix(raw-completions);
+          let exhaustive? = reduce(and, #t, map(completion-exhaustive?, completions));
+          let option-strings = map(option-string, options);
+          let common = longest-common-prefix(option-strings);
           replace-token(editor, complete-token, #f, common);
-          member?(common, raw-completions, test: \=);
+          member?(common, option-strings, test: \=) | ~exhaustive?;
         end;
     end;
   end;
-
 end method;
 
 define method editor-complete (editor :: <tty-command-shell>)
@@ -174,12 +177,13 @@ define method editor-complete (editor :: <tty-command-shell>)
         return();
       end;
     // get all completions as raw strings
-    let raw-completions =
-      apply(concatenate, #(), map(completion-results, completions));
+    let options = apply(concatenate, #(),
+                        map(completion-options, completions));
+    let option-strings = map(option-string, options);
     // we need the position in case we don't have a token
     let posn = editor-position(editor);
     // act on completion results
-    select (size(raw-completions))
+    select (size(options))
       // no completions -> say so
       0 =>
         begin
@@ -188,17 +192,20 @@ define method editor-complete (editor :: <tty-command-shell>)
         end;
       // one completion -> insert it
       1 =>
-        let completion = first(raw-completions);
+        let option = first(options);
+        let completion = option-string(option);
+        let autospace? = option-complete?(option)
+          & option-completion(option).completion-exhaustive?;
         if (complete-token)
-          replace-token(editor, complete-token, #t, completion);
+          replace-token(editor, complete-token, autospace?, completion);
         else
-          replace-position(editor, posn, #t, completion);
+          replace-position(editor, posn, autospace?, completion);
         end;
       // many completions -> insert longest common prefix and print options
       otherwise =>
         editor-finish(editor);
-        format-out("%s\n", join(raw-completions, " "));
-        let common = longest-common-prefix(raw-completions);
+        format-out("%s\n", join(option-strings, " "));
+        let common = longest-common-prefix(option-strings);
         if (complete-token)
           replace-token(editor, complete-token, #f, common);
         else

@@ -68,6 +68,16 @@ define command show log ($root)
     format-out("Nothing to show...\n");
 end;
 
+define command show rule ($root)
+  help "Query rules";
+  named parameter src-interface :: <string>;
+  named parameter src-address :: <string>;
+  named parameter dst-interface :: <string>;
+  named parameter dst-address :: <string>;
+  implementation
+    format-out("Nothing to show...\n");
+end;
+
 define command configure ($root)
   help "Modify configuration";
   implementation
