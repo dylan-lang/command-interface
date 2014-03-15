@@ -74,7 +74,14 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
           end;
         else
           if (key-character?(key))
-            if (key-character(key) ~= ' ' | editor-complete-implicit(editor))
+            if (key-character(key) == ' ')
+              let accepted = editor-complete-implicit(editor);
+              if(accepted) 
+                editor-insert(editor, key-character(key));
+              else
+                editor-complete(editor);
+              end;
+            else
               editor-insert(editor, key-character(key));
             end;
           end;
