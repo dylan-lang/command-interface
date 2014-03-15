@@ -7,11 +7,11 @@ copyright: see accompanying file LICENSE
  */
 define method root-add-bash-completion (root :: <command-root>)
  => ();
-  let command = root-define-command
+  let command = build-command
     (root, "bashcomplete",
      hidden?: #t,
      handler: bash-complete-handler);
-  make-simple-param(command, #"command", repeatable?: #t);
+  build-simple-parameter(command, #"command", repeatable?: #t);
 end method;
 
 /* Handler for the "bashcomplete" command

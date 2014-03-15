@@ -5,10 +5,10 @@ copyright: see accompanying file LICENSE
 
 define method root-add-help (root :: <command-root>)
  => ();
-  root-define-command(root, "help",
-                      node-class: <command-wrapper>,
-                      root: root,
-                      handler: help-handler);
+  build-command(root, "help",
+                node-class: <command-wrapper>,
+                root: root,
+                handler: help-handler);
 end method;
 
 define method help-handler (parser :: <command-parser>)

@@ -33,7 +33,7 @@ define macro command-aux-definer
                             ?bindings;
                             ?implementation;
                           end method;
-           let %command = root-define-command(%root, %symbols, handler: %handler, ?keywords);
+           let %command = build-command(%root, %symbols, handler: %handler, ?keywords);
            ?parameters
          end }
 
@@ -77,9 +77,9 @@ define macro command-aux-definer
   parameters:
     { } => { }
     { ?parameter-adjectives parameter ?:name, #rest ?parameter-options; ... }
-      => { make-param(%command, ?#"name", ?parameter-options, ?parameter-adjectives); ... }
+      => { build-parameter(%command, ?#"name", ?parameter-options, ?parameter-adjectives); ... }
     { ?parameter-adjectives parameter ?:name :: ?type:expression, #rest ?parameter-options; ... }
-      => { make-param(%command, ?#"name", value-type: ?type, ?parameter-options, ?parameter-adjectives); ... }
+      => { build-parameter(%command, ?#"name", value-type: ?type, ?parameter-options, ?parameter-adjectives); ... }
     { ?other:*; ... } => { ... }
 
   // parameter adjectives
