@@ -363,6 +363,7 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
     else
       #f
     end;
+
   // locator of current token as hint
   let tloc =
     if (token-string)
@@ -370,7 +371,6 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
     else
       #f
     end;
-
   // directory to complete in
   let dir =
     if (tloc & locator-directory(tloc))
@@ -383,37 +383,40 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
   let completions = #();
   let children = directory-contents(dir);
   for (child in children)
-    let filename = locator-name(child);
     if (tloc)
-      // accept files that match token hint
-      let str = locator-name(tloc);
-      // XXX this comparison probably breaks on windows
-      if (filename = str | starts-with?(filename, str))
-        completions := add(completions, child);
+      let tfn = locator-name(tloc);
+      if (instance?(tloc, <directory-locator>))
+        tfn := last(locator-path(tloc));
+      end;
+      if (instance?(child, <file-locator>))
+        let cfn = locator-name(child);
+        if ((tfn = "") | starts-with?(cfn, tfn))
+          completions := add(completions, child);
+        end;
+      end;
+      if (instance?(child, <directory-locator>))
+        let cfn = last(locator-path(child));
+        if ((tfn = "") | starts-with?(cfn, tfn))
+          completions := add(completions, child);
+        end;
       end;
     else
-      // accept all files
       completions := add(completions, child);
     end;
   end for;
 
   // filter out files if we don't want them
   // we don't do this for directories because they lead to files
-  if (~file-accept-file?(node))
-    completions := choose(complement(rcurry(instance?, <file-locator>)), completions);
-  end;
+  //if (~file-accept-file?(node))
+  //completions := choose(complement(rcurry(instance?, <file-locator>)), completions);
+  //end;
 
-  // if we have only one completion and it is
-  // a directory, then if we are searching for files
-  // (not just directories) we add an elipsis completion
-  // so that shells don't think we are done
-  if (size(completions) = 1
-       & instance?(last(completions), <directory-locator>)
-       & file-accept-file?(node))
-    let elipsis = make(<file-locator>,
-                       directory: last(completions),
-                       name: "...");
-    completions := add(completions, elipsis);
+  let compl-strings = map(curry(as, <string>), completions);
+  if (tloc)
+    let tstr = as(<string>, tloc);
+    if (~member?(tstr, compl-strings, test: \=))
+      compl-strings := add(compl-strings, tstr);
+    end
   end;
 
   local method as-option(string)
@@ -422,14 +425,14 @@ define method node-complete (node :: <command-file>, parser :: <command-parser>,
         end;
   make(<command-completion>,
        node: node, token: token,
-       exhaustive?: #f, options: map(as-option, completions));
+       exhaustive?: #f, options: map(as-option, compl-strings));
 end method;
 
 define method node-accept (node :: <command-file>, parser :: <command-parser>, token :: <command-token>)
  => ();
   next-method();
   let str = token-string(token);
-  if (file-must-exist?(node) & ~file-exists?(str))
-    error("File does not exist");
-  end;
+  //if (file-must-exist?(node) & ~file-exists?(str))
+  //  error("File does not exist");
+  //end;
 end method;
