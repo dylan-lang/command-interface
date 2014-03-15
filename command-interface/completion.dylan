@@ -22,11 +22,11 @@ define class <command-completion> (<object>)
     init-keyword: options:;
 end class;
 
-define method initialize(completion :: <command-completion>,
-                         #rest args, #key, #all-keys)
+define method initialize (completion :: <command-completion>,
+                          #rest args, #key, #all-keys)
  => ();
   next-method();
-  for(option in completion.completion-options)
+  for (option in completion.completion-options)
     option-completion(option) := completion;
   end;
 end method;
@@ -47,10 +47,10 @@ define class <command-completion-option> (<object>)
     init-keyword: complete?:;
 end class;
 
-define function make-exhaustive-completion(node :: <command-node>,
-                                           token :: false-or(<command-token>),
-                                           #key complete-options :: <list> = #(),
-                                                other-options :: <list> = #())
+define function make-exhaustive-completion (node :: <command-node>,
+                                            token :: false-or(<command-token>),
+                                            #key complete-options :: <list> = #(),
+                                                 other-options :: <list> = #())
   => (completion :: <command-completion>);
   local method as-complete-option(string :: <string>)
           make(<command-completion-option>, string: string, complete?: #t);

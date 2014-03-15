@@ -8,7 +8,7 @@ define function and (a :: <boolean>, b :: <boolean>)
   a & b;
 end;
 
-define function or(a :: <boolean>, b :: <boolean>)
+define function or (a :: <boolean>, b :: <boolean>)
  => (r :: <boolean>);
   a | b;
 end;
