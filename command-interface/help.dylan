@@ -1,4 +1,4 @@
-module: command-system
+module: command-interface
 synopsis: Reusable help command.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

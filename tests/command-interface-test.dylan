@@ -1,4 +1,4 @@
-module: command-system-test
+module: command-interface-test
 synopsis: Various tests for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
@@ -104,8 +104,8 @@ define test command-tokenizer-test()
            #(0, 2, 3, 5, 6, 8, 9));
 end;
 
-define suite command-system-test-suite()
+define suite command-interface-test-suite()
   test command-tokenizer-test;
 end;
 
-run-test-application(command-system-test-suite);
+run-test-application(command-interface-test-suite);

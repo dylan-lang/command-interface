@@ -1,4 +1,4 @@
-module: command-system
+module: command-interface
 synopsis: TTY activity for the CLI.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE

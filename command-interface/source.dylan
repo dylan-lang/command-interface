@@ -1,4 +1,4 @@
-module: command-system
+module: command-interface
 synopsis: CLI source records.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
