@@ -3,6 +3,16 @@ synsopsis: Utility functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
+define function and (a :: <boolean>, b :: <boolean>)
+ => (r :: <boolean>);
+  a & b;
+end;
+
+define function or(a :: <boolean>, b :: <boolean>)
+ => (r :: <boolean>);
+  a | b;
+end;
+
 define function n-spaces (n :: <integer>)
   => (spaces :: <string>);
   let str = "";
