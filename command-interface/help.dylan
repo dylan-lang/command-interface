@@ -5,10 +5,10 @@ copyright: see accompanying file LICENSE
 
 define method root-add-help (root :: <command-root>)
  => ();
-  root-define-command(root, "help",
-                      node-class: <command-wrapper>,
-                      root: root,
-                      handler: help-handler);
+  build-command(root, "help",
+                node-class: <command-wrapper>,
+                root: root,
+                handler: help-handler);
 end method;
 
 define method help-handler (parser :: <command-parser>)
@@ -44,9 +44,26 @@ define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
     end if;
   end for;
 
+  if (~cmd)
+    error("Incomplete command.");
+  end;
+
   cmd-title := reverse(cmd-title);
   cmd-title := map(as-uppercase, cmd-title);
 
   format-out("\n    %s\n\n", join(cmd-title, " "));
-  format-out("    %s\n\n", cmd-help);  
+  format-out("    %s\n\n",
+             if (cmd-help)
+               cmd-help
+             else
+               "No help."
+             end);
+
+  for (parameter in command-parameters(cmd))
+    let parmhelp = parameter-help(parameter);
+    if (~parmhelp)
+      parmhelp := "No help.";
+    end;
+    format-out("    PARAMETER %s\n     %s\n", parameter-name(parameter), parmhelp);
+  end;
 end method;

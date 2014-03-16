@@ -102,14 +102,6 @@ define module command-interface
     tty-command-shell-main;
 
   export
-    root-define-command,
-    root-add-help,
-    root-add-bash-completion,
-    make-named-param,
-    make-inline-param,
-    make-simple-param;
-
-  export
     longest-common-prefix;
 
   export

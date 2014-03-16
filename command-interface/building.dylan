@@ -3,7 +3,7 @@ synopsis: Utilities for constructing CLI node structures.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define method root-define-command (root :: <command-root>, name :: <sequence>,
+define method build-command (root :: <command-root>, name :: <sequence>,
                                    #rest node-keys,
                                    #key node-class :: <class> = <command-command>, #all-keys)
  => (cmd :: <command-symbol>);
@@ -45,52 +45,52 @@ define method root-define-command (root :: <command-root>, name :: <sequence>,
   cur;
 end method;
 
-define method root-define-command (root :: <command-root>, name :: <string>,
+define method build-command (root :: <command-root>, name :: <string>,
                                    #rest keys, #key, #all-keys)
  => (cmd :: <command-symbol>);
-  apply(root-define-command, root, list(name), keys);
+  apply(build-command, root, list(name), keys);
 end method;
 
-define method root-define-command (root :: <command-root>, name :: <symbol>,
+define method build-command (root :: <command-root>, name :: <symbol>,
                                    #rest keys, #key, #all-keys)
  => (cmd :: <command-symbol>);
-  apply(root-define-command, root, list(name), keys);
+  apply(build-command, root, list(name), keys);
 end method;
 
 
-define function make-param (anchor :: <command-command>, name :: <symbol>,
+define function build-parameter (command :: <command-command>, name :: <symbol>,
                             #rest keys,
                             #key syntax :: <symbol> = #"named",
                                  node-class :: <class> = <command-string>,
                             #all-keys)
  => (entry :: <command-node>);
   select (syntax)
-      #"named" => apply(make-named-param, anchor, name, keys);
-      #"simple" => apply(make-simple-param, anchor, name, keys);
-      #"inline" => apply(make-inline-param, anchor, name, keys);
+      #"named" => apply(build-named-parameter, command, name, keys);
+      #"simple" => apply(build-simple-parameter, command, name, keys);
+      #"inline" => apply(build-inline-parameter, command, name, keys);
       otherwise => error("Invalid parameter syntax %=", syntax);
   end;
 end;
 
-define function make-simple-param (anchor :: <command-command>, name :: <symbol>,
-                                   #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
+define function build-simple-parameter (command :: <command-command>, name :: <symbol>,
+                                    #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
  => (entry :: <command-node>);
   let param = apply(make, node-class,
                     name:, name,
-                    anchor:, anchor,
+                    command:, command,
                     priority:, $command-priority-parameter,
                     keys);
-  node-add-successor(anchor, param);
-  command-add-parameter(anchor, param);
+  node-add-successor(command, param);
+  command-add-parameter(command, param);
   param;
 end function;
 
-define method make-named-param (anchor :: <command-command>, names :: <sequence>,
-                                #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
+define method build-named-parameter (command :: <command-command>, names :: <sequence>,
+                                     #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
  => (param :: <command-node>, symbols :: <sequence>);
   let param = apply(make, node-class,
                     name:, element(names, 0),
-                    anchor:, anchor,
+                    command:, command,
                     priority:, $command-priority-parameter,
                     keys);
   let syms = #();
@@ -101,24 +101,24 @@ define method make-named-param (anchor :: <command-command>, names :: <sequence>
                    repeat-marker: param,
                    successors: list(param));
     syms := add(syms, sym);
-    node-add-successor(anchor, sym);
+    node-add-successor(command, sym);
   end for;
-  command-add-parameter(anchor, param);
+  command-add-parameter(command, param);
   values(param, syms);
 end method;
 
-define method make-named-param (anchor :: <command-command>, name :: <symbol>,
-                                #rest keys, #key, #all-keys)
+define method build-named-parameter (command :: <command-command>, name :: <symbol>,
+                                     #rest keys, #key, #all-keys)
  => (param :: <command-parameter>, symbols :: <sequence>);
-  apply(make-named-param, anchor, list(name), keys);
+  apply(build-named-parameter, command, list(name), keys);
 end method;
 
-define method make-inline-param (anchor :: <command-command>, names,
-                                 #rest keys, #key, #all-keys)
+define method build-inline-parameter (command :: <command-command>, names,
+                                      #rest keys, #key, #all-keys)
  => (param :: <command-node>, symbols :: <sequence>);
-  let (param, syms) = apply(make-named-param, anchor, names, keys);
+  let (param, syms) = apply(build-named-parameter, command, names, keys);
 
-  node-add-successor(anchor, param);
+  node-add-successor(command, param);
 
   values(param, syms);
 end method;
