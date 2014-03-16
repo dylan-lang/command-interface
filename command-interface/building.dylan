@@ -4,8 +4,8 @@ author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
 define method build-command (root :: <command-root>, name :: <sequence>,
-                                   #rest node-keys,
-                                   #key node-class :: <class> = <command-command>, #all-keys)
+                             #rest node-keys,
+                             #key node-class :: <class> = <command-command>, #all-keys)
  => (cmd :: <command-symbol>);
   local
     method find-or-make-successor (node :: <command-node>,
@@ -46,23 +46,23 @@ define method build-command (root :: <command-root>, name :: <sequence>,
 end method;
 
 define method build-command (root :: <command-root>, name :: <string>,
-                                   #rest keys, #key, #all-keys)
+                             #rest keys, #key, #all-keys)
  => (cmd :: <command-symbol>);
   apply(build-command, root, list(name), keys);
 end method;
 
 define method build-command (root :: <command-root>, name :: <symbol>,
-                                   #rest keys, #key, #all-keys)
+                             #rest keys, #key, #all-keys)
  => (cmd :: <command-symbol>);
   apply(build-command, root, list(name), keys);
 end method;
 
 
 define function build-parameter (command :: <command-command>, name :: <symbol>,
-                            #rest keys,
-                            #key syntax :: <symbol> = #"named",
-                                 node-class :: <class> = <command-string>,
-                            #all-keys)
+                                 #rest keys,
+                                 #key syntax :: <symbol> = #"named",
+                                      node-class :: <class> = <command-string>,
+                                 #all-keys)
  => (entry :: <command-node>);
   select (syntax)
       #"named" => apply(build-named-parameter, command, name, keys);
@@ -73,7 +73,7 @@ define function build-parameter (command :: <command-command>, name :: <symbol>,
 end;
 
 define function build-simple-parameter (command :: <command-command>, name :: <symbol>,
-                                    #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
+                                        #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
  => (entry :: <command-node>);
   let param = apply(make, node-class,
                     name:, name,
