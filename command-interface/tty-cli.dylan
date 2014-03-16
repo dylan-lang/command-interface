@@ -142,7 +142,7 @@ define method editor-complete-implicit (editor :: <tty-command-shell>)
       // else, insert the longest common prefix
       otherwise =>
         begin
-          let exhaustive? = reduce(and, #t, map(completion-exhaustive?, completions));
+          let exhaustive? = every?(completion-exhaustive?, completions);
           let option-strings = map(option-string, options);
           let common = longest-common-prefix(option-strings);
           replace-token(editor, complete-token, #f, common);
