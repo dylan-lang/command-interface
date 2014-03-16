@@ -74,7 +74,7 @@ define open generic node-accept ( node :: <command-node>, parser :: <command-par
  * This prevents non-repeatable parameters from being added again.
  *
  * Note how we also check for the repeat-marker of the node for
- * cases where another node can preclude our occurence.
+ * cases where another node can preclude our occurrence.
  */
 define method node-acceptable? (node :: <command-node>, parser :: <command-parser>)
  => (acceptable? :: <boolean>);

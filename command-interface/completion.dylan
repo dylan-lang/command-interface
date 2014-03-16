@@ -42,7 +42,7 @@ define class <command-completion-option> (<object>)
   /* string for this option */
   slot option-string :: <string>,
     required-init-keyword: string:;
-  /* true of this option is complete */
+  /* true if this option is complete */
   slot option-complete? :: <boolean> = #f,
     init-keyword: complete?:;
 end class;
