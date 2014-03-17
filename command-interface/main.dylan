@@ -32,23 +32,20 @@ define function tty-command-shell-main (name :: <string>, arguments :: <vector>,
 
     status := 0;
   exception (le :: <command-lexer-error>)
-    format(*standard-error*,
-           " %s\n %s\n%s\n",
-           source-string(source),
-           command-annotate(source, le.error-srcoff),
-           condition-to-string(le));
-    force-output(*standard-error*);
+    format-err(" %s\n %s\n%s\n",
+               source-string(source),
+               command-annotate(source, le.error-srcoff),
+               condition-to-string(le));
+    force-err();
   exception (pe :: <command-parse-error>)
-    format(*standard-error*,
-           " %s\n %s\n%s\n",
-           source-string(source),
-           command-annotate(source, token-srcloc(pe.error-token)),
-           condition-to-string(pe));
-    force-output(*standard-error*);
+    format-err(" %s\n %s\n%s\n",
+               source-string(source),
+               command-annotate(source, token-srcloc(pe.error-token)),
+               condition-to-string(pe));
+    force-err();
   exception (e :: <error>)
-    format(*standard-error*,
-           "Error: %=\n", e);
-    force-output(*standard-error*);
+    format-err("Error: %=\n", e);
+    force-err();
   end;
 
   exit-application(status);

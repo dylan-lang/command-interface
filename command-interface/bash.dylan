@@ -88,7 +88,7 @@ define method bash-complete-command (parser :: <command-parser>, command)
       format-out("...\n");
     end;
   exception (e :: <error>)
-    format(*standard-error*, "Error: %=\n", e);
-    force-output(*standard-error*);
+    format-err("Error: %=\n", e);
+    force-err();
   end block;
 end method;

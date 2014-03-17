@@ -24,7 +24,8 @@ define module command-interface
   use format,
     import: { format };
   use format-out,
-    import: { format-out, force-out };
+    import: { format-out, force-out,
+              format-err, force-err };
   use streams,
     import: { force-output };
   use tty;
