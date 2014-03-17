@@ -32,20 +32,20 @@ define constant $command-priority-default   =  0;
  *
  */
 define abstract class <command-node> (<object>)
-  /* possible (static) successors */
+  /* possible successor nodes (collected while building) */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
   /* match and completion priority */
-  slot node-priority :: <integer> = $command-priority-default,
+  constant slot node-priority :: <integer> = $command-priority-default,
     init-keyword: priority:;
   /* hidden nodes are not completed */
-  slot node-hidden? :: <boolean> = #f,
+  constant slot node-hidden? :: <boolean> = #f,
     init-keyword: hidden?:;
   /* repeatable nodes may re-appear */
-  slot node-repeatable? :: <boolean> = #f,
+  constant slot node-repeatable? :: <boolean> = #f,
     init-keyword: repeatable?:;
   /* don't repeat if this node is already present */
-  slot node-repeat-marker :: false-or(<command-node>) = #f,
+  constant slot node-repeat-marker :: false-or(<command-node>) = #f,
     init-keyword: repeat-marker:;
 end class;
 
@@ -163,12 +163,12 @@ end method;
  */
 define open class <command-command> (<command-symbol>)
   /* help source for the command */
-  slot command-help :: false-or(<string>) = #f,
+  constant slot command-help :: false-or(<string>) = #f,
     init-keyword: help:;
   /* handler function */
-  slot command-handler :: false-or(<function>) = #f,
+  constant slot command-handler :: false-or(<function>) = #f,
     init-keyword: handler:;
-  /* parameters */
+  /* parameters (collected while building) */
   slot command-parameters :: <list> = #();
 end class;
 
@@ -206,15 +206,15 @@ end method;
 /* A captured parameter
  */
 define open abstract class <command-parameter> (<command-node>)
-  slot parameter-name :: <symbol>,
+  constant slot parameter-name :: <symbol>,
     init-keyword: name:;
-  slot parameter-help :: false-or(<string>) = #f,
+  constant slot parameter-help :: false-or(<string>) = #f,
     init-keyword: help:;
-  slot parameter-command :: false-or(<command-command>) = #f,
+  constant slot parameter-command :: false-or(<command-command>) = #f,
     init-keyword: command:;
-  slot parameter-mandatory? :: <boolean> = #f,
+  constant slot parameter-mandatory? :: <boolean> = #f,
     init-keyword: mandatory?:;
-  slot parameter-value-type :: <type> = <string>,
+  constant slot parameter-value-type :: <type> = <string>,
     init-keyword: value-type:;
 end class;
 
