@@ -11,10 +11,22 @@ define command quit ($root)
       tty-finish-activity(current-tty());
 end;
 
-define command fail ($root)
+define command error ($root)
   help "Fail miserably";
+  simple parameter message :: <string>,
+    required: #t;
   implementation
-      error("Demo error");
+      error(message);
+end;
+
+define command examine ($root)
+  simple parameter object :: <string>,
+    required?: #t,
+    repeatable?: #t;
+  implementation
+    begin
+      format-out("Doing almost nothing...\nOBJECTS: %=\n", object);
+    end;
 end;
 
 define command directory ($root)
