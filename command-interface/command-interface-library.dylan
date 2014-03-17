@@ -75,6 +75,11 @@ define module command-interface
     <command-unknown-error>;
 
   export
+    <command-completion>,
+    <command-completion-option>,
+    make-exhaustive-completion;
+
+  export
     <command-node>,
     // getters and setters
     node-hidden?,

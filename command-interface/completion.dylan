@@ -9,16 +9,16 @@ copyright: see accompanying file LICENSE
  */
 define class <command-completion> (<object>)
   /* node the completion was performed for */
-  slot completion-node :: <command-node>,
+  constant slot completion-node :: <command-node>,
     required-init-keyword: node:;
   /* token used to hint the completion, if provided */
-  slot completion-token :: false-or(<command-token>) = #f,
+  constant slot completion-token :: false-or(<command-token>) = #f,
     init-keyword: token:;
   /* was this completion exhaustive? (if yes then only given options are valid) */
-  slot completion-exhaustive? :: <boolean> = #f,
+  constant slot completion-exhaustive? :: <boolean> = #f,
     init-keyword: exhaustive?:;
   /* actual completion options */
-  slot completion-options :: <list> = #(),
+  constant slot completion-options :: <list> = #(),
     init-keyword: options:;
 end class;
 
@@ -40,10 +40,10 @@ end method;
 define class <command-completion-option> (<object>)
   slot option-completion :: false-or(<command-completion>) = #f;
   /* string for this option */
-  slot option-string :: <string>,
+  constant slot option-string :: <string>,
     required-init-keyword: string:;
-  /* true of this option is complete */
-  slot option-complete? :: <boolean> = #f,
+  /* true if this option is complete */
+  constant slot option-complete? :: <boolean> = #f,
     init-keyword: complete?:;
 end class;
 

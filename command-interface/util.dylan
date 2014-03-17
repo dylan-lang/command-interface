@@ -1,5 +1,5 @@
 module: command-interface
-synsopsis: Utility functions.
+synopsis: Utility functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 

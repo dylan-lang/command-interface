@@ -79,7 +79,7 @@ define method bash-complete-command (parser :: <command-parser>, command)
       completions := parser-complete(p, #f);
     end if;
     // print completion
-    let all-exhaustive? = reduce(and, #t, map(completion-exhaustive?, completions));
+    let all-exhaustive? = every?(completion-exhaustive?, completions);
     let all-options = apply(concatenate, #(), map(completion-options, completions));
     for (option in all-options)
       format-out("%s\n", option-string(option));
