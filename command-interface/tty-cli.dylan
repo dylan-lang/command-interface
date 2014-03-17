@@ -115,6 +115,19 @@ end method;
 
 define method editor-complete-implicit (editor :: <tty-command-shell>)
  => (accepted? :: <boolean>);
+  let result = #t;
+  block ()
+    result := editor-complete-implicit-internal(editor);
+  exception (le :: <command-lexer-error>)
+    #t
+  exception (le :: <command-parse-error>)
+    #t
+  end;
+  result;
+end;
+
+define method editor-complete-implicit-internal (editor :: <tty-command-shell>)
+ => (accepted? :: <boolean>);
   // perform completion
   let (completions, complete-token) =
     block ()
