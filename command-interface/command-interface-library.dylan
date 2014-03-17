@@ -51,6 +51,10 @@ define module command-interface
     token-type,
     token-string,
     token-srcloc,
+    // completions
+    <command-completion>,
+    <command-completion-option>,
+    make-completion,
     // source record ops
     command-tokenize,
     command-annotate,
@@ -73,11 +77,6 @@ define module command-interface
     error-token,
     <command-ambiguous-error>,
     <command-unknown-error>;
-
-  export
-    <command-completion>,
-    <command-completion-option>,
-    make-exhaustive-completion;
 
   export
     <command-node>,

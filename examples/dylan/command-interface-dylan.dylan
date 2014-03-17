@@ -29,7 +29,7 @@ define class <command-open-dylan-project> (<command-parameter>)
 end class;
 
 define method node-complete (param :: <command-open-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
+ => (completions :: <command-completion>);
   let names = map(project-name, open-projects());
   let compls =
     if (token)
@@ -39,35 +39,31 @@ define method node-complete (param :: <command-open-dylan-project>, parser :: <c
     else
       names;
     end;
-  as(<list>, compls);
+  make-completion(param, token, complete-options: compls, exhaustive?: #t);
 end method;
 
 define class <command-dylan-project> (<command-parameter>)
 end class;
 
 define method node-complete (param :: <command-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
+ => (completions :: <command-completion>);
   let names = map(project-name, open-projects());
   let compls =
     if (token)
       let string = as-lowercase(token-string(token));
       let compls = choose(rcurry(starts-with?, string), names);
-      unless (member?(string, compls, test: \=)
-                | member?(longest-common-prefix(names), compls, test: \=))
-        compls := add!(compls, string);
-      end;
       compls;
     else
       names;
     end;
-  as(<list>, compls);
+  make-completion(param, token, complete-options: compls, exhaustive?: #f);
 end method;
 
 define class <command-report-type> (<command-parameter>)
 end class;
 
 define method node-complete (param :: <command-report-type>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <list>);
+ => (completions :: <command-completion>);
   let names = map(curry(as, <string>), key-sequence(available-reports()));
   let compls =
     if (token)
@@ -76,7 +72,7 @@ define method node-complete (param :: <command-report-type>, parser :: <command-
     else
       names;
     end;
-  as(<list>, compls);
+  make-completion(param, token, complete-options: compls, exhaustive?: #t);
 end method;
 
 
