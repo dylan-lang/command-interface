@@ -67,7 +67,6 @@ define function build-parameter (command :: <command-command>, name :: <symbol>,
   select (syntax)
       #"named" => apply(build-named-parameter, command, name, keys);
       #"simple" => apply(build-simple-parameter, command, name, keys);
-      #"inline" => apply(build-inline-parameter, command, name, keys);
       otherwise => error("Invalid parameter syntax %=", syntax);
   end;
 end;
@@ -113,14 +112,4 @@ define method build-named-parameter (command :: <command-command>, name :: <symb
                                      #rest keys, #key, #all-keys)
  => (param :: <command-parameter>, symbols :: <sequence>);
   apply(build-named-parameter, command, list(name), keys);
-end method;
-
-define method build-inline-parameter (command :: <command-command>, names,
-                                      #rest keys, #key, #all-keys)
- => (param :: <command-node>, symbols :: <sequence>);
-  let (param, syms) = apply(build-named-parameter, command, names, keys);
-
-  node-add-successor(command, param);
-
-  values(param, syms);
 end method;
