@@ -47,10 +47,11 @@ define class <command-completion-option> (<object>)
     init-keyword: complete?:;
 end class;
 
-define function make-exhaustive-completion (node :: <command-node>,
-                                            token :: false-or(<command-token>),
-                                            #key complete-options :: <list> = #(),
-                                                 other-options :: <list> = #())
+define function make-completion (node :: <command-node>,
+                                 token :: false-or(<command-token>),
+                                 #key exhaustive? :: <boolean> = #f,
+                                      complete-options :: <sequence> = #(),
+                                      other-options :: <sequence> = #())
   => (completion :: <command-completion>);
   local method as-complete-option(string :: <string>)
           make(<command-completion-option>, string: string, complete?: #t);
@@ -60,7 +61,8 @@ define function make-exhaustive-completion (node :: <command-node>,
         end;
   make(<command-completion>,
        node: node, token: token,
-       exhaustive?: #t,
-       options: concatenate(map(as-complete-option, complete-options),
-                            map(as-other-option, other-options)));
+       exhaustive?: exhaustive?,
+       options: concatenate-as(<list>,
+                               map(as-complete-option, complete-options),
+                               map(as-other-option, other-options)));
 end;

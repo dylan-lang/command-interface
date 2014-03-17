@@ -106,7 +106,7 @@ end;
  */
 define method node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completion :: <command-completion>);
-  make-exhaustive-completion(node, token);
+  make-completion(node, token, exhaustive?: #t);
 end method;
 
 /* Default acceptor (no-op)
@@ -157,7 +157,7 @@ define method node-complete (node :: <command-symbol>, parser :: <command-parser
                 else
                   #();
                 end;
-  make-exhaustive-completion(node, token, complete-options: options);
+  make-completion(node, token, complete-options: options, exhaustive?: #t);
 end method;
 
 
@@ -321,8 +321,9 @@ define method node-complete (node :: <command-oneof>, parser :: <command-parser>
                  else
                    alternatives;
                  end;
-  make-exhaustive-completion(node, token,
-                             complete-options: filtered);
+  make-completion(node, token,
+                  exhaustive?: #t,
+                  complete-options: filtered);
 end method;
 
 
