@@ -151,13 +151,10 @@ define method node-match (node :: <command-symbol>, parser :: <command-parser>, 
 end method;
 
 define method node-complete (node :: <command-symbol>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <command-completion>);
-  let options = if (~token | node-match(node, parser, token))
-                  list(as(<string>, node-symbol(node)));
-                else
-                  #();
-                end;
-  make-completion(node, token, complete-options: options, exhaustive?: #t);
+ => (completion :: <command-completion>);
+  make-completion(node, token,
+                  exhaustive?: #t,
+                  complete-options: list(as(<string>, node-symbol(node))));
 end method;
 
 
@@ -254,15 +251,8 @@ end method;
  */
 define method node-complete (node :: <command-parameter>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <command-completion>);
-  let options =
-    if (token)
-      list(make(<command-completion-option>, string: token-string(token)));
-    else
-      #()
-    end;
-  make(<command-completion>,
-       node: node, token: token,
-       exhaustive?: #f, options: options);
+  make-completion(node, token,
+                  exhaustive?: #f);
 end method;
 
 /* Parameters get registered as such when accepted
@@ -312,18 +302,9 @@ define method node-complete (node :: <command-oneof>, parser :: <command-parser>
   unless (case-sensitive?)
     alternatives := map(as-lowercase, alternatives);
   end;
-  let filtered = if (token)
-                   let token-string = token-string(token);
-                   unless (case-sensitive?)
-                     token-string := as-lowercase(token-string);
-                   end;
-                   choose(rcurry(starts-with?, token-string), alternatives);
-                 else
-                   alternatives;
-                 end;
   make-completion(node, token,
                   exhaustive?: #t,
-                  complete-options: filtered);
+                  complete-options: alternatives);
 end method;
 
 

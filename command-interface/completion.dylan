@@ -52,7 +52,27 @@ define function make-completion (node :: <command-node>,
                                  #key exhaustive? :: <boolean> = #f,
                                       complete-options :: <sequence> = #(),
                                       other-options :: <sequence> = #())
-  => (completion :: <command-completion>);
+ => (completion :: <command-completion>);
+  if (token)
+    let tokstr = token-string(token);
+    // filter options using token
+    complete-options := choose(rcurry(starts-with?, tokstr), complete-options);
+    other-options := choose(rcurry(starts-with?, tokstr), other-options);
+    // add token as an incomplete option for non-exhaustive completion
+    if (~exhaustive?)
+      let all-options = concatenate(complete-options, other-options);
+      unless (member?(tokstr, all-options, test: \=))
+        other-options := add!(other-options, tokstr);
+      end;
+    end;
+  end;
+  // add longest common prefix as an incomplete option
+  let all-options = concatenate(complete-options, other-options);
+  let lcp = longest-common-prefix(all-options);
+  unless (empty?(lcp) | member?(lcp, all-options, test: \=))
+    other-options := add!(other-options, lcp);
+  end;
+  // construct the result
   local method as-complete-option(string :: <string>)
           make(<command-completion-option>, string: string, complete?: #t);
         end,

@@ -125,6 +125,7 @@ define method editor-complete-implicit (editor :: <tty-command-shell>)
   // get all completions as raw strings
   let options = apply(concatenate, #(),
                       map(completion-options, completions));
+  let exhaustive? = every?(completion-exhaustive?, completions);
   // we only complete when there is an existing token
   if (complete-token)
     // act on the completion
@@ -135,18 +136,23 @@ define method editor-complete-implicit (editor :: <tty-command-shell>)
       1 =>
         begin
           let option = first(options);
-          let completion = option-string(first(options));
-          replace-token(editor, complete-token, #f, completion);
-          option.option-complete? | ~option.option-completion.completion-exhaustive?;
+          let completion = option.option-string;
+          if (exhaustive?)
+            replace-token(editor, complete-token, #f, completion);
+          end;
+          option.option-complete? | ~exhaustive?;
         end;
       // else, insert the longest common prefix
       otherwise =>
         begin
-          let exhaustive? = every?(completion-exhaustive?, completions);
           let option-strings = map(option-string, options);
           let common = longest-common-prefix(option-strings);
-          replace-token(editor, complete-token, #f, common);
-          member?(common, option-strings, test: \=) | ~exhaustive?;
+          let matching = choose-by(curry(\=, common), option-strings, options);
+          let option = if (empty?(matching)) #f else first(matching) end;
+          if (exhaustive?)
+            replace-token(editor, complete-token, #f, common);
+          end;
+          (option & option.option-complete?) | ~exhaustive?;
         end;
     end;
   end;
@@ -194,8 +200,7 @@ define method editor-complete (editor :: <tty-command-shell>)
       1 =>
         let option = first(options);
         let completion = option-string(option);
-        let autospace? = option-complete?(option)
-          & option-completion(option).completion-exhaustive?;
+        let autospace? = option-complete?(option) & option-completion(option).completion-exhaustive?;
         if (complete-token)
           replace-token(editor, complete-token, autospace?, completion);
         else
@@ -204,12 +209,20 @@ define method editor-complete (editor :: <tty-command-shell>)
       // many completions -> insert longest common prefix and print options
       otherwise =>
         editor-finish(editor);
-        format-out("%s\n", join(option-strings, " "));
-        let common = longest-common-prefix(option-strings);
+        let complete-options = choose(option-complete?, options);
+        let complete-strings = map(option-string, complete-options);
+        format-out("%s\n", join(option-strings, " ")); // XXX only complete options for exhaustive case ???
+        let common = longest-common-prefix(complete-strings);
+
+        let matching-options = choose-by(rcurry(starts-with?, common),
+                                         complete-strings, complete-options);
+        let matching = choose-by(curry(\=, common), option-strings, options);
+        let option = if (empty?(matching)) #f else first(matching) end;
+        let autospace? = (size(matching-options) = 1) & option & option.option-complete?;
         if (complete-token)
-          replace-token(editor, complete-token, #f, common);
+          replace-token(editor, complete-token, autospace?, common);
         else
-          replace-position(editor, posn, #f, common);
+          replace-position(editor, posn, autospace?, common);
         end;
     end select;
   end block;
