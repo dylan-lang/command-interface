@@ -63,6 +63,8 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
           select (key-character(key))
             'A' => editor-jump(editor, 0);
             'E' => editor-jump(editor, size(editor-line(editor)));
+            'B' => editor-move(editor, -1);
+            'F' => editor-move(editor, +1);
             otherwise => #f;
           end;
         else
