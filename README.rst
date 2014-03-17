@@ -1,42 +1,45 @@
-Dylan CLI Library
-=================
+Command Interface System
+========================
 
-This is a library for building command line interfaces in Dylan.
+This is a system for building command-driven interfaces in Dylan.
 
-It can be used for build programs with an interactive shell
-that supports completion and sophisticated self-documentation.
+It can currently be used to declaratively design terminal-based
+command interfaces, commonly called shells or CLIs.
 
-It is dynamic in the sense that command structure and
-parameter completion can depend on runtime state.
+We also strive to implement graphical command interfaces in a
+similar manner to Symbolics Genera, including support for
+full graphical and markup output.
 
 Compiling
 ---------
 
 All dependencies are in `Open Dylan`_ itself.
 
-Add a custom registry entry and build with::
+Just build with::
 
-    $ dylan-compiler -build cli
+    $ dylan-compiler -build command-interface
 
-There is also a demo::
+There also is a demo::
 
-    $ dylan-compiler -build cli-demo
+    $ dylan-compiler -build command-interface-demo
+    $ _build/bin/command-interface-demo
 
 As well as some tests::
 
-    $ dylan-compiler -build cli-test
+    $ dylan-compiler -build command-interface-test
+    $ _build/bin/command-interface-test
 
 Completion in bash
 ------------------
 
-The cli integrates with bash completion. This allows one
-to implement a CLI binary that can be used both as an
+Our system integrates with bash completion. This allows one
+to implement a binary that can be used both as an
 interactive shell and from the system shell.
 
 To enable this feature you need to load the shell snippet
 printed by the following command into your shell::
 
-    $ cli-demo bashcomplete
+    $ _build/bin/command-interface-demo bashcomplete
 
 Once you do this you can complete and execute all commands
 that would be available inside the shell.
