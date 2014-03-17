@@ -23,7 +23,7 @@ define constant $ctrl-char-suspend   = ctrl-char('z');
 // other operations
 define constant $ctrl-char-tab = ctrl-char('i');
 define constant $ctrl-char-nak = ctrl-char('u');
-define constant $ctrl-char-bel = ctrl-char('b');
+define constant $ctrl-char-bel = ctrl-char('g');
 define constant $ctrl-char-eot = ctrl-char('d');
 define constant $ctrl-char-bs = ctrl-char('h');
 define constant $ctrl-char-ff = ctrl-char('l');
