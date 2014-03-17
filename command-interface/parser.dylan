@@ -75,11 +75,13 @@ end method;
  */
 define method parser-execute (parser :: <command-parser>)
  => ();
-  let commands = reverse(parser-commands(parser));
+  let commands = parser-commands(parser);
   if (size(commands) > 0)
-    let hn :: <command-command> = element(commands, 0);
-    let fn = command-handler(hn);
-    fn(parser);
+    let command :: <command-command> = last(commands);
+    let function = command-handler(command);
+    function(parser);
+  else
+    error("No command");
   end;
 end method;
 
