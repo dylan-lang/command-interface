@@ -24,13 +24,6 @@ define open class <tty-editor> (<tty-activity>)
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
 
-
-/* Finish the editor when paused
- */
-define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-pause>)
- => ();
-end method;
-
 /* Perform full redraw when resumed
  */
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-resume>)
