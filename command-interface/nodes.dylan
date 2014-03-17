@@ -217,8 +217,8 @@ define open abstract class <command-parameter> (<command-node>)
     init-keyword: help:;
   constant slot parameter-command :: false-or(<command-command>) = #f,
     init-keyword: command:;
-  constant slot parameter-mandatory? :: <boolean> = #f,
-    init-keyword: mandatory?:;
+  constant slot parameter-required? :: <boolean> = #f,
+    init-keyword: required?:;
   constant slot parameter-value-type :: <type> = <string>,
     init-keyword: value-type:;
 end class;
