@@ -50,7 +50,7 @@ end function;
 
 /* Get graphic character corresponding to a control char
  *
- * Will always be uppercase.
+ * Will always be uppercase if the result is a letter.
  */
 define function ctrl-char-character (c :: <byte-character>)
  => (character :: <byte-character>);
