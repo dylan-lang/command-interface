@@ -202,12 +202,17 @@ define method node-successors (node :: <command-wrapper>)
   concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
 
+/* Syntactical kinds of parameters
+ */
+define constant <parameter-kind> = one-of(#"simple", #"named");
 
 /* A captured parameter
  */
 define open abstract class <command-parameter> (<command-node>)
   constant slot parameter-name :: <symbol>,
     init-keyword: name:;
+  constant slot parameter-kind :: <parameter-kind> = #"named",
+    init-keyword: kind:;
   constant slot parameter-help :: false-or(<string>) = #f,
     init-keyword: help:;
   constant slot parameter-command :: false-or(<command-command>) = #f,
