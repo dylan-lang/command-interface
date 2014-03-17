@@ -23,6 +23,8 @@ define method editor-execute (editor :: <tty-command-shell>)
     let tokens = command-tokenize(src);
     // parse
     parser-parse(parser, tokens);
+    // verify
+    parser-verify(parser);
     // execute
     parser-execute(parser);
     // clear editor if successful

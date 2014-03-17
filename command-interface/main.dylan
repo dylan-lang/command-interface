@@ -16,6 +16,7 @@ define function tty-command-shell-main (name :: <string>, arguments :: <vector>,
     //     It ensures that completion results don't get garbled by tty handling.
     if (~empty?(tokens) & token-string(tokens[0]) = "bashcomplete")
       parser-parse(parser, tokens);
+      parser-verify(parser);
       parser-execute(parser);
     else
       with-tty (tty)
