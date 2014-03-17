@@ -158,12 +158,10 @@ define method parser-complete (parser :: <command-parser>, token :: false-or(<co
   if (token)
     acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
-  // collect completions from each node
+  // collect completions from each node and return them
   local method completion-for-node (node :: <command-node>)
          => (completion :: <command-completion>);
           node-complete(node, parser, token);
         end method;
-  let completions = map(completion-for-node, acceptable);
-  // return
-  completions;
+  map(completion-for-node, acceptable);
 end method;

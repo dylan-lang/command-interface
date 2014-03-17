@@ -49,21 +49,31 @@ define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
   end;
 
   cmd-title := reverse(cmd-title);
-  cmd-title := map(as-uppercase, cmd-title);
+  cmd-title := map(as-lowercase, cmd-title);
 
-  format-out("\n    %s\n\n", join(cmd-title, " "));
-  format-out("    %s\n\n",
-             if (cmd-help)
-               cmd-help
-             else
-               "No help."
-             end);
+  if (~cmd-help)
+    cmd-help := "No help.";
+  end;
+
+  format-out("\n");
+  format-out("  %s\n    %s\n\n", join(cmd-title, " "), cmd-help);
 
   for (parameter in command-parameters(cmd))
-    let parmhelp = parameter-help(parameter);
-    if (~parmhelp)
-      parmhelp := "No help.";
+    let param-help = parameter-help(parameter);
+    if (~param-help)
+      param-help := "No help.";
     end;
-    format-out("    PARAMETER %s\n     %s\n", parameter-name(parameter), parmhelp);
+    select (parameter-kind(parameter))
+      #"simple" =>
+        begin
+          format-out("    <%s>\n", parameter-name(parameter));
+          format-out("      %s\n", param-help);
+        end;
+      #"named" =>
+        begin
+          format-out("    %s <value>\n", parameter-name(parameter));
+          format-out("      %s\n", param-help);
+        end;
+    end;
   end;
 end method;

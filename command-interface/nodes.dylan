@@ -32,20 +32,20 @@ define constant $command-priority-default   =  0;
  *
  */
 define abstract class <command-node> (<object>)
-  /* possible (static) successors */
+  /* possible successor nodes (collected while building) */
   slot node-successors :: <list> = #(),
     init-keyword: successors:;
   /* match and completion priority */
-  slot node-priority :: <integer> = $command-priority-default,
+  constant slot node-priority :: <integer> = $command-priority-default,
     init-keyword: priority:;
   /* hidden nodes are not completed */
-  slot node-hidden? :: <boolean> = #f,
+  constant slot node-hidden? :: <boolean> = #f,
     init-keyword: hidden?:;
   /* repeatable nodes may re-appear */
-  slot node-repeatable? :: <boolean> = #f,
+  constant slot node-repeatable? :: <boolean> = #f,
     init-keyword: repeatable?:;
   /* don't repeat if this node is already present */
-  slot node-repeat-marker :: false-or(<command-node>) = #f,
+  constant slot node-repeat-marker :: false-or(<command-node>) = #f,
     init-keyword: repeat-marker:;
 end class;
 
@@ -151,13 +151,10 @@ define method node-match (node :: <command-symbol>, parser :: <command-parser>, 
 end method;
 
 define method node-complete (node :: <command-symbol>, parser :: <command-parser>, token :: false-or(<command-token>))
- => (completions :: <command-completion>);
-  let options = if (~token | node-match(node, parser, token))
-                  list(as(<string>, node-symbol(node)));
-                else
-                  #();
-                end;
-  make-completion(node, token, complete-options: options, exhaustive?: #t);
+ => (completion :: <command-completion>);
+  make-completion(node, token,
+                  exhaustive?: #t,
+                  complete-options: list(as(<string>, node-symbol(node))));
 end method;
 
 
@@ -166,12 +163,12 @@ end method;
  */
 define open class <command-command> (<command-symbol>)
   /* help source for the command */
-  slot command-help :: false-or(<string>) = #f,
+  constant slot command-help :: false-or(<string>) = #f,
     init-keyword: help:;
   /* handler function */
-  slot command-handler :: false-or(<function>) = #f,
+  constant slot command-handler :: false-or(<function>) = #f,
     init-keyword: handler:;
-  /* parameters */
+  /* parameters (collected while building) */
   slot command-parameters :: <list> = #();
 end class;
 
@@ -205,19 +202,24 @@ define method node-successors (node :: <command-wrapper>)
   concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
 
+/* Syntactical kinds of parameters
+ */
+define constant <parameter-kind> = one-of(#"simple", #"named");
 
 /* A captured parameter
  */
 define open abstract class <command-parameter> (<command-node>)
-  slot parameter-name :: <symbol>,
+  constant slot parameter-name :: <symbol>,
     init-keyword: name:;
-  slot parameter-help :: false-or(<string>) = #f,
+  constant slot parameter-kind :: <parameter-kind> = #"named",
+    init-keyword: kind:;
+  constant slot parameter-help :: false-or(<string>) = #f,
     init-keyword: help:;
-  slot parameter-command :: false-or(<command-command>) = #f,
+  constant slot parameter-command :: false-or(<command-command>) = #f,
     init-keyword: command:;
-  slot parameter-mandatory? :: <boolean> = #f,
+  constant slot parameter-mandatory? :: <boolean> = #f,
     init-keyword: mandatory?:;
-  slot parameter-value-type :: <type> = <string>,
+  constant slot parameter-value-type :: <type> = <string>,
     init-keyword: value-type:;
 end class;
 
@@ -254,15 +256,8 @@ end method;
  */
 define method node-complete (node :: <command-parameter>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <command-completion>);
-  let options =
-    if (token)
-      list(make(<command-completion-option>, string: token-string(token)));
-    else
-      #()
-    end;
-  make(<command-completion>,
-       node: node, token: token,
-       exhaustive?: #f, options: options);
+  make-completion(node, token,
+                  exhaustive?: #f);
 end method;
 
 /* Parameters get registered as such when accepted
@@ -312,18 +307,9 @@ define method node-complete (node :: <command-oneof>, parser :: <command-parser>
   unless (case-sensitive?)
     alternatives := map(as-lowercase, alternatives);
   end;
-  let filtered = if (token)
-                   let token-string = token-string(token);
-                   unless (case-sensitive?)
-                     token-string := as-lowercase(token-string);
-                   end;
-                   choose(rcurry(starts-with?, token-string), alternatives);
-                 else
-                   alternatives;
-                 end;
   make-completion(node, token,
                   exhaustive?: #t,
-                  complete-options: filtered);
+                  complete-options: alternatives);
 end method;
 
 

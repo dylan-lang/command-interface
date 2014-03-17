@@ -22,6 +22,9 @@ define class <command-completion> (<object>)
     init-keyword: options:;
 end class;
 
+/**
+ * Initializes back-references in completion options
+ */
 define method initialize (completion :: <command-completion>,
                           #rest args, #key, #all-keys)
  => ();
@@ -34,8 +37,10 @@ end method;
 /**
  * Represents a single option returned by completion
  *
- * An option may be COMPLETE.
- * This means that we would accept it in execution.
+ * An option may be COMPLETE, which means that it represents
+ * a syntactically complete parameter value which can be
+ * used as-is, whereas INCOMPLETE options are not valid
+ * values.
  */
 define class <command-completion-option> (<object>)
   slot option-completion :: false-or(<command-completion>) = #f;
@@ -47,12 +52,35 @@ define class <command-completion-option> (<object>)
     init-keyword: complete?:;
 end class;
 
+/**
+ * Construct a completion result
+ */
 define function make-completion (node :: <command-node>,
                                  token :: false-or(<command-token>),
                                  #key exhaustive? :: <boolean> = #f,
                                       complete-options :: <sequence> = #(),
                                       other-options :: <sequence> = #())
-  => (completion :: <command-completion>);
+ => (completion :: <command-completion>);
+  if (token)
+    let tokstr = token-string(token);
+    // filter options using token
+    complete-options := choose(rcurry(starts-with?, tokstr), complete-options);
+    other-options := choose(rcurry(starts-with?, tokstr), other-options);
+    // add token as an incomplete option for non-exhaustive completion
+    if (~exhaustive?)
+      let all-options = concatenate(complete-options, other-options);
+      unless (member?(tokstr, all-options, test: \=))
+        other-options := add!(other-options, tokstr);
+      end;
+    end;
+  end;
+  // add longest common prefix as an incomplete option
+  let all-options = concatenate(complete-options, other-options);
+  let lcp = longest-common-prefix(all-options);
+  unless (empty?(lcp) | member?(lcp, all-options, test: \=))
+    other-options := add!(other-options, lcp);
+  end;
+  // construct the result
   local method as-complete-option(string :: <string>)
           make(<command-completion-option>, string: string, complete?: #t);
         end,

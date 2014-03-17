@@ -31,15 +31,9 @@ end class;
 define method node-complete (param :: <command-open-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <command-completion>);
   let names = map(project-name, open-projects());
-  let compls =
-    if (token)
-      let string = as-lowercase(token-string(token));
-      let compls = choose(rcurry(starts-with?, string), names);
-      compls;
-    else
-      names;
-    end;
-  make-completion(param, token, complete-options: compls, exhaustive?: #t);
+  make-completion(param, token,
+                  exhaustive?: #t,
+                  complete-options: names);
 end method;
 
 define class <command-dylan-project> (<command-parameter>)
@@ -48,15 +42,9 @@ end class;
 define method node-complete (param :: <command-dylan-project>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <command-completion>);
   let names = map(project-name, open-projects());
-  let compls =
-    if (token)
-      let string = as-lowercase(token-string(token));
-      let compls = choose(rcurry(starts-with?, string), names);
-      compls;
-    else
-      names;
-    end;
-  make-completion(param, token, complete-options: compls, exhaustive?: #f);
+  make-completion(param, token,
+                  exhaustive?: #f,
+                  complete-options: names);
 end method;
 
 define class <command-report-type> (<command-parameter>)
@@ -65,14 +53,9 @@ end class;
 define method node-complete (param :: <command-report-type>, parser :: <command-parser>, token :: false-or(<command-token>))
  => (completions :: <command-completion>);
   let names = map(curry(as, <string>), key-sequence(available-reports()));
-  let compls =
-    if (token)
-      let string = as-lowercase(token-string(token));
-      choose(rcurry(starts-with?, string), names);
-    else
-      names;
-    end;
-  make-completion(param, token, complete-options: compls, exhaustive?: #t);
+  make-completion(param, token,
+                  exhaustive?: #t,
+                  complete-options: names);
 end method;
 
 

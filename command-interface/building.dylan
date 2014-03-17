@@ -77,6 +77,7 @@ define function build-simple-parameter (command :: <command-command>, name :: <s
  => (entry :: <command-node>);
   let param = apply(make, node-class,
                     name:, name,
+                    kind:, #"simple",
                     command:, command,
                     priority:, $command-priority-parameter,
                     keys);
@@ -90,6 +91,7 @@ define method build-named-parameter (command :: <command-command>, names :: <seq
  => (param :: <command-node>, symbols :: <sequence>);
   let param = apply(make, node-class,
                     name:, element(names, 0),
+                    kind:, #"named",
                     command:, command,
                     priority:, $command-priority-parameter,
                     keys);
