@@ -24,13 +24,6 @@ define open class <tty-editor> (<tty-activity>)
   slot editor-history-current :: false-or(<list>) = #f;
 end class;
 
-
-/* Finish the editor when paused
- */
-define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-pause>)
- => ();
-end method;
-
 /* Perform full redraw when resumed
  */
 define method tty-activity-event (editor :: <tty-editor>, event :: <tty-activity-resume>)
@@ -51,8 +44,8 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
     #"cursor-right" => editor-move(editor, +1);
     #"cursor-left" => editor-move(editor, -1);
     #"quit" =>
-      editor-finish(editor);
-      if (size(editor-line(editor)) = 0)
+      if (editor-empty?(editor))
+        editor-finish(editor);
         tty-finish-activity(tty);
       end;
     #"enter" =>
@@ -70,6 +63,8 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
           select (key-character(key))
             'A' => editor-jump(editor, 0);
             'E' => editor-jump(editor, size(editor-line(editor)));
+            'B' => editor-move(editor, -1);
+            'F' => editor-move(editor, +1);
             otherwise => #f;
           end;
         else
@@ -93,6 +88,12 @@ define method tty-activity-event (editor :: <tty-editor>, key :: <tty-key>)
     tty-flush(tty);
   end;
 end method;
+
+define method editor-empty? (editor :: <tty-editor>)
+ => (empty? :: <boolean>);
+  let line = editor-line(editor);
+  empty?(line) | whitespace?(line);
+end;
 
 /* Finish use of the TTY
  *

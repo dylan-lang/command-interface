@@ -43,6 +43,28 @@ define method initialize (parser :: <command-parser>, #rest keys, #key, #all-key
   parser-current-node(parser) := parser-initial-node(parser);
 end method;
 
+/* Verify the parsed command
+ *
+ */
+define method parser-verify (parser :: <command-parser>)
+ => ();
+  let commands = parser-commands(parser);
+  if (size(commands) > 0)
+    let command :: <command-command> = last(commands);
+    let expected-parameters = command-parameters(command);
+    let provided-parameters = parser-parameters(parser).key-sequence;
+    for (parameter in expected-parameters)
+      if (parameter.parameter-required?)
+        unless (member?(parameter-name(parameter), provided-parameters))
+          error("Missing required parameter \"%s\"", as(<string>, parameter-name(parameter)));
+        end;
+      end;
+    end;
+  else
+    error("Incomplete command");
+  end; 
+end method;
+
 /* Execute the parsed command
  *
  * This will call the OUTERMOST handler.
@@ -53,11 +75,13 @@ end method;
  */
 define method parser-execute (parser :: <command-parser>)
  => ();
-  let commands = reverse(parser-commands(parser));
+  let commands = parser-commands(parser);
   if (size(commands) > 0)
-    let hn :: <command-command> = element(commands, 0);
-    let fn = command-handler(hn);
-    fn(parser);
+    let command :: <command-command> = last(commands);
+    let function = command-handler(command);
+    function(parser);
+  else
+    error("No command");
   end;
 end method;
 

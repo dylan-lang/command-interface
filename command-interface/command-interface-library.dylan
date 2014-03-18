@@ -99,7 +99,7 @@ define module command-interface
     <command-string>,
     <command-oneof>,
     parameter-name,
-    parameter-mandatory?,
+    parameter-required?,
     <command-file>;
 
   export

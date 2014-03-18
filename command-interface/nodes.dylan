@@ -170,6 +170,10 @@ define open class <command-command> (<command-symbol>)
     init-keyword: handler:;
   /* parameters (collected while building) */
   slot command-parameters :: <list> = #();
+  /* all named parameters */
+  slot command-named-parameters :: <list> = #();
+  /* all simple parameters */
+  slot command-simple-parameters :: <list> = #();
 end class;
 
 define method node-accept (node :: <command-command>, parser :: <command-parser>, token :: <command-token>)
@@ -182,6 +186,12 @@ end method;
 define method command-add-parameter (node :: <command-command>, parameter :: <command-parameter>)
  => ();
   command-parameters(node) := add!(command-parameters(node), parameter);
+  select (parameter-kind(parameter))
+    #"named" =>
+      command-named-parameters(node) := add!(command-named-parameters(node), parameter);
+    #"simple" =>
+      command-simple-parameters(node) := add!(command-simple-parameters(node), parameter);
+  end;
 end method;
 
 
@@ -217,8 +227,8 @@ define open abstract class <command-parameter> (<command-node>)
     init-keyword: help:;
   constant slot parameter-command :: false-or(<command-command>) = #f,
     init-keyword: command:;
-  constant slot parameter-mandatory? :: <boolean> = #f,
-    init-keyword: mandatory?:;
+  constant slot parameter-required? :: <boolean> = #f,
+    init-keyword: required?:;
   constant slot parameter-value-type :: <type> = <string>,
     init-keyword: value-type:;
 end class;

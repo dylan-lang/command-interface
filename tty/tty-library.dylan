@@ -8,6 +8,7 @@ define library tty
   use io;
   use c-ffi;
   use system;
+  use strings;
 
   export tty;
 end library;
@@ -30,6 +31,8 @@ define module tty
     import: { format };
   use format-out,
     import: { format-out, force-out };
+  // whitespace?
+  use strings;
 
   // tty
   export

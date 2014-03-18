@@ -86,7 +86,6 @@ define macro command-aux-definer
   parameter-adjectives:
     { } => { }
     { named ... } => { syntax: #"named", ... }
-    { inline ... } => { syntax: #"inline", ... }
     { simple ... } => { syntax: #"simple", ... }
 
   // parameter options
