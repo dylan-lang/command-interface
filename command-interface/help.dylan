@@ -64,6 +64,11 @@ define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
       param-help := "No help.";
     end;
     select (parameter-kind(parameter))
+      #"flag" =>
+        begin
+          format-out("    %s\n", parameter-name(parameter));
+          format-out("     %s\n", param-help);
+        end;
       #"simple" =>
         begin
           format-out("    <%s>\n", parameter-name(parameter));
