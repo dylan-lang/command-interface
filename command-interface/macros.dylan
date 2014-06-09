@@ -85,6 +85,7 @@ define macro command-aux-definer
   // parameter adjectives
   parameter-adjectives:
     { } => { }
+    { flag ... } => { syntax: #"flag", ... }
     { named ... } => { syntax: #"named", ... }
     { simple ... } => { syntax: #"simple", ... }
 

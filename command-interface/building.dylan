@@ -64,11 +64,26 @@ define function build-parameter (command :: <command-command>, name :: <symbol>,
                                  #all-keys)
  => (entry :: <command-node>);
   select (syntax)
-      #"named" => apply(build-named-parameter, command, name, keys);
-      #"simple" => apply(build-simple-parameter, command, name, keys);
-      otherwise => error("Invalid parameter syntax %=", syntax);
+    #"flag" => apply(build-flag-parameter, command, name, keys);
+    #"named" => apply(build-named-parameter, command, name, keys);
+    #"simple" => apply(build-simple-parameter, command, name, keys);
+    otherwise => error("Invalid parameter syntax %=", syntax);
   end;
 end;
+
+define function build-flag-parameter (command :: <command-command>, name :: <symbol>,
+                                      #rest keys, #key node-class :: <class> = <command-flag>, #all-keys)
+  let param = apply(make, node-class,
+                    name:, name,
+                    symbol:, name,
+                    kind:, #"flag",
+                    command: command,
+                    priority: $command-priority-default,
+                    keys);
+  node-add-successor(command, param);
+  command-add-parameter(command, param);
+  param;
+end function;
 
 define function build-simple-parameter (command :: <command-command>, name :: <symbol>,
                                         #rest keys, #key node-class :: <class> = <command-string>, #all-keys)

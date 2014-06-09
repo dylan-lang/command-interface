@@ -170,6 +170,8 @@ define open class <command-command> (<command-symbol>)
     init-keyword: handler:;
   /* parameters (collected while building) */
   slot command-parameters :: <list> = #();
+  /* all flag parameters */
+  slot command-flag-parameters :: <list> = #();
   /* all named parameters */
   slot command-named-parameters :: <list> = #();
   /* all simple parameters */
@@ -187,6 +189,8 @@ define method command-add-parameter (node :: <command-command>, parameter :: <co
  => ();
   command-parameters(node) := add!(command-parameters(node), parameter);
   select (parameter-kind(parameter))
+    #"flag" =>
+      command-flag-parameters(node) := add!(command-flag-parameters(node), parameter);
     #"named" =>
       command-named-parameters(node) := add!(command-named-parameters(node), parameter);
     #"simple" =>
@@ -214,7 +218,7 @@ end method;
 
 /* Syntactical kinds of parameters
  */
-define constant <parameter-kind> = one-of(#"simple", #"named");
+define constant <parameter-kind> = one-of(#"simple", #"named", #"flag");
 
 /* A captured parameter
  */
@@ -283,6 +287,36 @@ end method;
  */
 define class <command-string> (<command-parameter>)
 end class;
+
+
+/* Flag parameters
+ */
+define class <command-flag> (<command-parameter>, <command-symbol>)
+end class;
+
+define method parameter-convert (parser :: <command-parser>, node :: <command-flag>, token :: <command-token>)
+ => (value :: <boolean>);
+  #t;
+end method;
+
+define method node-match (node :: <command-flag>, parser :: <command-parser>, token :: <command-token>)
+ => (matched? :: <boolean>);
+  starts-with?(as(<string>, node-symbol(node)),
+               as-lowercase(token-string(token)));
+end method;
+
+define method node-complete (node :: <command-flag>, parser :: <command-parser>, token :: false-or(<command-token>))
+ => (completion :: <command-completion>);
+  make-completion(node, token,
+                  exhaustive?: #t,
+                  complete-options: list(as(<string>, node-symbol(node))));
+end method;
+
+define method node-accept (node :: <command-flag>, parser :: <command-parser>, token :: <command-token>)
+ => ();
+  parser-push-parameter(parser, node, parameter-convert(parser, node, token));
+end method;
+
 
 
 /* One-of parameters
