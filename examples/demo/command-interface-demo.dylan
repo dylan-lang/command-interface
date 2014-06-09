@@ -47,6 +47,7 @@ end;
 
 define command show interface ($root)
   help "Query interfaces";
+  flag parameter verbose :: <boolean>;
   simple parameter name :: <string>,
     node-class: <command-oneof>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
@@ -57,7 +58,7 @@ define command show interface ($root)
     node-class: <command-oneof>,
     alternatives: #("ip","ip4","ip6","lldp");
   implementation
-    format-out("Nothing to show...\n");
+    format-out("Nothing to show... %= | %=\n", verbose, name);
 end;
 
 define command show route ($root)
