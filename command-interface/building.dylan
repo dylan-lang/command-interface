@@ -21,7 +21,7 @@ define method build-command (root :: <command-root>, name :: <sequence>,
       end for;
       // if not found then make one
       if (~found)
-        found := apply(make, node-class, name:, symbol, node-keys);
+        found := apply(make, node-class, symbol:, symbol, node-keys);
         node-add-successor(node, found);
       end if;
       // return whatever we have now
@@ -97,7 +97,7 @@ define method build-named-parameter (command :: <command-command>, names :: <seq
   let syms = #();
   for (name in names)
     let sym = make(<command-symbol>,
-                   name: as(<symbol>, name),
+                   symbol: as(<symbol>, name),
                    repeatable?: node-repeatable?(param),
                    repeat-marker: param,
                    successors: list(param));

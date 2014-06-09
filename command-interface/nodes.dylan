@@ -141,7 +141,7 @@ end method;
  */
 define class <command-symbol> (<command-node>)
   slot node-symbol :: <symbol>,
-    init-keyword: name:;
+    init-keyword: symbol:;
 end class;
 
 define method node-match (node :: <command-symbol>, parser :: <command-parser>, token :: <command-token>)
