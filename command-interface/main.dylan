@@ -25,6 +25,7 @@ define function tty-command-shell-main (name :: <string>, arguments :: <vector>,
           tty-start-activity(tty, editor);
         else
           parser-parse(parser, tokens);
+          parser-verify(parser);
           parser-execute(parser);
         end;
         tty-run(tty);
