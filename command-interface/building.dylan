@@ -61,7 +61,6 @@ end method;
 define function build-parameter (command :: <command-command>, name :: <symbol>,
                                  #rest keys,
                                  #key syntax :: <symbol> = #"named",
-                                      node-class :: <class> = <command-string>,
                                  #all-keys)
  => (entry :: <command-node>);
   select (syntax)
