@@ -14,7 +14,8 @@ define class <command-completion> (<object>)
   /* token used to hint the completion, if provided */
   constant slot completion-token :: false-or(<command-token>) = #f,
     init-keyword: token:;
-  /* was this completion exhaustive? (if yes then only given options are valid) */
+  /* was this completion exhaustive?
+     (if yes then only given complete options are valid) */
   constant slot completion-exhaustive? :: <boolean> = #f,
     init-keyword: exhaustive?:;
   /* actual completion options */
