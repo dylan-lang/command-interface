@@ -10,6 +10,8 @@ define class <command-parse-error> (<simple-error>)
     init-keyword: parser:;
   slot error-token :: <command-token>,
     init-keyword: token:;
+  slot error-options :: <list>,
+    init-keyword: options:;
 end class;
 
 define class <command-ambiguous-error> (<command-parse-error>)
@@ -158,14 +160,16 @@ define method parser-advance (parser :: <command-parser>, token :: <command-toke
                   format-string: "Unrecognized token \"%s\"",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
-                  token: token));
+                  token: token,
+                  options: acceptable));
     // more than one: ambiguous token
     otherwise =>
       signal(make(<command-ambiguous-error>,
                   format-string: "Ambiguous token \"%s\"",
                   format-arguments: vector(token-string(token)),
                   parser: parser,
-                  token: token));
+                  token: token,
+                  options: matches));
   end select;
 end method;
 

@@ -41,6 +41,18 @@ define method editor-execute (editor :: <tty-command-shell>)
                n-spaces(size(editor-prompt(editor))),
                command-annotate(src, token-srcloc(pe.error-token)),
                condition-to-string(pe));
+    case
+      instance?(pe, <command-ambiguous-error>) =>
+        format-out("\nCan be interpreted as:\n");
+        for(option in error-options(pe))
+          format-out("  %=\n", option);
+        end;
+      instance?(pe, <command-unknown-error>) =>
+        format-out("\nPossible options:\n");
+        for(option in error-options(pe))
+          format-out("  %=\n", option);
+        end;
+    end;
   exception (e :: <error>)
     // print condition and clear
     format-out("Error: %=\n", e);
