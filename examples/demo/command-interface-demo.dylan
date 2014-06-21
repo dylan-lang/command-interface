@@ -32,7 +32,7 @@ end;
 define command directory ($root)
   help "Show information about directory";
   simple parameter directory :: <string>,
-    node-class: <command-file>,
+    node-class: <file-node>,
     accept-file?: #f,
     must-exist?: #t;
   implementation
@@ -49,13 +49,13 @@ define command show interface ($root)
   help "Query interfaces";
   flag parameter verbose :: <boolean>;
   simple parameter name :: <string>,
-    node-class: <command-oneof>,
+    node-class: <oneof-node>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
   named parameter type :: <string>,
-    node-class: <command-oneof>,
+    node-class: <oneof-node>,
     alternatives: #("ethernet","atm");
   named parameter protocol :: <string>,
-    node-class: <command-oneof>,
+    node-class: <oneof-node>,
     alternatives: #("ip","ip4","ip6","lldp");
   implementation
     format-out("Nothing to show... %= | %=\n", verbose, name);
@@ -72,10 +72,10 @@ end;
 define command show log ($root)
   help "Query logs";
   named parameter service :: <string>,
-    node-class: <command-oneof>,
+    node-class: <oneof-node>,
     alternatives: #("dhcp-server","dhcp-client","kernel");
   named parameter level :: <string>,
-    node-class: <command-oneof>,
+    node-class: <oneof-node>,
     alternatives: #("fatal","error","warning","notice","info","debug","trace");
   implementation
     format-out("Nothing to show...\n");
