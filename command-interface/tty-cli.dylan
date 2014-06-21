@@ -4,7 +4,7 @@ author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
 define class <tty-command-shell> (<tty-editor>)
-  slot tty-command-shell-root-node :: <command-node>,
+  slot tty-command-shell-root-node :: <root-node>,
     required-init-keyword: root-node:;
 end class;
 

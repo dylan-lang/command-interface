@@ -3,19 +3,19 @@ synopsis: Utilities for constructing CLI node structures.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define method build-command (root :: <command-root>, name :: <sequence>,
+define method build-command (root :: <root-node>, name :: <sequence>,
                              #rest node-keys,
-                             #key node-class :: <class> = <command-command>, #all-keys)
- => (cmd :: <command-symbol>);
+                             #key node-class :: <class> = <command-node>, #all-keys)
+ => (cmd :: <symbol-node>);
   local
-    method find-or-make-successor (node :: <command-node>,
+    method find-or-make-successor (node :: <parse-node>,
                                    symbol :: <symbol>,
                                    node-class :: <class>,
                                    node-keys :: <sequence>)
       // find symbol in existing successors
       let found = #f;
       for (s in node-successors(node), until: found)
-        if (instance?(s, <command-symbol>) & (node-symbol(s) == symbol))
+        if (instance?(s, <symbol-node>) & (node-symbol(s) == symbol))
           found := s;
         end if;
       end for;
@@ -35,7 +35,7 @@ define method build-command (root :: <command-root>, name :: <sequence>,
       if (i == size(name) - 1)
         values(node-class, node-keys);
       else
-        values(<command-symbol>, #[]);
+        values(<symbol-node>, #[]);
       end;
     // find or make the node
     cur := find-or-make-successor
@@ -45,24 +45,24 @@ define method build-command (root :: <command-root>, name :: <sequence>,
   cur;
 end method;
 
-define method build-command (root :: <command-root>, name :: <string>,
+define method build-command (root :: <root-node>, name :: <string>,
                              #rest keys, #key, #all-keys)
- => (cmd :: <command-symbol>);
+ => (cmd :: <command-node>);
   apply(build-command, root, list(name), keys);
 end method;
 
-define method build-command (root :: <command-root>, name :: <symbol>,
+define method build-command (root :: <root-node>, name :: <symbol>,
                              #rest keys, #key, #all-keys)
- => (cmd :: <command-symbol>);
+ => (cmd :: <command-node>);
   apply(build-command, root, list(name), keys);
 end method;
 
 
-define function build-parameter (command :: <command-command>, name :: <symbol>,
+define function build-parameter (command :: <command-node>, name :: <symbol>,
                                  #rest keys,
                                  #key syntax :: <symbol> = #"named",
                                  #all-keys)
- => (entry :: <command-node>);
+ => (entry :: <parse-node>);
   select (syntax)
     #"flag" => apply(build-flag-parameter, command, name, keys);
     #"named" => apply(build-named-parameter, command, name, keys);
@@ -71,8 +71,9 @@ define function build-parameter (command :: <command-command>, name :: <symbol>,
   end;
 end;
 
-define function build-flag-parameter (command :: <command-command>, name :: <symbol>,
-                                      #rest keys, #key node-class :: <class> = <command-flag>, #all-keys)
+define function build-flag-parameter (command :: <command-node>, name :: <symbol>,
+                                      #rest keys, #key node-class :: <class> = <flag-node>, #all-keys)
+  => (param :: <flag-node>);
   let param = apply(make, node-class,
                     name:, name,
                     symbol:, name,
@@ -85,9 +86,9 @@ define function build-flag-parameter (command :: <command-command>, name :: <sym
   param;
 end function;
 
-define function build-simple-parameter (command :: <command-command>, name :: <symbol>,
-                                        #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
- => (entry :: <command-node>);
+define function build-simple-parameter (command :: <command-node>, name :: <symbol>,
+                                        #rest keys, #key node-class :: <class> = <string-parameter-node>, #all-keys)
+ => (entry :: <parse-node>);
   let param = apply(make, node-class,
                     name:, name,
                     kind:, #"simple",
@@ -99,9 +100,9 @@ define function build-simple-parameter (command :: <command-command>, name :: <s
   param;
 end function;
 
-define method build-named-parameter (command :: <command-command>, names :: <sequence>,
-                                     #rest keys, #key node-class :: <class> = <command-string>, #all-keys)
- => (param :: <command-node>, symbols :: <sequence>);
+define method build-named-parameter (command :: <command-node>, names :: <sequence>,
+                                     #rest keys, #key node-class :: <class> = <string-parameter-node>, #all-keys)
+ => (param :: <parameter-node>, symbols :: <sequence>);
   let param = apply(make, node-class,
                     name:, element(names, 0),
                     kind:, #"named",
@@ -110,7 +111,7 @@ define method build-named-parameter (command :: <command-command>, names :: <seq
                     keys);
   let syms = #();
   for (name in names)
-    let sym = make(<command-symbol>,
+    let sym = make(<symbol-node>,
                    symbol: as(<symbol>, name),
                    repeatable?: node-repeatable?(param),
                    repeat-marker: param,
@@ -122,8 +123,8 @@ define method build-named-parameter (command :: <command-command>, names :: <seq
   values(param, syms);
 end method;
 
-define method build-named-parameter (command :: <command-command>, name :: <symbol>,
+define method build-named-parameter (command :: <command-node>, name :: <symbol>,
                                      #rest keys, #key, #all-keys)
- => (param :: <command-parameter>, symbols :: <sequence>);
+ => (param :: <parameter-node>, symbols :: <sequence>);
   apply(build-named-parameter, command, list(name), keys);
 end method;

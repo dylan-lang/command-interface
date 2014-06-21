@@ -5,7 +5,7 @@ copyright: see accompanying file LICENSE
 
 define macro command-root-definer
   { define command-root ?:name }
-    => { define constant ?name = make(<command-root>);
+    => { define constant ?name = make(<root-node>);
          begin
            root-add-bash-completion(?name);
            root-add-help(?name);
@@ -26,7 +26,7 @@ define macro command-aux-definer
       (?definitions) (?bindings) (?implementation) (?keywords) (?parameters)
     end }
     => { begin
-           let %root :: <command-root> = ?root;
+           let %root :: <root-node> = ?root;
            let %symbols :: <list> = #(?symbols);
            let %handler = method (%parser :: <command-parser>)
                            => ();

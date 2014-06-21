@@ -5,7 +5,7 @@ copyright: see accompanying file LICENSE
 
 /* Add hidden command for bash completion to given root
  */
-define method root-add-bash-completion (root :: <command-root>)
+define method root-add-bash-completion (root :: <root-node>)
  => ();
   let command = build-command
     (root, "bashcomplete",

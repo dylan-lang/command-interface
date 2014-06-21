@@ -27,10 +27,10 @@ define class <command-parser> (<object>)
   slot parser-source :: <command-source>,
     init-keyword: source:;
 
-  slot parser-initial-node :: <command-node>,
+  slot parser-initial-node :: <parse-node>,
     required-init-keyword: initial-node:;
 
-  slot parser-current-node :: <command-node>;
+  slot parser-current-node :: <parse-node>;
 
   slot parser-tokens :: <list> = #();
   slot parser-nodes :: <list> = #();
@@ -52,7 +52,7 @@ define method parser-verify (parser :: <command-parser>)
  => ();
   let commands = parser-commands(parser);
   if (size(commands) > 0)
-    let command :: <command-command> = last(commands);
+    let command :: <command-node> = last(commands);
     let expected-parameters = command-parameters(command);
     let provided-parameters = parser-parameters(parser).key-sequence;
     for (parameter in expected-parameters)
@@ -79,7 +79,7 @@ define method parser-execute (parser :: <command-parser>)
  => ();
   let commands = parser-commands(parser);
   if (size(commands) > 0)
-    let command :: <command-command> = last(commands);
+    let command :: <command-node> = last(commands);
     let function = command-handler(command);
     function(parser);
   else
@@ -106,7 +106,7 @@ define method parser-get-parameter (parser :: <command-parser>, name :: <symbol>
   element(parser-parameters(parser), name, default: default);
 end method;
 
-define method parser-push-parameter (parser :: <command-parser>, param :: <command-parameter>, value :: <object>)
+define method parser-push-parameter (parser :: <command-parser>, param :: <parameter-node>, value :: <object>)
  => (value :: <object>);
   if (node-repeatable?(param))
     element(parser-parameters(parser), parameter-name(param)) :=
@@ -117,13 +117,13 @@ define method parser-push-parameter (parser :: <command-parser>, param :: <comma
   value;
 end method;
 
-define method parser-push-command (parser :: <command-parser>, h :: <command-command>)
+define method parser-push-command (parser :: <command-parser>, h :: <command-node>)
  => ();
   parser-commands(parser) := add(parser-commands(parser), h);
 end method;
 
-define method parser-push-node (parser :: <command-parser>, token :: <command-token>, node :: <command-node>)
- => (node :: <command-node>);
+define method parser-push-node (parser :: <command-parser>, token :: <command-token>, node :: <parse-node>)
+ => (node :: <parse-node>);
   parser-current-node(parser) := node;
   parser-nodes(parser) := add(parser-nodes(parser), node);
   parser-tokens(parser) := add(parser-tokens(parser), token);
@@ -187,7 +187,7 @@ define method parser-complete (parser :: <command-parser>, token :: false-or(<co
     acceptable := choose(rcurry(node-match, parser, token), acceptable);
   end;
   // collect completions from each node and return them
-  local method completion-for-node (node :: <command-node>)
+  local method completion-for-node (node :: <parse-node>)
          => (completion :: <command-completion>);
           node-complete(node, parser, token);
         end method;

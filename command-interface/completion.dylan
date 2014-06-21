@@ -9,7 +9,7 @@ copyright: see accompanying file LICENSE
  */
 define class <command-completion> (<object>)
   /* node the completion was performed for */
-  constant slot completion-node :: <command-node>,
+  constant slot completion-node :: <parse-node>,
     required-init-keyword: node:;
   /* token used to hint the completion, if provided */
   constant slot completion-token :: false-or(<command-token>) = #f,
@@ -56,7 +56,7 @@ end class;
 /**
  * Construct a completion result
  */
-define function make-completion (node :: <command-node>,
+define function make-completion (node :: <parse-node>,
                                  token :: false-or(<command-token>),
                                  #key exhaustive? :: <boolean> = #f,
                                       complete-options :: <sequence> = #(),

@@ -3,7 +3,7 @@ synopsis: Convenience main functions.
 author: Ingo Albrecht <prom@berlin.ccc.de>
 copyright: see accompanying file LICENSE
 
-define function tty-command-shell-main (name :: <string>, arguments :: <vector>, tty :: <tty>, root :: <command-root>)
+define function tty-command-shell-main (name :: <string>, arguments :: <vector>, tty :: <tty>, root :: <root-node>)
   let source = make(<command-vector-source>, strings: arguments);
   let parser = make(<command-parser>, source: source, initial-node: root);
 

@@ -80,7 +80,7 @@ define module command-interface
     <command-unknown-error>;
 
   export
-    <command-node>,
+    <parse-node>,
     // getters and setters
     node-hidden?,
     node-repeatable?,
@@ -91,16 +91,16 @@ define module command-interface
     node-complete,
     node-match,
     // subclasses
-    <command-root>,
-    <command-symbol>,
-    <command-command>,
-    <command-wrapper>,
-    <command-parameter>,
-    <command-string>,
-    <command-oneof>,
+    <root-node>,
+    <symbol-node>,
+    <command-node>,
+    <wrapper-node>,
+    <parameter-node>,
+    <string-parameter-node>,
+    <oneof-node>,
     parameter-name,
     parameter-required?,
-    <command-file>;
+    <file-node>;
 
   export
     <tty-command-shell>,
