@@ -75,11 +75,14 @@ define function make-completion (node :: <parse-node>,
       end;
     end;
   end;
-  // add longest common prefix as an incomplete option
+  // add longest common prefix as an incomplete option,
+  // but filter it against existing options and the token
   let all-options = concatenate(complete-options, other-options);
   let lcp = longest-common-prefix(all-options);
   unless (empty?(lcp) | member?(lcp, all-options, test: \=))
-    other-options := add!(other-options, lcp);
+    unless (token & lcp = token-string(token))
+      other-options := add!(other-options, lcp);
+    end;
   end;
   // construct the result
   local method as-complete-option(string :: <string>)
