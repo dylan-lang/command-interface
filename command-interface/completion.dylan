@@ -30,6 +30,7 @@ define method initialize (completion :: <command-completion>,
                           #rest args, #key, #all-keys)
  => ();
   next-method();
+  // initialize reverse links
   for (option in completion.completion-options)
     option-completion(option) := completion;
   end;
@@ -44,6 +45,7 @@ end method;
  * values.
  */
 define class <command-completion-option> (<object>)
+  /* normally initialized by make(<completion>) */
   slot option-completion :: false-or(<command-completion>) = #f;
   /* string for this option */
   constant slot option-string :: <string>,
