@@ -144,6 +144,10 @@ define class <symbol-node> (<parse-node>)
     init-keyword: symbol:;
 end class;
 
+define method print-object(object :: <symbol-node>, stream :: <stream>) => ();
+  format(stream, "%s", node-symbol(object));
+end method;
+
 define method node-match (node :: <symbol-node>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   starts-with?(as(<string>, node-symbol(node)),
@@ -177,6 +181,10 @@ define open class <command-node> (<symbol-node>)
   /* all simple parameters */
   slot command-simple-parameters :: <list> = #();
 end class;
+
+define method print-object(object :: <command-node>, stream :: <stream>) => ();
+  format(stream, "%s - %s", node-symbol(object), command-help(object));
+end method;
 
 define method node-accept (node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => ();

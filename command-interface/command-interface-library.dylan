@@ -26,6 +26,7 @@ define module command-interface
   use format-out,
     import: { format-out, force-out,
               format-err, force-err };
+  use print;
   use streams,
     import: { force-output };
   use tty;
