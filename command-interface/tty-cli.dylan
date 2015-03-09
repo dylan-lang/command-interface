@@ -45,13 +45,19 @@ define method editor-execute (editor :: <tty-command-shell>)
       instance?(pe, <command-ambiguous-error>) =>
         format-out("\nCan be interpreted as:\n");
         for(option in error-options(pe))
-          format-out("  %=\n", option);
+          format-out("  %s - %s\n",
+                     node-help-symbol(option),
+                     node-help-text(option));
         end;
+        format-out("\n");
       instance?(pe, <command-unknown-error>) =>
         format-out("\nPossible options:\n");
         for(option in error-options(pe))
-          format-out("  %=\n", option);
+          format-out("  %s - %s\n",
+                     node-help-symbol(option),
+                     node-help-text(option));
         end;
+        format-out("\n");
     end;
   exception (e :: <error>)
     // print condition and clear
