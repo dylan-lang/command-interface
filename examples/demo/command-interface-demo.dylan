@@ -39,6 +39,17 @@ define command directory ($root)
     format-out("Nothing to show...\n");
 end;
 
+define command echo ($root)
+  simple parameter message :: <string>,
+    required: #t;
+  implementation
+      format-out("%s\n", message);
+end;
+
+define command show ($root)
+  help "Show information";
+end;
+
 define command show configuration ($root)
   help "Query configuration";
   implementation
