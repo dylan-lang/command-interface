@@ -272,8 +272,14 @@ end class;
 
 define method node-help-symbol (node :: <parameter-symbol-node>)
  => (help-symbol :: <string>);
+  let parameter = symbol-parameter(node);
   concatenate(as(<string>, node-symbol(node)),
-              " <", as(<string>, parameter-name(symbol-parameter(node))), ">");
+              " <", as(<string>, parameter-name(parameter)),
+              if (node-repeatable?(parameter))
+                ">..."
+              else
+                ">"
+              end);
 end method;
 
 define method node-help-text (node :: <parameter-symbol-node>)
@@ -305,7 +311,12 @@ end class;
 
 define method node-help-symbol (node :: <parameter-node>)
  => (help-symbol :: <string>);
-  concatenate("<", as(<string>, parameter-name(node)), ">")
+  concatenate("<", as(<string>, parameter-name(node)),
+              if (node-repeatable?(node))
+                ">..."
+              else
+                ">"
+              end)
 end method;
 
 define method node-help-text (node :: <parameter-node>)
