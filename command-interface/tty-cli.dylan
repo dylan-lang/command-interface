@@ -185,6 +185,27 @@ define method editor-complete-implicit-internal (editor :: <tty-command-shell>)
   end;
 end method;
 
+define method print-completions (completions :: <list>)
+  => ();
+  format-out("\n");
+  for (completion in completions)
+    format-out("  %s\n\t%s\n",
+               completion-help-symbol(completion),
+               completion-help-text(completion));
+    let options = choose(option-complete?,
+                         completion-options(completion));
+    if (completion.completion-exhaustive?)
+      options := choose(option-complete?, options);
+    else
+      options := add!(options, "...");
+    end;
+    if (options.size > 1)
+      format-out("\tOptions: %s\n",
+                 join(map(option-string, options), ", "));
+    end;
+  end;
+end method;
+
 define method editor-complete (editor :: <tty-command-shell>)
  => ();
   block (return)
@@ -217,13 +238,19 @@ define method editor-complete (editor :: <tty-command-shell>)
     let posn = editor-position(editor);
     // act on completion results
     select (size(options))
-      // no completions -> say so
+      // no completion options -> say so
       0 =>
         begin
           editor-finish(editor);
-          format-out("no completions\n");
+          if (empty?(completions))
+            // if there truly are no completions, just say so
+            format-out("no completions\n");
+          else
+            // else print completions so the user knows his options
+            print-completions(completions);
+          end;
         end;
-      // one completion -> insert it
+      // one completion option -> insert it
       1 =>
         let option = first(options);
         let completion = option-string(option);
@@ -233,12 +260,12 @@ define method editor-complete (editor :: <tty-command-shell>)
         else
           replace-position(editor, posn, autospace?, completion);
         end;
-      // many completions -> insert longest common prefix and print options
+      // many completion options -> insert longest common prefix and print completions
       otherwise =>
         editor-finish(editor);
+        print-completions(completions);
         let complete-options = choose(option-complete?, options);
         let complete-strings = map(option-string, complete-options);
-        format-out("%s\n", join(option-strings, " ")); // XXX only complete options for exhaustive case ???
         let common = longest-common-prefix(complete-strings);
 
         let matching-options = choose-by(rcurry(starts-with?, common),

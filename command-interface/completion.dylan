@@ -11,6 +11,12 @@ define class <command-completion> (<object>)
   /* node the completion was performed for */
   constant slot completion-node :: <parse-node>,
     required-init-keyword: node:;
+  /* Value placeholder for help */
+  constant slot completion-help-symbol :: false-or(<string>) = #f,
+    init-keyword: help-symbol:;
+  /* Main help text */
+  constant slot completion-help-text :: false-or(<string>) = #f,
+    init-keyword: help-text:;
   /* token used to hint the completion, if provided */
   constant slot completion-token :: false-or(<command-token>) = #f,
     init-keyword: token:;
@@ -63,7 +69,11 @@ define function make-completion (node :: <parse-node>,
                                  #key exhaustive? :: <boolean> = #f,
                                       complete-options :: <sequence> = #(),
                                       other-options :: <sequence> = #())
- => (completion :: <command-completion>);
+  => (completion :: <command-completion>);
+  // get node help strings
+  let help-symbol = node-help-symbol(node);
+  let help-text = node-help-text(node);
+  // apply token restrictions
   if (token)
     let tokstr = token-string(token);
     // filter options using token
@@ -96,6 +106,8 @@ define function make-completion (node :: <parse-node>,
   make(<command-completion>,
        node: node, token: token,
        exhaustive?: exhaustive?,
+       help-symbol: help-symbol,
+       help-text: help-text,
        options: concatenate-as(<list>,
                                map(as-complete-option, complete-options),
                                map(as-other-option, other-options)));

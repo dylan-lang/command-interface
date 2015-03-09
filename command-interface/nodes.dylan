@@ -49,6 +49,12 @@ define abstract class <parse-node> (<object>)
     init-keyword: repeat-marker:;
 end class;
 
+define open generic node-help-symbol (node :: <parse-node>)
+ => (help-symbol :: <string>);
+
+define open generic node-help-text (node :: <parse-node>)
+ => (help-text :: <string>);
+
 /* Generate completions for the given node
  *
  * May or may not be provided a partial token.
@@ -68,6 +74,16 @@ define open generic node-match (node :: <parse-node>, parser :: <command-parser>
 define open generic node-accept ( node :: <parse-node>, parser :: <command-parser>, token :: <command-token>)
  => ();
 
+
+define method node-help-symbol (node :: <parse-node>)
+ => (help-symbol :: <string>);
+  "<...>";
+end method;
+
+define method node-help-text (node :: <parse-node>)
+ => (help-symbol :: <string>);
+  "No help.";
+end method;
 
 /* Is the node acceptable as next node in given parser state?
  *
@@ -148,6 +164,16 @@ define method print-object(object :: <symbol-node>, stream :: <stream>) => ();
   format(stream, "%s", node-symbol(object));
 end method;
 
+define method node-help-symbol (node :: <symbol-node>)
+ => (help-symbol :: <string>);
+  as(<string>, node-symbol(node));
+end method;
+
+define method node-help-text (node :: <symbol-node>)
+ => (help-symbol :: <string>);
+  "No help";
+end method;
+
 define method node-match (node :: <symbol-node>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
   starts-with?(as(<string>, node-symbol(node)),
@@ -186,11 +212,23 @@ define method print-object(object :: <command-node>, stream :: <stream>) => ();
   format(stream, "%s - %s", node-symbol(object), command-help(object));
 end method;
 
+define method node-help-text (node :: <command-node>)
+ => (help-text :: <string>);
+  concatenate("Command: ", command-help(node) | "No help");
+end method;
+
 define method node-accept (node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
  => ();
   if (command-handler(node))
     parser-push-command(parser, node);
   end
+end method;
+
+define method node-complete (node :: <command-node>, parser :: <command-parser>, token :: false-or(<command-token>))
+ => (completion :: <command-completion>);
+  make-completion(node, token,
+                  exhaustive?: #t,
+                  complete-options: list(as(<string>, node-symbol(node))));
 end method;
 
 define method command-add-parameter (node :: <command-node>, parameter :: <parameter-node>)
@@ -232,6 +270,18 @@ define class <parameter-symbol-node> (<symbol-node>)
     init-keyword: parameter:;
 end class;
 
+define method node-help-symbol (node :: <parameter-symbol-node>)
+ => (help-symbol :: <string>);
+  concatenate(as(<string>, node-symbol(node)),
+              " <", as(<string>, parameter-name(symbol-parameter(node))), ">");
+end method;
+
+define method node-help-text (node :: <parameter-symbol-node>)
+ => (help-text :: <string>);
+  node-help-text(symbol-parameter(node));
+end method;
+
+
 /* Syntactical kinds of parameters
  */
 define constant <parameter-kind> = one-of(#"simple", #"named", #"flag");
@@ -252,6 +302,16 @@ define open abstract class <parameter-node> (<parse-node>)
   constant slot parameter-value-type :: <type> = <string>,
     init-keyword: value-type:;
 end class;
+
+define method node-help-symbol (node :: <parameter-node>)
+ => (help-symbol :: <string>);
+  concatenate("<", as(<string>, parameter-name(node)), ">")
+end method;
+
+define method node-help-text (node :: <parameter-node>)
+ => (help-symbol :: <string>);
+  concatenate("Parameter: ", parameter-help(node) | "No help");
+end method;
 
 /* Parameters can be converted to values
  *
@@ -310,6 +370,16 @@ end class;
 define class <flag-node> (<parameter-node>, <symbol-node>)
 end class;
 
+define method node-help-symbol (node :: <flag-node>)
+ => (help-symbol :: <string>);
+  as(<string>, parameter-name(node));
+end method;
+
+define method node-help-text (node :: <flag-node>)
+ => (help-symbol :: <string>);
+  concatenate("Flag: ", parameter-help(node) | "No help");
+end method;
+
 define method parameter-convert (parser :: <command-parser>, node :: <flag-node>, token :: <command-token>)
  => (value :: <boolean>);
   #t;
@@ -345,6 +415,11 @@ define class <oneof-node> (<parameter-node>)
   slot oneof-alternatives :: <list>,
     required-init-keyword: alternatives:;
 end class;
+
+define method node-help-text (node :: <oneof-node>)
+ => (help-symbol :: <string>);
+  concatenate("Parameter: ", parameter-help(node) | "No help")
+end method;
 
 define method node-match (node :: <oneof-node>, parser :: <command-parser>, token :: <command-token>)
  => (matched? :: <boolean>);
