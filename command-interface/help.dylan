@@ -30,53 +30,58 @@ define method show-command-help (nodes :: <sequence>, tokens :: <sequence>)
   let cmd-title :: <list> = #();
   let cmd-help :: false-or(<string>) = #f;
 
+  // find the last command node
   for (token in tokens, node in nodes)
     if (instance?(node, <command-node>))
-      if (~cmd)
-        cmd := node;
-        cmd-title := add(cmd-title, as(<string>, node-symbol(node)));
-        if (command-help(node))
-          cmd-help := command-help(node);
-        end if;
+      cmd := node;
+      cmd-title := add(cmd-title, as(<string>, node-symbol(node)));
+      if (command-help(node))
+        cmd-help := command-help(node);
       end if;
     end if;
   end for;
 
+  // complain if no command found
   if (~cmd)
     error("Incomplete command.");
   end;
 
+  // fudge the title
   cmd-title := reverse(cmd-title);
   cmd-title := map(as-lowercase, cmd-title);
 
+  // default help
   if (~cmd-help)
     cmd-help := "No help.";
   end;
 
-  format-out("\n");
-  format-out("  %s\n    %s\n\n", join(cmd-title, " "), cmd-help);
+  // determine possible successor nodes
+  let successors = node-successors(cmd);
+  let commands = choose(rcurry(instance?, <command-node>), successors);
+  local method is-param?(node :: <parse-node>)
+          => (param? :: <boolean>);
+          instance?(node, <parameter-node>) | instance?(node, <parameter-symbol-node>)
+        end;
+  let params = choose(is-param?, successors);
 
-  for (parameter in command-parameters(cmd))
-    let param-help = parameter-help(parameter);
-    if (~param-help)
-      param-help := "No help.";
+  // print stuff
+  format-out("\n");
+  format-out("  %s\n    %s\n", join(cmd-title, " "), cmd-help);
+  format-out("\n");
+  unless (empty?(commands))
+    format-out("  Subcommands:\n");
+    for (command in commands)
+      format-out("    %s\n", node-help-symbol(command));
+      format-out("      %s\n", node-help-text(command));
     end;
-    select (parameter-kind(parameter))
-      #"flag" =>
-        begin
-          format-out("    %s\n", parameter-name(parameter));
-          format-out("     %s\n", param-help);
-        end;
-      #"simple" =>
-        begin
-          format-out("    <%s>\n", parameter-name(parameter));
-          format-out("      %s\n", param-help);
-        end;
-      #"named" =>
-        begin
-          format-out("    %s <value>\n", parameter-name(parameter));
-          format-out("      %s\n", param-help);
-        end;
+    format-out("\n");
+  end;
+  unless (empty?(params))
+    format-out("  Parameters:\n");
+    for (param in params)
+      format-out("    %s\n", node-help-symbol(param));
+      format-out("      %s\n", node-help-text(param));
     end;
+    format-out("\n");
   end;
 end method;

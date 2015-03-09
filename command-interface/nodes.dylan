@@ -171,7 +171,7 @@ end method;
 
 define method node-help-text (node :: <symbol-node>)
  => (help-symbol :: <string>);
-  "No help";
+  "";
 end method;
 
 define method node-match (node :: <symbol-node>, parser :: <command-parser>, token :: <command-token>)
@@ -214,7 +214,7 @@ end method;
 
 define method node-help-text (node :: <command-node>)
  => (help-text :: <string>);
-  concatenate("Command: ", command-help(node) | "No help");
+  command-help(node) | "Command";
 end method;
 
 define method node-accept (node :: <command-node>, parser :: <command-parser>, token :: <command-token>)
@@ -310,7 +310,7 @@ end method;
 
 define method node-help-text (node :: <parameter-node>)
  => (help-symbol :: <string>);
-  concatenate("Parameter: ", parameter-help(node) | "No help");
+  parameter-help(node) | "Parameter";
 end method;
 
 /* Parameters can be converted to values
@@ -367,7 +367,7 @@ end class;
 
 /* Flag parameters
  */
-define class <flag-node> (<parameter-node>, <symbol-node>)
+define class <flag-node> (<parameter-node>, <parameter-symbol-node>)
 end class;
 
 define method node-help-symbol (node :: <flag-node>)
@@ -377,7 +377,7 @@ end method;
 
 define method node-help-text (node :: <flag-node>)
  => (help-symbol :: <string>);
-  concatenate("Flag: ", parameter-help(node) | "No help");
+  parameter-help(node) | "Flag";
 end method;
 
 define method parameter-convert (parser :: <command-parser>, node :: <flag-node>, token :: <command-token>)
@@ -417,8 +417,12 @@ define class <oneof-node> (<parameter-node>)
 end class;
 
 define method node-help-text (node :: <oneof-node>)
- => (help-symbol :: <string>);
-  concatenate("Parameter: ", parameter-help(node) | "No help")
+  => (help-symbol :: <string>);
+  let alternatives = oneof-alternatives(node);
+  unless (oneof-case-sensitive?(node))
+    alternatives := map(as-lowercase, alternatives);
+  end;
+  parameter-help(node) | concatenate("One of: ", join(alternatives, ", "));
 end method;
 
 define method node-match (node :: <oneof-node>, parser :: <command-parser>, token :: <command-token>)

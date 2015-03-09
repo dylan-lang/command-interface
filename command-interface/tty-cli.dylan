@@ -187,21 +187,71 @@ end method;
 
 define method print-completions (completions :: <list>)
   => ();
-  format-out("\n");
-  for (completion in completions)
-    format-out("  %s\n\t%s\n",
-               completion-help-symbol(completion),
-               completion-help-text(completion));
-    let options = choose(option-complete?,
-                         completion-options(completion));
-    if (completion.completion-exhaustive?)
-      options := choose(option-complete?, options);
-    else
-      options := add!(options, "...");
+  let nodes = map(completion-node, completions);
+  let commands = choose-by(rcurry(instance?, <command-node>), nodes, completions);
+  let paramsyms = choose-by(rcurry(instance?, <parameter-symbol-node>), nodes, completions);
+  local method is-param-and-not-paramsym? (node)
+          instance?(node, <parameter-node>)
+            & ~instance?(node, <parameter-symbol-node>)
+        end;
+  let params = choose-by(is-param-and-not-paramsym?, nodes, completions);
+
+  local method print-command(command)
+          let node = completion-node(command);
+          format-out("  %s - %s\n",
+                     node-help-symbol(node),
+                     node-help-text(node));
+        end,
+        method print-parameter(param)
+          let node = completion-node(param);
+          let options = completion-options(param);
+          format-out("  %s - %s\n",
+                     node-help-symbol(node),
+                     node-help-text(node));
+          unless (instance?(node, <parameter-symbol-node>))
+            unless ((empty?(options) & completion-exhaustive?(param)))
+              let elipsis = if (param.completion-exhaustive?)
+                              ""
+                            else
+                              " ..."
+                            end;
+              let print-options = if (param.completion-exhaustive?)
+                                    choose(option-complete?, options);
+                                  else
+                                    options;
+                                  end;
+              format-out("    %s%s\n",
+                         join(map(option-string, print-options), ", "),
+                         elipsis);
+            end;
+          end;
+        end;
+
+  let total-count = size(commands) + size(params) + size(paramsyms);
+  let headers? = total-count > 1;
+  
+  unless (empty?(commands))
+    if (headers?)
+      format-out("Commands:\n");
     end;
-    if (options.size > 1)
-      format-out("\tOptions: %s\n",
-                 join(map(option-string, options), ", "));
+    for (command in commands)
+      print-command(command);
+    end;
+  end;
+  unless (empty?(paramsyms))
+    if (headers?)
+      format-out("Parameters:\n");
+    end;
+    for (param in paramsyms)
+      print-parameter(param);
+    end;
+  end;
+  unless (empty?(params))
+    if (headers?)
+      format-out("Value:\n");
+    end;
+    for (param in params)
+      print-parameter(param);
     end;
   end;
 end method;
