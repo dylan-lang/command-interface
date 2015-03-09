@@ -41,6 +41,7 @@ end;
 
 define command echo ($root)
   simple parameter message :: <string>,
+    help: "Message to print",
     required: #t;
   implementation
       format-out("%s\n", message);
@@ -60,12 +61,15 @@ define command show interface ($root)
   help "Query interfaces";
   flag parameter verbose :: <boolean>;
   simple parameter name :: <string>,
+    help: "Name of the interface",
     node-class: <oneof-node>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
   named parameter type :: <string>,
+    help: "Filter interfaces by type",
     node-class: <oneof-node>,
     alternatives: #("ethernet","atm");
   named parameter protocol :: <string>,
+    help: "Filter interfaces by protocol",
     node-class: <oneof-node>,
     alternatives: #("ip","ip4","ip6","lldp");
   implementation
@@ -74,8 +78,10 @@ end;
 
 define command show route ($root)
   help "Query routes";
-  named parameter destination :: <symbol>;
-  named parameter source :: <symbol>;
+  named parameter destination :: <symbol>,
+    help: "Filter routes by destination";
+  named parameter source :: <symbol>,
+    help: "Filter routes by source";
   implementation
     format-out("Nothing to show...\n src %= dst %= \n", source, destination);
 end;
@@ -83,9 +89,11 @@ end;
 define command show log ($root)
   help "Query logs";
   named parameter service :: <string>,
+    help: "Filter log messages by service",
     node-class: <oneof-node>,
     alternatives: #("dhcp-server","dhcp-client","kernel");
   named parameter level :: <string>,
+    help: "Filter log messages by level",
     node-class: <oneof-node>,
     alternatives: #("fatal","error","warning","notice","info","debug","trace");
   implementation
