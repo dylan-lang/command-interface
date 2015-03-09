@@ -224,6 +224,14 @@ define method node-successors (node :: <wrapper-node>)
   concatenate(node-successors(wrapper-root(node)), next-method());
 end method;
 
+
+/* A symbol that comes before a parameter
+ */
+define class <parameter-symbol-node> (<symbol-node>)
+  constant slot symbol-parameter :: <parameter-node>,
+    init-keyword: parameter:;
+end class;
+
 /* Syntactical kinds of parameters
  */
 define constant <parameter-kind> = one-of(#"simple", #"named", #"flag");
