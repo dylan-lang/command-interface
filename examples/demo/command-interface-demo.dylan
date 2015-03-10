@@ -59,9 +59,11 @@ end;
 
 define command show interface ($root)
   help "Query interfaces";
-  flag parameter verbose :: <boolean>;
+  flag parameter verbose :: <boolean>,
+    help: "Print verbose information";
   simple parameter name :: <string>,
-    help: "Name of the interface",
+    help: "Filter interfaces by name",
+    repeatable?: #t,
     node-class: <oneof-node>,
     alternatives: #("eth0", "eth1", "eth2", "eth3");
   named parameter type :: <string>,
