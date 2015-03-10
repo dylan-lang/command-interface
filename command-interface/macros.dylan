@@ -33,7 +33,7 @@ define macro command-aux-definer
                             ?bindings;
                             ?implementation;
                           end method;
-           let %command = build-command(%root, %symbols, handler: %handler, ?keywords);
+           let %command = build-command(%root, %symbols, ?keywords);
            ?parameters
          end }
 
@@ -71,6 +71,8 @@ define macro command-aux-definer
     { } => { }
     { help ?text:expression; ... }
       => { help: ?text, ... }
+    { implementation ?:expression; ... }
+      => { handler: %handler, ... }
     { ?other:*; ... } => { ... }
 
   // definitions that define parameters

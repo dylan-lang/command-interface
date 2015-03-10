@@ -45,13 +45,19 @@ define method editor-execute (editor :: <tty-command-shell>)
       instance?(pe, <command-ambiguous-error>) =>
         format-out("\nCan be interpreted as:\n");
         for(option in error-options(pe))
-          format-out("  %=\n", option);
+          format-out("  %s - %s\n",
+                     node-help-symbol(option),
+                     node-help-text(option));
         end;
+        format-out("\n");
       instance?(pe, <command-unknown-error>) =>
         format-out("\nPossible options:\n");
         for(option in error-options(pe))
-          format-out("  %=\n", option);
+          format-out("  %s - %s\n",
+                     node-help-symbol(option),
+                     node-help-text(option));
         end;
+        format-out("\n");
     end;
   exception (e :: <error>)
     // print condition and clear
@@ -185,6 +191,77 @@ define method editor-complete-implicit-internal (editor :: <tty-command-shell>)
   end;
 end method;
 
+define method print-completions (completions :: <list>)
+  => ();
+  let nodes = map(completion-node, completions);
+  let commands = choose-by(rcurry(instance?, <command-node>), nodes, completions);
+  let paramsyms = choose-by(rcurry(instance?, <parameter-symbol-node>), nodes, completions);
+  local method is-param-and-not-paramsym? (node)
+          instance?(node, <parameter-node>)
+            & ~instance?(node, <parameter-symbol-node>)
+        end;
+  let params = choose-by(is-param-and-not-paramsym?, nodes, completions);
+
+  local method print-command(command)
+          let node = completion-node(command);
+          format-out("  %s - %s\n",
+                     node-help-symbol(node),
+                     node-help-text(node));
+        end,
+        method print-parameter(param)
+          let node = completion-node(param);
+          let options = completion-options(param);
+          format-out("  %s - %s\n",
+                     node-help-symbol(node),
+                     node-help-text(node));
+          unless (instance?(node, <parameter-symbol-node>))
+            unless ((empty?(options) & completion-exhaustive?(param)))
+              let elipsis = if (param.completion-exhaustive?)
+                              ""
+                            else
+                              " ..."
+                            end;
+              let print-options = if (param.completion-exhaustive?)
+                                    choose(option-complete?, options);
+                                  else
+                                    options;
+                                  end;
+              format-out("    %s%s\n",
+                         join(map(option-string, print-options), ", "),
+                         elipsis);
+            end;
+          end;
+        end;
+
+  let total-count = size(commands) + size(params) + size(paramsyms);
+  let headers? = total-count > 1;
+  
+  unless (empty?(commands))
+    if (headers?)
+      format-out("Commands:\n");
+    end;
+    for (command in commands)
+      print-command(command);
+    end;
+  end;
+  unless (empty?(paramsyms))
+    if (headers?)
+      format-out("Parameters:\n");
+    end;
+    for (param in paramsyms)
+      print-parameter(param);
+    end;
+  end;
+  unless (empty?(params))
+    if (headers?)
+      format-out("Value:\n");
+    end;
+    for (param in params)
+      print-parameter(param);
+    end;
+  end;
+end method;
+
 define method editor-complete (editor :: <tty-command-shell>)
  => ();
   block (return)
@@ -217,13 +294,19 @@ define method editor-complete (editor :: <tty-command-shell>)
     let posn = editor-position(editor);
     // act on completion results
     select (size(options))
-      // no completions -> say so
+      // no completion options -> say so
       0 =>
         begin
           editor-finish(editor);
-          format-out("no completions\n");
+          if (empty?(completions))
+            // if there truly are no completions, just say so
+            format-out("no completions\n");
+          else
+            // else print completions so the user knows his options
+            print-completions(completions);
+          end;
         end;
-      // one completion -> insert it
+      // one completion option -> insert it
       1 =>
         let option = first(options);
         let completion = option-string(option);
@@ -233,12 +316,12 @@ define method editor-complete (editor :: <tty-command-shell>)
         else
           replace-position(editor, posn, autospace?, completion);
         end;
-      // many completions -> insert longest common prefix and print options
+      // many completion options -> insert longest common prefix and print completions
       otherwise =>
         editor-finish(editor);
+        print-completions(completions);
         let complete-options = choose(option-complete?, options);
         let complete-strings = map(option-string, complete-options);
-        format-out("%s\n", join(option-strings, " ")); // XXX only complete options for exhaustive case ???
         let common = longest-common-prefix(complete-strings);
 
         let matching-options = choose-by(rcurry(starts-with?, common),

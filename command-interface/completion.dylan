@@ -11,6 +11,12 @@ define class <command-completion> (<object>)
   /* node the completion was performed for */
   constant slot completion-node :: <parse-node>,
     required-init-keyword: node:;
+  /* Value placeholder for help */
+  constant slot completion-help-symbol :: false-or(<string>) = #f,
+    init-keyword: help-symbol:;
+  /* Main help text */
+  constant slot completion-help-text :: false-or(<string>) = #f,
+    init-keyword: help-text:;
   /* token used to hint the completion, if provided */
   constant slot completion-token :: false-or(<command-token>) = #f,
     init-keyword: token:;
@@ -30,6 +36,7 @@ define method initialize (completion :: <command-completion>,
                           #rest args, #key, #all-keys)
  => ();
   next-method();
+  // initialize reverse links
   for (option in completion.completion-options)
     option-completion(option) := completion;
   end;
@@ -44,6 +51,7 @@ end method;
  * values.
  */
 define class <command-completion-option> (<object>)
+  /* normally initialized by make(<completion>) */
   slot option-completion :: false-or(<command-completion>) = #f;
   /* string for this option */
   constant slot option-string :: <string>,
@@ -61,7 +69,11 @@ define function make-completion (node :: <parse-node>,
                                  #key exhaustive? :: <boolean> = #f,
                                       complete-options :: <sequence> = #(),
                                       other-options :: <sequence> = #())
- => (completion :: <command-completion>);
+  => (completion :: <command-completion>);
+  // get node help strings
+  let help-symbol = node-help-symbol(node);
+  let help-text = node-help-text(node);
+  // apply token restrictions
   if (token)
     let tokstr = token-string(token);
     // filter options using token
@@ -75,11 +87,14 @@ define function make-completion (node :: <parse-node>,
       end;
     end;
   end;
-  // add longest common prefix as an incomplete option
+  // add longest common prefix as an incomplete option,
+  // but filter it against existing options and the token
   let all-options = concatenate(complete-options, other-options);
   let lcp = longest-common-prefix(all-options);
   unless (empty?(lcp) | member?(lcp, all-options, test: \=))
-    other-options := add!(other-options, lcp);
+    unless (token & lcp = token-string(token))
+      other-options := add!(other-options, lcp);
+    end;
   end;
   // construct the result
   local method as-complete-option(string :: <string>)
@@ -91,6 +106,8 @@ define function make-completion (node :: <parse-node>,
   make(<command-completion>,
        node: node, token: token,
        exhaustive?: exhaustive?,
+       help-symbol: help-symbol,
+       help-text: help-text,
        options: concatenate-as(<list>,
                                map(as-complete-option, complete-options),
                                map(as-other-option, other-options)));

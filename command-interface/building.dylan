@@ -111,8 +111,9 @@ define method build-named-parameter (command :: <command-node>, names :: <sequen
                     keys);
   let syms = #();
   for (name in names)
-    let sym = make(<symbol-node>,
+    let sym = make(<parameter-symbol-node>,
                    symbol: as(<symbol>, name),
+                   parameter: param,
                    repeatable?: node-repeatable?(param),
                    repeat-marker: param,
                    successors: list(param));
