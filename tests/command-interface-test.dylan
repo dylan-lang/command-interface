@@ -38,10 +38,6 @@ define command simple three ($simple-root)
     end;
 end;
 
-define test command-integration-test()
-  
-end;
-
 
 define test command-tokenizer-test()
   local
@@ -79,29 +75,29 @@ define test command-tokenizer-test()
            #(0));
   test-one(" a ",
            #(" ", "a", " "),
-           #(#"whitespace",#"word",#"whitespace"),
+           #(#"whitespace", #"word", #"whitespace"),
            #(0, 1, 2),
            #(0, 1, 2));
   test-one("a b c",
-           #("a"," ","b"," ","c"),
-           #(#"word",#"whitespace",#"word",#"whitespace",#"word"),
+           #("a", " ", "b", " ", "c"),
+           #(#"word", #"whitespace", #"word", #"whitespace", #"word"),
            #(0, 1, 2, 3, 4),
            #(0, 1, 2, 3, 4));
   test-one(" a b c ",
-           #(" ","a"," ","b"," ","c"," "),
-           #(#"whitespace",#"word",#"whitespace",#"word",#"whitespace",#"word",#"whitespace"),
+           #(" ", "a", " ", "b", " ", "c", " "),
+           #(#"whitespace", #"word", #"whitespace", #"word", #"whitespace", #"word", #"whitespace"),
            #(0, 1, 2, 3, 4, 5, 6),
            #(0, 1, 2, 3, 4, 5, 6));
   test-one("aa bb cc",
-           #("aa"," ","bb"," ","cc"),
-           #(#"word",#"whitespace",#"word",#"whitespace",#"word"),
+           #("aa", " ", "bb", " ", "cc"),
+           #(#"word", #"whitespace", #"word", #"whitespace", #"word"),
            #(0, 2, 3, 5, 6),
            #(1, 2, 4, 5, 7));
-  test-one(" aa bb cc ",
-           #(" ","aa"," ","bb"," ","cc"," "),
-           #(#"whitespace",#"word",#"whitespace",#"word",#"whitespace",#"word",#"whitespace"),
-           #(0, 1, 3, 4, 6, 7, 9),
-           #(0, 2, 3, 5, 6, 8, 9));
+  test-one(" aa bb  cc ",       // double space after bb
+           #(" ", "aa", " ", "bb", "  ", "cc", " "),
+           #(#"whitespace", #"word", #"whitespace", #"word", #"whitespace", #"word", #"whitespace"),
+           #(0, 1, 3, 4, 6, 8, 10),
+           #(0, 2, 3, 5, 7, 9, 10));
 end;
 
 define suite command-interface-test-suite()
