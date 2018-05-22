@@ -13,14 +13,7 @@ define function or (a :: <boolean>, b :: <boolean>)
   a | b;
 end;
 
-define function n-spaces (n :: <integer>)
-  => (spaces :: <string>);
-  let str = "";
-  for (i from 0 below n)
-    str := add(str, ' ');
-  end;
-  str;
-end function;
+define constant n-spaces = curry(pad, "");
 
 define function longest-common-prefix (strings :: <sequence>)
  => (prefix :: <string>);
