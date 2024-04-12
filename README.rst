@@ -1,33 +1,35 @@
 Command Interface System
 ========================
+[![Build status](https://github.com/dylan-lang/command-interface/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/dylan-lang/command-interface/actions/workflows/build-and-test.yml) [![Documentation](https://github.com/dylan-lang/command-interface/actions/workflows/build-and-deploy-documentation.yml/badge.svg)](https://github.com/dylan-lang/command-interface/actions/workflows/build-and-deploy-documentation.yml)
 
 This is a system for building command-driven interfaces in Dylan.
 
 It can currently be used to declaratively design terminal-based
 command interfaces, commonly called shells or CLIs.
 
-We also strive to implement graphical command interfaces in a
-similar manner to Symbolics Genera, including support for
-full graphical and markup output.
+We also strive to implement graphical command interfaces in a similar
+manner to `Symbolics Genera
+<https://en.wikipedia.org/wiki/Genera_(operating_system)>`_, including
+support for full graphical and markup output.
 
 Compiling
 ---------
 
-All dependencies are in `Open Dylan`_ itself.
+Update library dependencies::
 
-Just build with::
+    dylan update
 
-    $ dylan-compiler -build command-interface
+Build the library, tests and demo with::
 
-There also is a demo::
+    dylan build --all
 
-    $ dylan-compiler -build command-interface-demo
-    $ _build/bin/command-interface-demo
+Run the demo::
 
-As well as some tests::
+    _build/bin/command-interface-demo
 
-    $ dylan-compiler -build command-interface-test
-    $ _build/bin/command-interface-test
+And the tests::
+
+    _build/bin/command-interface-test
 
 Completion in bash
 ------------------
@@ -39,11 +41,9 @@ interactive shell and from the system shell.
 To enable this feature you need to load the shell snippet
 printed by the following command into your shell::
 
-    $ _build/bin/command-interface-demo bashcomplete
+    _build/bin/command-interface-demo bashcomplete
 
 Once you do this you can complete and execute all commands
 that would be available inside the shell.
 
 This feature is automatically available to library users.
-
-.. _Open Dylan: https://github.com/dylan-lang/opendylan
