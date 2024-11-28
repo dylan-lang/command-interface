@@ -1,8 +1,8 @@
 {
     "name": "command-interface",
-    "description": "Interactive command interface system for Dylan",
+    "description": "Interactive command interface system",
     "keywords": [ "command-line" ],
-    "version": "0.1.2",
+    "version": "0.1.3",
     "url": "https://github.com/dylan-lang/command-interface",
     "category" : "utilities",
     "contact": "dylan-lang@googlegroups.com",
