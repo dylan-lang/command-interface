@@ -100,8 +100,4 @@ define test command-tokenizer-test()
            #(0, 2, 3, 5, 7, 9, 10));
 end;
 
-define suite command-interface-test-suite()
-  test command-tokenizer-test;
-end;
-
-run-test-application(command-interface-test-suite);
+run-test-application();
