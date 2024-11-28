@@ -26,11 +26,11 @@ Compiling
 
 Update library dependencies::
 
-    dylan update
+    deft update
 
 Build the library, tests and demo with::
 
-    dylan build --all
+    deft build --all
 
 Run the demo::
 
