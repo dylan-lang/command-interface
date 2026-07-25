@@ -1,35 +1,38 @@
-name: Build and test
+name: build-and-test
 
 on:
   push:
     # all branches
+    paths-ignore:
+      - 'documentation/**'
   pull_request:
-    # all branches
+    paths-ignore:
+      - 'documentation/**'
 
   # This enables the Run Workflow button on the Actions tab.
   workflow_dispatch:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install Opendylan
+      - name: Install Open Dylan
         uses: dylan-lang/install-opendylan@v3
 
-      - name: Download dependencies
-        run: dylan update
+      - name: Install dependencies
+        run: deft update
 
-      - name: Build tests
-        run: dylan build command-interface-test
-
-      - name: Run tests
-        run: _build/bin/command-interface-test --progress none --report surefire > _build/TEST-command-interface.xml
+      - name: Build and Run Tests
+        run: deft test -- --report surefire --report-file _build/test-output.xml
 
       - name: Publish Test Report
         if: success() || failure()
         uses: mikepenz/action-junit-report@v6
         with:
-          report_paths: '**/_build/TEST-*.xml'
+          report_paths: '**/_build/test-output.xml'
